@@ -209,3 +209,11 @@ extension SBUBaseViewController {
         }
     }
 }
+
+extension SBUBaseViewController {
+    open override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        let theme = (self.traitCollection.userInterfaceStyle == .dark) ? SBUTheme.dark : SBUTheme.light
+        SBUTheme.set(theme: theme)
+        updateStyles(needsToLayout: true)
+    }
+}
