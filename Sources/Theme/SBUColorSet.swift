@@ -62,4 +62,8 @@ public class SBUColorSet {
     // MARK: - Highlight
     public static var highlight = UIColor(red: 1.0, green: 242.0 / 255.0, blue: 182.0 / 255.0, alpha: 1.0)
     
+    // MARK: - Bounce Custom Colors
+    public static var navigationBarTint = UIColor(hex: "#09A2AA")
+    public static var navigationButtonTint = UIColor.white
+    public static var navigationTitleColor = UIColor.white
 }

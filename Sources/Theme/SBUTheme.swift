@@ -392,9 +392,9 @@ public class SBUGroupChannelListTheme {
         } else {
             theme.statusBarStyle = .default
         }
-        theme.leftBarButtonTintColor = SBUColorSet.primary300
-        theme.rightBarButtonTintColor = SBUColorSet.primary300
-        theme.navigationBarTintColor = SBUColorSet.background50
+        theme.leftBarButtonTintColor = SBUColorSet.navigationButtonTint
+        theme.rightBarButtonTintColor = SBUColorSet.navigationButtonTint
+        theme.navigationBarTintColor = SBUColorSet.navigationBarTint
         theme.navigationBarShadowColor = SBUColorSet.onlight04
         
         theme.backgroundColor = SBUColorSet.background50
@@ -416,9 +416,9 @@ public class SBUGroupChannelListTheme {
         
         theme.statusBarStyle = .lightContent
         
-        theme.leftBarButtonTintColor = SBUColorSet.primary200
-        theme.rightBarButtonTintColor = SBUColorSet.primary200
-        theme.navigationBarTintColor = SBUColorSet.background500
+        theme.leftBarButtonTintColor = SBUColorSet.navigationButtonTint
+        theme.rightBarButtonTintColor = SBUColorSet.navigationButtonTint
+        theme.navigationBarTintColor = SBUColorSet.navigationBarTint
         theme.navigationBarShadowColor = SBUColorSet.background500
         
         theme.backgroundColor = SBUColorSet.background600
@@ -824,10 +824,10 @@ public class SBUChannelTheme {
         } else {
             theme.statusBarStyle = .default
         }
-        theme.navigationBarTintColor = SBUColorSet.background50
+        theme.navigationBarTintColor = SBUColorSet.navigationBarTint
         theme.navigationBarShadowColor = SBUColorSet.onlight04
-        theme.leftBarButtonTintColor = SBUColorSet.primary300
-        theme.rightBarButtonTintColor = SBUColorSet.primary300
+        theme.leftBarButtonTintColor = SBUColorSet.navigationButtonTint
+        theme.rightBarButtonTintColor = SBUColorSet.navigationButtonTint
         theme.backgroundColor = SBUColorSet.background50
         
         // Alert
@@ -868,10 +868,10 @@ public class SBUChannelTheme {
         
         theme.statusBarStyle = .lightContent
         
-        theme.navigationBarTintColor = SBUColorSet.background500
-        theme.navigationBarShadowColor = SBUColorSet.background500
-        theme.leftBarButtonTintColor = SBUColorSet.primary200
-        theme.rightBarButtonTintColor = SBUColorSet.primary200
+        theme.navigationBarTintColor = SBUColorSet.navigationBarTint
+        theme.navigationBarShadowColor = SBUColorSet.navigationBarTint
+        theme.leftBarButtonTintColor = SBUColorSet.navigationButtonTint
+        theme.rightBarButtonTintColor = SBUColorSet.navigationButtonTint
         theme.backgroundColor = SBUColorSet.background600
         
         // Alert
@@ -912,10 +912,10 @@ public class SBUChannelTheme {
         
         theme.statusBarStyle = .lightContent
         
-        theme.navigationBarTintColor = SBUColorSet.background500
-        theme.navigationBarShadowColor = SBUColorSet.background500
-        theme.leftBarButtonTintColor = SBUColorSet.primary200
-        theme.rightBarButtonTintColor = SBUColorSet.primary200
+        theme.navigationBarTintColor = SBUColorSet.navigationBarTint
+        theme.navigationBarShadowColor = SBUColorSet.navigationBarTint
+        theme.leftBarButtonTintColor = SBUColorSet.navigationButtonTint
+        theme.rightBarButtonTintColor = SBUColorSet.navigationButtonTint
         theme.backgroundColor = SBUColorSet.onlight02
         
         // Alert
@@ -2238,10 +2238,10 @@ public class SBUUserListTheme {
         } else {
             theme.statusBarStyle = .default
         }
-        theme.navigationBarTintColor = SBUColorSet.background50
+        theme.navigationBarTintColor = SBUColorSet.navigationBarTint
         theme.navigationShadowColor = SBUColorSet.onlight04
-        theme.leftBarButtonTintColor = SBUColorSet.primary300
-        theme.rightBarButtonTintColor = SBUColorSet.onlight04 // TODO: need to replace
+        theme.leftBarButtonTintColor = SBUColorSet.navigationButtonTint
+        theme.rightBarButtonTintColor = SBUColorSet.navigationButtonTint // TODO: need to replace
         theme.rightBarButtonSelectedTintColor = SBUColorSet.primary300 // TODO: need to replace
         theme.barButtonTintColor = SBUColorSet.primary300
         theme.barButtonDisabledTintColor = SBUColorSet.onlight04
@@ -2260,10 +2260,10 @@ public class SBUUserListTheme {
     public static var dark: SBUUserListTheme {
         let theme = SBUUserListTheme()
         theme.statusBarStyle = .lightContent
-        theme.navigationBarTintColor = SBUColorSet.background500
-        theme.navigationShadowColor = SBUColorSet.background500
-        theme.leftBarButtonTintColor = SBUColorSet.primary200
-        theme.rightBarButtonTintColor = SBUColorSet.ondark04 // TODO: need to replace
+        theme.navigationBarTintColor = SBUColorSet.navigationBarTint
+        theme.navigationShadowColor = SBUColorSet.navigationBarTint
+        theme.leftBarButtonTintColor = SBUColorSet.navigationButtonTint
+        theme.rightBarButtonTintColor = SBUColorSet.navigationButtonTint // TODO: need to replace
         theme.rightBarButtonSelectedTintColor = SBUColorSet.primary200 // TODO: need to replace
         theme.barButtonTintColor = SBUColorSet.primary200
         theme.barButtonDisabledTintColor = SBUColorSet.ondark04
@@ -2457,10 +2457,10 @@ public class SBUChannelSettingsTheme {
             theme.statusBarStyle = .default
         }
         
-        theme.navigationBarTintColor = SBUColorSet.background50
+        theme.navigationBarTintColor = SBUColorSet.navigationBarTint
         theme.navigationShadowColor = SBUColorSet.onlight04
-        theme.leftBarButtonTintColor = SBUColorSet.primary300
-        theme.rightBarButtonTintColor = SBUColorSet.primary300
+        theme.leftBarButtonTintColor = SBUColorSet.navigationButtonTint
+        theme.rightBarButtonTintColor = SBUColorSet.navigationButtonTint
         theme.backgroundColor = SBUColorSet.background50
         
         // Cell
@@ -2505,10 +2505,10 @@ public class SBUChannelSettingsTheme {
     public static var dark: SBUChannelSettingsTheme {
         let theme = SBUChannelSettingsTheme()
         theme.statusBarStyle = .lightContent
-        theme.navigationBarTintColor = SBUColorSet.background500
-        theme.navigationShadowColor = SBUColorSet.background500
-        theme.leftBarButtonTintColor = SBUColorSet.primary200
-        theme.rightBarButtonTintColor = SBUColorSet.primary200
+        theme.navigationBarTintColor = SBUColorSet.navigationBarTint
+        theme.navigationShadowColor = SBUColorSet.navigationBarTint
+        theme.leftBarButtonTintColor = SBUColorSet.navigationButtonTint
+        theme.rightBarButtonTintColor = SBUColorSet.navigationButtonTint
         theme.backgroundColor = SBUColorSet.background600
         
         // Cell
@@ -2878,7 +2878,7 @@ public class SBUComponentTheme {
         
         // Title View
         theme.titleOnlineStateColor = SBUColorSet.secondary300
-        theme.titleColor = SBUColorSet.onlight01
+        theme.titleColor = SBUColorSet.navigationTitleColor
         theme.titleFont = SBUFontSet.h3
         theme.titleStatusColor = SBUColorSet.onlight03
         theme.titleStatusFont = SBUFontSet.caption2
@@ -2996,7 +2996,7 @@ public class SBUComponentTheme {
         
         // Title View
         theme.titleOnlineStateColor = SBUColorSet.secondary200
-        theme.titleColor = SBUColorSet.ondark01
+        theme.titleColor = SBUColorSet.navigationTitleColor
         theme.titleFont = SBUFontSet.h3
         theme.titleStatusColor = SBUColorSet.ondark03
         theme.titleStatusFont = SBUFontSet.caption2
@@ -3113,7 +3113,7 @@ public class SBUComponentTheme {
         
         // Title View
         theme.titleOnlineStateColor = SBUColorSet.secondary200
-        theme.titleColor = SBUColorSet.ondark01
+        theme.titleColor = SBUColorSet.navigationTitleColor
         theme.titleFont = SBUFontSet.h3
         theme.titleStatusColor = SBUColorSet.ondark03
         theme.titleStatusFont = SBUFontSet.caption2
@@ -3474,7 +3474,7 @@ public class SBUMessageSearchTheme {
             theme.statusBarStyle = .default
         }
         theme.navigationBarStyle = .default
-        theme.navigationBarTintColor = SBUColorSet.background50
+        theme.navigationBarTintColor = SBUColorSet.navigationBarTint
         theme.navigationBarShadowColor = SBUColorSet.onlight04
         theme.backgroundColor = SBUColorSet.background50
         
@@ -3484,7 +3484,7 @@ public class SBUMessageSearchTheme {
         theme.searchPlaceholderColor = SBUColorSet.onlight03
         theme.searchIconTintColor = SBUColorSet.onlight03
         theme.clearIconTintColor = SBUColorSet.onlight03
-        theme.cancelButtonTintColor = SBUColorSet.primary400
+        theme.cancelButtonTintColor = SBUColorSet.navigationButtonTint
         
         return theme
     }
@@ -3494,8 +3494,8 @@ public class SBUMessageSearchTheme {
         
         theme.statusBarStyle = .lightContent
         theme.navigationBarStyle = .black
-        theme.navigationBarTintColor = SBUColorSet.background500
-        theme.navigationBarShadowColor = SBUColorSet.background500
+        theme.navigationBarTintColor = SBUColorSet.navigationBarTint
+        theme.navigationBarShadowColor = SBUColorSet.navigationBarTint
         theme.backgroundColor = SBUColorSet.background600
         
         theme.searchTextColor = SBUColorSet.ondark01
@@ -3504,7 +3504,7 @@ public class SBUMessageSearchTheme {
         theme.searchPlaceholderColor = SBUColorSet.ondark03
         theme.searchIconTintColor = SBUColorSet.ondark03
         theme.clearIconTintColor = SBUColorSet.ondark03
-        theme.cancelButtonTintColor = SBUColorSet.primary200
+        theme.cancelButtonTintColor = SBUColorSet.navigationButtonTint
         
         return theme
     }
