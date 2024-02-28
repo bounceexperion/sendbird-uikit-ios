@@ -307,3 +307,12 @@ extension UIImage {
         return animation
     }
 }
+
+extension UIImage {
+    func flip() -> UIImage {
+        if SBUGlobals.isRTLLayout == true {
+            return self.withHorizontallyFlippedOrientation()
+        }
+        return self
+    }
+}

@@ -227,7 +227,7 @@ public enum SBUIconSetType: String, Hashable {
         case .iconNotificationFilled: return SBUIconSet.iconNotificationFilled
         case .iconNotificationOffFilled: return SBUIconSet.iconNotificationOffFilled
         case .iconAdd: return SBUIconSet.iconAdd
-        case .iconBack: return SBUIconSet.iconBack
+        case .iconBack: return SBUIconSet.iconBack.flip()
         case .iconBan: return SBUIconSet.iconBan
         case .iconBroadcast: return SBUIconSet.iconBroadcast
         case .iconCamera: return SBUIconSet.iconCamera
@@ -236,7 +236,7 @@ public enum SBUIconSetType: String, Hashable {
         case .iconCheckboxUnchecked: return SBUIconSet.iconCheckboxUnchecked
         case .iconCheckboxChecked: return SBUIconSet.iconCheckboxChecked
         case .iconChevronDown: return SBUIconSet.iconChevronDown
-        case .iconChevronRight: return SBUIconSet.iconChevronRight
+        case .iconChevronRight: return SBUIconSet.iconChevronRight.flip()
         case .iconClose: return SBUIconSet.iconClose
         case .iconCopy: return SBUIconSet.iconCopy
         case .iconCreate: return SBUIconSet.iconCreate

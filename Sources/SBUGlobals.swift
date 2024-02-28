@@ -176,4 +176,13 @@ public class SBUGlobals {
     /// ```
     /// - Since: 3.13.0
     public static var scrollPostionConfiguration = SBUScrollPostionConfiguration()
+    
+    /// The Layout of the application.
+    ///
+    /// See the example below for configuration setting.
+    /// If the app layout needs to in RTL , set as true ( for Arabic )
+    /// Else set as false ( default value  for English )
+    /// - Since: 3.13.0
+    public static var isRTLLayout: Bool = false
+
 }
