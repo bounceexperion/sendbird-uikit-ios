@@ -1,14 +1,16 @@
-// swift-tools-version:5.3
+// swift-tools-version: 5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
+
 import PackageDescription
 
 let package = Package(
     name: "SendbirdUIKit",
-    platforms: [.iOS(.v11)],
+    platforms: [.iOS(.v13)],
     products: [
+        // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "SendbirdUIKit",
-            targets: ["SendbirdUIKitTarget"]
+            targets: ["SendbirdUIKit"]
         ),
     ],
     dependencies: [
@@ -19,18 +21,19 @@ let package = Package(
         ),
     ],
     targets: [
-        .binaryTarget(
-            name: "SendbirdUIKit",
-            path: "Framework/SendbirdUIKit.xcframework"
-        ),
+        // Targets are the basic building blocks of a package, defining a module or a test suite.
+        // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "SendbirdUIKitTarget",
+            name: "SendbirdUIKit",
             dependencies: [
-                .target(name: "SendbirdUIKit"),
+                //                .target(name: "SendbirdUIKit"),
                 .product(name: "SendbirdChatSDK", package: "SendbirdChatSDK")
             ],
-            path: "Framework/Dependency",
-            exclude: ["../../Sample", "../../Sources"]
-        ),
+            path: "Sources",
+            resources: [
+                .process("Resource/Assets.xcassets")
+            ]
+            //            exclude: ["../../Sample", "../../Sources"]
+        )
     ]
 )
