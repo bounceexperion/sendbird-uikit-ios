@@ -579,27 +579,27 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
     ///
     /// - Since: 3.11.0
     public func showUserProfile(user: SBUUser, isOpenChannel: Bool = false) {
-        self.dismissKeyboard()
-        
-        guard let userProfileView = self.baseListComponent?.userProfileView as? SBUUserProfileView else { return }
-        guard let baseView = self.navigationController?.view else { return }
-        guard SendbirdUI.config.common.isUsingDefaultUserProfileEnabled else { return }
-        
-        let completionHandler: ((SBUUser, UIView) -> Void) = { user, baseView in
-            userProfileView.show(
-                baseView: baseView,
-                user: user,
-                isOpenChannel: isOpenChannel
-            )
-        }
-        
-        if let presentedViewController = self.presentedViewController {
-            presentedViewController.dismiss(animated: true) { [user, baseView] in
-                    completionHandler(user, baseView)
-                }
-        } else {
-            completionHandler(user, baseView)
-        }
+//        self.dismissKeyboard()
+//        
+//        guard let userProfileView = self.baseListComponent?.userProfileView as? SBUUserProfileView else { return }
+//        guard let baseView = self.navigationController?.view else { return }
+//        guard SendbirdUI.config.common.isUsingDefaultUserProfileEnabled else { return }
+//        
+//        let completionHandler: ((SBUUser, UIView) -> Void) = { user, baseView in
+//            userProfileView.show(
+//                baseView: baseView,
+//                user: user,
+//                isOpenChannel: isOpenChannel
+//            )
+//        }
+//        
+//        if let presentedViewController = self.presentedViewController {
+//            presentedViewController.dismiss(animated: true) { [user, baseView] in
+//                    completionHandler(user, baseView)
+//                }
+//        } else {
+//            completionHandler(user, baseView)
+//        }
     }
     
     // MARK: - MessageInputView

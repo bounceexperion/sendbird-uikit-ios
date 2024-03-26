@@ -330,4 +330,8 @@ extension SBUToastView {
     static func show(type: SBUToastType) {
         show(item: type.item)
     }
+    
+    static func showToast(item: SBUToastViewItem) {
+        show(item: item)
+    }
 }

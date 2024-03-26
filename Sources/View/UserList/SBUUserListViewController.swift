@@ -400,7 +400,7 @@ open class SBUUserListViewController: SBUBaseViewController, SBUUserListModuleHe
     
     open func userListModule(_ listComponent: SBUUserListModule.List,
                                didTapUserProfileFor user: SBUUser) {
-        self.showUserProfile(with: user)
+//        self.showUserProfile(with: user)
     }
     
     open func userListModuleDidSelectRetry(_ listComponent: SBUUserListModule.List) {

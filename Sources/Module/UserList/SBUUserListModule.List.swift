@@ -275,6 +275,7 @@ extension SBUUserListModule {
                     guard let self = self else { return }
                     self.setUserProfileTapAction(user)
                 }
+                defaultCell.moreButton.isHidden = true
             }
         }
         

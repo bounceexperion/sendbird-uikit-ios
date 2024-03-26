@@ -9,6 +9,7 @@
 import UIKit
 import SendbirdChatSDK
 import MobileCoreServices
+import AVFoundation
 
 private let kDefaultGroupChannelName = "Group Channel"
 private let kDefaultOpenChannelName = "Open Channel"
@@ -284,4 +285,18 @@ extension SBUUtils {
         return strTime
     }
 
+}
+
+extension SBUUtils {
+    static func showLowVolumeAlert() {
+        do {
+            try AVAudioSession.sharedInstance().setActive(true)
+            let volume = AVAudioSession.sharedInstance().outputVolume
+            if volume == 0.0 {
+                SBUToastView.showToast(item: SBUToastViewItem(title: SBUStringSet.Alert_Mute_Message, textAlignment: .center))
+            }
+        } catch {
+            print("error")
+        }
+    }
 }

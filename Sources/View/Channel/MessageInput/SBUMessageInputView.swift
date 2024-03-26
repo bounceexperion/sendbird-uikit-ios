@@ -801,6 +801,7 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         self.textView?.scrollRangeToVisible(bottom)
         
         self.textView?.becomeFirstResponder()
+        self.textView?.textAlignment = SBUGlobals.isRTLLayout ? .right : .left
 
         self.layoutIfNeeded()
     }

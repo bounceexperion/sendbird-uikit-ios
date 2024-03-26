@@ -875,7 +875,6 @@ extension SBUGroupChannelModule.List {
                 self?.voicePlayer?.pause()
             case .pause:
                 if actionInSameView == true { break }
-
                 let currentPlayTime = self?.currentVoiceFileInfo?.currentPlayTime ?? 0
                 self?.voicePlayer?.play(fromTime: currentPlayTime)
             case .finishPlaying:

@@ -106,12 +106,12 @@ extension SBUGroupChannelSettingsModule {
             let searchItem = self.createSearchItem()
             let leaveItem = self.createLeaveItem()
 
-            var items = self.isOperator ? [moderationsItem] : []
+            var items: [SBUChannelSettingItem] = []
             items += [notificationsItem, membersItem]
             if SBUAvailable.isSupportMessageSearch() {
                 items += [searchItem]
             }
-            items += [leaveItem]
+            //items += [leaveItem]
             
             self.items = items
         }

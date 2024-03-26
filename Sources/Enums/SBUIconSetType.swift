@@ -101,7 +101,7 @@ public enum SBUIconSetType: String, Hashable {
     private static let bundle = Bundle(identifier: SBUConstant.bundleIdentifier)
     
     func load(tintColor: UIColor? = nil) -> UIImage {
-        guard let image = UIImage(named: self.rawValue, in: Bundle.module, compatibleWith: nil) else {
+        guard let image = UIImage(named: self.rawValue, in: SBUIconSetType.bundle ?? Bundle.module, compatibleWith: nil) else {
             return UIImage()
         }
         guard let tintColor = tintColor else { return image }
@@ -271,7 +271,7 @@ public enum SBUIconSetType: String, Hashable {
         case .iconReply: return SBUIconSet.iconReply
         case .iconReplied: return SBUIconSet.iconReplied
         case .iconSearch: return SBUIconSet.iconSearch
-        case .iconSend: return SBUIconSet.iconSend
+        case .iconSend: return SBUIconSet.iconSend.flip()
         case .iconSpinner: return SBUIconSet.iconSpinner
         case .iconSupergroup: return SBUIconSet.iconSupergroup
         case .iconThumbnailNone: return SBUIconSet.iconThumbnailNone

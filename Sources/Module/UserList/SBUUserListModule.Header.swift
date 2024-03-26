@@ -177,9 +177,9 @@ extension SBUUserListModule {
             if self.leftBarButton == nil {
                 self.leftBarButton = self.defaultLeftBarButton()
             }
-            if self.rightBarButton == nil {
-                self.rightBarButton = self.defaultRightBarButton()
-            }
+//            if self.rightBarButton == nil {
+//                self.rightBarButton = self.defaultRightBarButton()
+//            }
         }
         
         /// Sets layouts of the views in the header component.

@@ -15,7 +15,7 @@ public extension UIView {
     /// - Returns: nib object
     @objc static func sbu_loadNib() -> UINib {
         let nibName = String(NSStringFromClass(self).split(separator: ".").last ?? "")
-        let nib = UINib(nibName: nibName, bundle: Bundle(identifier: SBUConstant.bundleIdentifier))
+        let nib = UINib(nibName: nibName, bundle: Bundle(identifier: SBUConstant.bundleIdentifier) ?? Bundle.module)
         return nib
     }
     

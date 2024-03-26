@@ -116,6 +116,7 @@ public class SBUVoicePlayer: NSObject, AVAudioPlayerDelegate {
         if self.audioPlayer?.play() == true {
             self.status = .playing
             self.startProgressTimer()
+            SBUUtils.showLowVolumeAlert()
             self.delegate?.voicePlayerDidStart(self)
         } else {
             self.status = .none

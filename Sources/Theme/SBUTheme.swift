@@ -2242,7 +2242,7 @@ public class SBUUserListTheme {
         theme.navigationShadowColor = SBUColorSet.onlight04
         theme.leftBarButtonTintColor = SBUColorSet.navigationButtonTint
         theme.rightBarButtonTintColor = SBUColorSet.navigationButtonTint // TODO: need to replace
-        theme.rightBarButtonSelectedTintColor = SBUColorSet.primary300 // TODO: need to replace
+        theme.rightBarButtonSelectedTintColor = SBUColorSet.navigationButtonTint // TODO: need to replace
         theme.barButtonTintColor = SBUColorSet.primary300
         theme.barButtonDisabledTintColor = SBUColorSet.onlight04
         theme.backgroundColor = SBUColorSet.background50
@@ -2264,7 +2264,7 @@ public class SBUUserListTheme {
         theme.navigationShadowColor = SBUColorSet.navigationBarTint
         theme.leftBarButtonTintColor = SBUColorSet.navigationButtonTint
         theme.rightBarButtonTintColor = SBUColorSet.navigationButtonTint // TODO: need to replace
-        theme.rightBarButtonSelectedTintColor = SBUColorSet.primary200 // TODO: need to replace
+        theme.rightBarButtonSelectedTintColor = SBUColorSet.navigationButtonTint // TODO: need to replace
         theme.barButtonTintColor = SBUColorSet.primary200
         theme.barButtonDisabledTintColor = SBUColorSet.ondark04
         theme.backgroundColor = SBUColorSet.background600
