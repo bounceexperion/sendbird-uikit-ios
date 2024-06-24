@@ -107,7 +107,6 @@
 		39029B34FB634831D77CBF05 /* SBUInviteUserModule.List.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE16DAE32B6070998336573 /* SBUInviteUserModule.List.swift */; };
 		393D546FA1327DF6CA85B585 /* SBUCacheManager.Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 128E1F4D28ABBCAA2CB98AE2 /* SBUCacheManager.Image.swift */; };
 		3AE5B16042516DF13DE22E76 /* SBUFileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 317F5A7D8B32F3D20AED085F /* SBUFileViewController.swift */; };
-		3B04FE2EE0A8A31376CC1827 /* Base.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = A7DFEE86211C0E28A911D6DC /* Base.xcconfig */; };
 		3B94E9299C7E346EF249428D /* SBUMessageWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5A20EDD654F256666066E1 /* SBUMessageWebView.swift */; };
 		3CC54678C90239C10351681A /* SBUEmptyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56E9454F11000953A6F8C879 /* SBUEmptyView.swift */; };
 		3D561455585C033C130C7C08 /* UIViewController+SBUIKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C657C1F4384894BEC567E0 /* UIViewController+SBUIKit.swift */; };
@@ -241,7 +240,6 @@
 		9624EC42381DDB58B35524D5 /* SBUMessageSearchModule.List.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356E4539B86C74DF7BC90226 /* SBUMessageSearchModule.List.swift */; };
 		966F4B8083CE103C9FBEEE3E /* SBUMessageThreadViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7DBD895C66F0C68F390FF9C /* SBUMessageThreadViewController.swift */; };
 		968AB424FE811F29FEC4DC71 /* SBUPhotoAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E789225DA1A59CFFD35E58E /* SBUPhotoAccess.swift */; };
-		969C0F6FD83188A29B4A3ADD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EF138BA2AA25618180441328 /* Assets.xcassets */; };
 		978FDF6840AAF0104197BD2C /* SBUModerationsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59408BF6DEEF6A1204C9D898 /* SBUModerationsModule.swift */; };
 		98F73B14A75D306333B7F7F8 /* SBUOpenChannelSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 952FBBAF8024A3591C7555BC /* SBUOpenChannelSettingsViewModel.swift */; };
 		995E6F11F14B746018179A71 /* SBUMessageSearchModule.Header.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22E35BE6887D4AB62C03F91E /* SBUMessageSearchModule.Header.swift */; };
@@ -276,7 +274,7 @@
 		9C03AF57C46A2EA435A07E73 /* SBUInviteUserModule.Header.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48A6F04A4D8148E895C22C79 /* SBUInviteUserModule.Header.swift */; };
 		9C2A3C5B28863A9E0052F71D /* SendbirdChatSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 9C2A3C5A28863A9E0052F71D /* SendbirdChatSDK */; };
 		9C3EBE2328091D2A00B5366B /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C3EBE2228091D2A00B5366B /* NotificationService.swift */; };
-		9C3EBE2728091D2A00B5366B /* NotificationService.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 9C3EBE2028091D2A00B5366B /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		9C3EBE2728091D2A00B5366B /* NotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9C3EBE2028091D2A00B5366B /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9C5DCD49242AFA7C00C41106 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C5DCD48242AFA7C00C41106 /* UserNotifications.framework */; };
 		9E23C8B9C66A4008FE77B090 /* SBUTypingIndicatorInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A3FB8892ADCD3E0E9511904 /* SBUTypingIndicatorInfo.swift */; };
 		9EA5BE4B5EECE136CC894349 /* SBUSuggestedReplyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C96D0A591A137975FD1E0971 /* SBUSuggestedReplyView.swift */; };
@@ -332,7 +330,6 @@
 		AAC04C76C409407D45567FDA /* CommonProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDEE98EA5FE5B8FC4540CFDD /* CommonProtocols.swift */; };
 		AACFBD0A1D56825B588C187E /* SBUView.Unavaliable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365095CEC736C9DEBA69415 /* SBUView.Unavaliable.swift */; };
 		AB3B71963C992D57F68A1B57 /* SBUCacheManager.Version.swift in Sources */ = {isa = PBXBuildFile; fileRef = E343BD5E55FB035F36719271 /* SBUCacheManager.Version.swift */; };
-		ABEA02BACAFC94F208A49A1B /* Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = CE71868AC6C379CE8650B648 /* Release.xcconfig */; };
 		AC3E122DD614C59D289CD1A6 /* SBUQuoteMessageInputViewParams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FB67DDF4454E91EEA430FDC /* SBUQuoteMessageInputViewParams.swift */; };
 		AE199A581662FFB47C92857F /* SBUCreateOpenChannelModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9091377FA7FD153C5C626A38 /* SBUCreateOpenChannelModule.swift */; };
 		B032663B5E7F7BC97D5F2DBC /* SBUOpenChannelCommonContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDA56305FD54F137E1F8D9A /* SBUOpenChannelCommonContentView.swift */; };
@@ -388,12 +385,12 @@
 		D60ADFDACD9679B85C7CA781 /* NSObject+SBUIKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBDACB5577B4060BA97AC1C /* NSObject+SBUIKit.swift */; };
 		D6CFE43020A72C999FDEA57C /* Thread+SBUIKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D16DD6A59A102988A393664 /* Thread+SBUIKit.swift */; };
 		D6E231FE538B6FE162C0AF02 /* SBUBaseChannelModule.List.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCE76DED6C09949CE698E04F /* SBUBaseChannelModule.List.swift */; };
+		D71716662B9251E100B4316C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D71716652B9251E100B4316C /* Assets.xcassets */; };
 		D7545E96C1FDCC286F84770B /* Array+SBUIKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F02D80E07FEBA2F9BF79F74 /* Array+SBUIKit.swift */; };
 		D7A1AA66BFF52B70EA6CC787 /* SBUMention.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BD48AF299A50466D94ED18A /* SBUMention.swift */; };
 		D840CA18875416A89149C492 /* SBUOpenChannelFileMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1DE87CFB8568852BD36170 /* SBUOpenChannelFileMessageCell.swift */; };
 		D87ED0C1DA9ECBCB9736C5C4 /* SBUEnums.Deprecated.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5CB819B1B0E913907810E24 /* SBUEnums.Deprecated.swift */; };
 		D8E9B9507C25EC7F20883EC0 /* SBUConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1A59D81D7DCAA6E5C5E4FF /* SBUConfig.swift */; };
-		DAE9E6E0787D1A59F328E7FF /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = AD37012F11ABA8AE1B81409D /* Debug.xcconfig */; };
 		DB8315D87ECE0D3992EF53BE /* SBUOpenChannelListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B07B5246BBDD2BE9B965C611 /* SBUOpenChannelListViewModel.swift */; };
 		DBA6ABA7FCC361DA08B17C5D /* SBUBaseSelectUserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C96F2CEEEE432B7089E424 /* SBUBaseSelectUserViewModel.swift */; };
 		DCA5CBF0AF05405E9220F06E /* SBUUserMessageTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDE6689B2BED066E8E991EF2 /* SBUUserMessageTextView.swift */; };
@@ -470,15 +467,25 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		9C3EBE2828091D2A00B5366B /* Embed App Extensions */ = {
+		9C3EBE2828091D2A00B5366B /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				9C3EBE2728091D2A00B5366B /* NotificationService.appex in Embed App Extensions */,
+				9C3EBE2728091D2A00B5366B /* NotificationService.appex in Embed Foundation Extensions */,
 			);
-			name = "Embed App Extensions";
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D71716252B91C53A00B4316C /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -880,6 +887,7 @@
 		D4FA477973837F5FA7CB53C7 /* SBUOpenChannelCell.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SBUOpenChannelCell.swift; path = ../Sources/View/ChannelList/ChannelCell/SBUOpenChannelCell.swift; sourceTree = "<group>"; };
 		D55F05BC9D1C1E1BCA8CA286 /* SBUFeedNotificationChannelViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SBUFeedNotificationChannelViewController.swift; path = ../Sources/View/Channel/SBUFeedNotificationChannelViewController.swift; sourceTree = "<group>"; };
 		D5CB819B1B0E913907810E24 /* SBUEnums.Deprecated.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SBUEnums.Deprecated.swift; path = ../Sources/Deprecated/SBUEnums.Deprecated.swift; sourceTree = "<group>"; };
+		D71716652B9251E100B4316C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D718268CEE9FA55175A4C970 /* SBUBaseChannelSettingsViewController.Deprecated.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SBUBaseChannelSettingsViewController.Deprecated.swift; path = ../Sources/Deprecated/ChannelSettings/SBUBaseChannelSettingsViewController.Deprecated.swift; sourceTree = "<group>"; };
 		D7722F31CFBDC19D02EB123F /* SBUEnums.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SBUEnums.swift; path = ../Sources/Enums/SBUEnums.swift; sourceTree = "<group>"; };
 		D7F7229A8D45004D8D08718D /* SBUBaseChannelModule.Header.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SBUBaseChannelModule.Header.swift; path = ../Sources/Module/Channel/SBUBaseChannelModule.Header.swift; sourceTree = "<group>"; };
@@ -915,7 +923,6 @@
 		EE1E5CC03E155014E6840404 /* SBUBaseChannelListModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SBUBaseChannelListModule.swift; path = ../Sources/Module/ChannelList/SBUBaseChannelListModule.swift; sourceTree = "<group>"; };
 		EE5A20EDD654F256666066E1 /* SBUMessageWebView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SBUMessageWebView.swift; path = ../Sources/View/Channel/CellView/SBUMessageWebView.swift; sourceTree = "<group>"; };
 		EE8737B229EE75D61DDC0DE5 /* SBUOpenChannelModule.Header.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SBUOpenChannelModule.Header.swift; path = ../Sources/Module/Channel/OpenChannel/SBUOpenChannelModule.Header.swift; sourceTree = "<group>"; };
-		EF138BA2AA25618180441328 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../Sources/Resource/Assets.xcassets; sourceTree = "<group>"; };
 		EF917390051200FD2E4BD088 /* SBUAvailable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SBUAvailable.swift; path = ../Sources/SBUAvailable.swift; sourceTree = "<group>"; };
 		EFDE0D3FFB6132981BCA4F1F /* SBUNotificationNavigationTitleView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SBUNotificationNavigationTitleView.swift; path = ../Sources/View/Common/SBUNotificationNavigationTitleView.swift; sourceTree = "<group>"; };
 		F0F5D45976F02F06B93E23E8 /* SBUCreateChannelModule.List.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SBUCreateChannelModule.List.swift; path = ../Sources/Module/SelectUser/CreateChannel/SBUCreateChannelModule.List.swift; sourceTree = "<group>"; };
@@ -970,13 +977,6 @@
 			name = ChatSDK;
 			sourceTree = "<group>";
 		};
-		00FAB5253407B5D1B9530C71 /* OpenChannel */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = OpenChannel;
-			sourceTree = "<group>";
-		};
 		02C9F1FA94342CE892D22E8B /* RegisterOperator */ = {
 			isa = PBXGroup;
 			children = (
@@ -985,20 +985,6 @@
 				EBD9BC05CA0CF6FB82053557 /* SBURegisterOperatorModule.swift */,
 			);
 			name = RegisterOperator;
-			sourceTree = "<group>";
-		};
-		03E8101CB536251962499B1D /* Channel */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Channel;
-			sourceTree = "<group>";
-		};
-		049720DAC34206C13146954D /* CreateChannel */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = CreateChannel;
 			sourceTree = "<group>";
 		};
 		0673EF654645BF66B73B3BCF /* MultipleFilesMessage */ = {
@@ -1021,13 +1007,6 @@
 			name = ChannelCell;
 			sourceTree = "<group>";
 		};
-		078BC41F91282BAA94CA8A33 /* ViewModel */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = ViewModel;
-			sourceTree = "<group>";
-		};
 		08F2B4476CB88F9EE04340BC /* Replies */ = {
 			isa = PBXGroup;
 			children = (
@@ -1035,13 +1014,6 @@
 				DBA7B49C2CEDF23D1C9EB928 /* ViewParams */,
 			);
 			name = Replies;
-			sourceTree = "<group>";
-		};
-		0932ADCD3561FEAACFA975D0 /* VoiceNote */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = VoiceNote;
 			sourceTree = "<group>";
 		};
 		09567E20D287DD8F2E0A8223 /* NotificationChannel */ = {
@@ -1080,27 +1052,6 @@
 			name = MessageInput;
 			sourceTree = "<group>";
 		};
-		0C4C734FF97D7724715B87D6 /* GroupChannel */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = GroupChannel;
-			sourceTree = "<group>";
-		};
-		0E40327B5CCC8A1F629721D1 /* UserList */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = UserList;
-			sourceTree = "<group>";
-		};
-		0E589DC4593D4001D22254E0 /* CreateChannel */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = CreateChannel;
-			sourceTree = "<group>";
-		};
 		103537D78340D2DB58EDACD3 /* Menu */ = {
 			isa = PBXGroup;
 			children = (
@@ -1111,13 +1062,6 @@
 				7A8AC70030814C04B093723E /* SBUBottomSheetController.swift */,
 			);
 			name = Menu;
-			sourceTree = "<group>";
-		};
-		112CACC149B36D01DA947F0E /* Reaction */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Reaction;
 			sourceTree = "<group>";
 		};
 		14DAD1F53D620E135329029A /* MessageCellParams */ = {
@@ -1153,14 +1097,6 @@
 			name = ViewModel;
 			sourceTree = "<group>";
 		};
-		1901C8BC0071129357A67BA8 /* ChannelList */ = {
-			isa = PBXGroup;
-			children = (
-				A992B31CB9D3A9055A6E7715 /* ChannelCell */,
-			);
-			name = ChannelList;
-			sourceTree = "<group>";
-		};
 		1A3549F20516747AE001498D /* NotificationChannel */ = {
 			isa = PBXGroup;
 			children = (
@@ -1176,36 +1112,6 @@
 				63D82218F0312BC1870F50A0 /* SBUMessageCellConfiguration.swift */,
 			);
 			name = MessageCell;
-			sourceTree = "<group>";
-		};
-		1CF5907EA834DB09CE40288E /* GroupChannel */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = GroupChannel;
-			sourceTree = "<group>";
-		};
-		1CFE291825A96F11E59DF383 /* Channel */ = {
-			isa = PBXGroup;
-			children = (
-				078BC41F91282BAA94CA8A33 /* ViewModel */,
-				112CACC149B36D01DA947F0E /* Reaction */,
-				7F67E8720B2C89C8DFEB3A6F /* MessageCell */,
-				851433DA6201CCB9052A2D9B /* MessageInput */,
-				B08F6A45F29BDA03B426B926 /* CategoryFilterCell */,
-				498791C5600286023307CB69 /* CellView */,
-				38BBB9791D8FF0D3E1E712B2 /* FileViewer */,
-				1D7D8A806D1DE09550FC4CAB /* NewMessageInfo */,
-				205B8F13055419AF2EA9C0DD /* Header */,
-			);
-			name = Channel;
-			sourceTree = "<group>";
-		};
-		1D7D8A806D1DE09550FC4CAB /* NewMessageInfo */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = NewMessageInfo;
 			sourceTree = "<group>";
 		};
 		1F13E923B8BFC6C2A23879F1 /* View */ = {
@@ -1229,13 +1135,6 @@
 			name = View;
 			sourceTree = "<group>";
 		};
-		205B8F13055419AF2EA9C0DD /* Header */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Header;
-			sourceTree = "<group>";
-		};
 		21BEE5AF0FA40186CB6452BA /* CacheManager */ = {
 			isa = PBXGroup;
 			children = (
@@ -1250,20 +1149,6 @@
 			name = CacheManager;
 			sourceTree = "<group>";
 		};
-		2291EE9FBC1BDE38ED9732D2 /* ViewParams */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = ViewParams;
-			sourceTree = "<group>";
-		};
-		241EEA198432822037EFAB13 /* View */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = View;
-			sourceTree = "<group>";
-		};
 		26655F234A9649787EB07704 /* PhotoLibrary */ = {
 			isa = PBXGroup;
 			children = (
@@ -1272,13 +1157,6 @@
 				689502D1DDCBD96ED860D2EF /* SBUSelectablePhotoViewController.swift */,
 			);
 			name = PhotoLibrary;
-			sourceTree = "<group>";
-		};
-		2939A961C95CEAA729583DBD /* View */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = View;
 			sourceTree = "<group>";
 		};
 		295FF20128A4DC7932ADFD70 /* ChannelSettings */ = {
@@ -1319,31 +1197,6 @@
 			name = MessageThread;
 			sourceTree = "<group>";
 		};
-		2D2978B7FDE04AF8E0ABF2CB /* MessageSearch */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = MessageSearch;
-			sourceTree = "<group>";
-		};
-		2E0B7D4240443B56D212804D /* NotificationChannel */ = {
-			isa = PBXGroup;
-			children = (
-				4569B4D1542F5F990C6383E5 /* Chat */,
-				7AE39880820ADDEC01CFF541 /* Feed */,
-			);
-			name = NotificationChannel;
-			sourceTree = "<group>";
-		};
-		2E464994446B1CA65A0D781C /* ChannelList */ = {
-			isa = PBXGroup;
-			children = (
-				0C4C734FF97D7724715B87D6 /* GroupChannel */,
-				94E2441E24E4C06FF1187BB6 /* OpenChannel */,
-			);
-			name = ChannelList;
-			sourceTree = "<group>";
-		};
 		2E9850E52B1EEC0B00EA4F39 /* ViewModel */ = {
 			isa = PBXGroup;
 			children = (
@@ -1361,14 +1214,6 @@
 			path = Others;
 			sourceTree = "<group>";
 		};
-		2EDA8B2EF93AF11CCF386CA3 /* CreateChannel */ = {
-			isa = PBXGroup;
-			children = (
-				2939A961C95CEAA729583DBD /* View */,
-			);
-			name = CreateChannel;
-			sourceTree = "<group>";
-		};
 		2F84532221048B32F8962500 /* Life cycles */ = {
 			isa = PBXGroup;
 			children = (
@@ -1381,13 +1226,6 @@
 				DFF4105D1C89B834C8F32FFD /* SBUView.swift */,
 			);
 			name = "Life cycles";
-			sourceTree = "<group>";
-		};
-		2FB4853C80E2EA25F8FDA2F1 /* OpenChannel */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = OpenChannel;
 			sourceTree = "<group>";
 		};
 		34F80DA1DAE4177427B0136D /* FileViewer */ = {
@@ -1409,13 +1247,6 @@
 				352FFF5CB36C2B0EC00C4AB3 /* SBUDebouncer.swift */,
 			);
 			name = Util;
-			sourceTree = "<group>";
-		};
-		36271BD890FB4D5D2142B98E /* MessageSearch */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = MessageSearch;
 			sourceTree = "<group>";
 		};
 		3828200A1CA0989177FD7E82 /* Deprecated */ = {
@@ -1444,13 +1275,6 @@
 			name = Deprecated;
 			sourceTree = "<group>";
 		};
-		38BBB9791D8FF0D3E1E712B2 /* FileViewer */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = FileViewer;
-			sourceTree = "<group>";
-		};
 		39BD1A35538E604EE4F663EB /* OpenChannel */ = {
 			isa = PBXGroup;
 			children = (
@@ -1470,13 +1294,6 @@
 				59E0F1FDFE65CD2E324EF9A9 /* MessageTemplateRenderer.swift */,
 			);
 			name = CustomSyntaxTest;
-			sourceTree = "<group>";
-		};
-		3AA0E5656A216076FD72D224 /* Menu */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Menu;
 			sourceTree = "<group>";
 		};
 		3C53398DE657A0288BADC166 /* UserList */ = {
@@ -1515,13 +1332,6 @@
 			name = Module;
 			sourceTree = "<group>";
 		};
-		401FA2F05EC98CFCE7853147 /* MessageView */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = MessageView;
-			sourceTree = "<group>";
-		};
 		416E90EBE491883A3DDB65FD /* SelectUser */ = {
 			isa = PBXGroup;
 			children = (
@@ -1533,16 +1343,6 @@
 				8EF406405EDE97C610DC0FA2 /* SBUBaseSelectUserModule.List.swift */,
 			);
 			name = SelectUser;
-			sourceTree = "<group>";
-		};
-		42BF459728583F907AA75206 /* ChannelSettings */ = {
-			isa = PBXGroup;
-			children = (
-				E6DD66412027794D5800AB91 /* ChannelSettingItem */,
-				1CF5907EA834DB09CE40288E /* GroupChannel */,
-				2FB4853C80E2EA25F8FDA2F1 /* OpenChannel */,
-			);
-			name = ChannelSettings;
 			sourceTree = "<group>";
 		};
 		432BCA51C4698496C214C325 /* MemberList */ = {
@@ -1574,20 +1374,6 @@
 			name = InviteUser;
 			sourceTree = "<group>";
 		};
-		44FAB242FF90CC5FA12CC5DB /* ChannelList */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = ChannelList;
-			sourceTree = "<group>";
-		};
-		4569B4D1542F5F990C6383E5 /* Chat */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Chat;
-			sourceTree = "<group>";
-		};
 		46068566EA0FAB22F2BFB202 /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
@@ -1596,13 +1382,6 @@
 				A7DFEE86211C0E28A911D6DC /* Base.xcconfig */,
 			);
 			name = Configurations;
-			sourceTree = "<group>";
-		};
-		498791C5600286023307CB69 /* CellView */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = CellView;
 			sourceTree = "<group>";
 		};
 		4992616D2A9D89BE00B07828 /* MainViews */ = {
@@ -1660,13 +1439,6 @@
 				FCE76DED6C09949CE698E04F /* SBUBaseChannelModule.List.swift */,
 			);
 			name = Channel;
-			sourceTree = "<group>";
-		};
-		4BC29D6AB56D731D6CC713F8 /* UserList */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = UserList;
 			sourceTree = "<group>";
 		};
 		4C2A095E5D54C9F8DD5E0AF1 /* NewMessageInfo */ = {
@@ -1739,29 +1511,6 @@
 			name = Channel;
 			sourceTree = "<group>";
 		};
-		5280CAC046B32D4331B61A29 /* ChannelSettings */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = ChannelSettings;
-			sourceTree = "<group>";
-		};
-		534DCB836E516AF616263F7B /* Moderations */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Moderations;
-			sourceTree = "<group>";
-		};
-		552786FB56B254267760FF0A /* MessageCell */ = {
-			isa = PBXGroup;
-			children = (
-				B151827BB25CFCB6B75B26E1 /* MessageCellParams */,
-				FFC1D0545EE76F8CEEC698F8 /* Replies */,
-			);
-			name = MessageCell;
-			sourceTree = "<group>";
-		};
 		57E968BA8FDF429C72004A4C /* MessageCell */ = {
 			isa = PBXGroup;
 			children = (
@@ -1785,13 +1534,6 @@
 				CBEB9389C250AEF99D6DEE13 /* SBUUserMessageCell.swift */,
 			);
 			name = MessageCell;
-			sourceTree = "<group>";
-		};
-		57F854C20DF3FB5734F2F74D /* ChannelSettings */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = ChannelSettings;
 			sourceTree = "<group>";
 		};
 		5822031C5838827029119E94 /* CellView */ = {
@@ -1820,13 +1562,6 @@
 				38E55472110C068CBB77FF02 /* SBUFeedNotificationChannelModule.swift */,
 			);
 			name = Feed;
-			sourceTree = "<group>";
-		};
-		59012AC1EC7FAB5660F6EA27 /* MessageSearch */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = MessageSearch;
 			sourceTree = "<group>";
 		};
 		5987B64C8DB418F72CF9B854 /* OpenChannel */ = {
@@ -1870,23 +1605,6 @@
 			name = Extension;
 			sourceTree = "<group>";
 		};
-		5B171CFAF46044510337F269 /* ChannelSettings */ = {
-			isa = PBXGroup;
-			children = (
-				A2C406730676EAEA48459BEA /* Cell */,
-				241EEA198432822037EFAB13 /* View */,
-			);
-			name = ChannelSettings;
-			sourceTree = "<group>";
-		};
-		5B21D48BFD4172CD095939A6 /* MessageSearch */ = {
-			isa = PBXGroup;
-			children = (
-				CFED3D7FD3A0809126B1787D /* Cell */,
-			);
-			name = MessageSearch;
-			sourceTree = "<group>";
-		};
 		5D68DC58A683C7DB701D2CA6 /* MessageSearch */ = {
 			isa = PBXGroup;
 			children = (
@@ -1907,31 +1625,6 @@
 			name = MessageThread;
 			sourceTree = "<group>";
 		};
-		5F5D1C34F7D26EC7D5442251 /* MemberList */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = MemberList;
-			sourceTree = "<group>";
-		};
-		5FFFCDE424E58D7D615C33DC /* Feedback */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Feedback;
-			sourceTree = "<group>";
-		};
-		6275597BB160300F48DE6A87 /* Common */ = {
-			isa = PBXGroup;
-			children = (
-				F8EDA38ACB6D16FBD8DE18F5 /* PhotoLibrary */,
-				89692868BAF36796C0AA778E /* User */,
-				3AA0E5656A216076FD72D224 /* Menu */,
-				FF7415C7C68F363A927D36CA /* UserCell */,
-			);
-			name = Common;
-			sourceTree = "<group>";
-		};
 		6275B65FBB7E84F19FBD0D71 /* UserList */ = {
 			isa = PBXGroup;
 			children = (
@@ -1940,27 +1633,12 @@
 			name = UserList;
 			sourceTree = "<group>";
 		};
-		6377963711879E24FCE94450 /* SelectUser */ = {
-			isa = PBXGroup;
-			children = (
-				049720DAC34206C13146954D /* CreateChannel */,
-			);
-			name = SelectUser;
-			sourceTree = "<group>";
-		};
 		6385CB05961884032ACFE7FC /* ChannelSettings */ = {
 			isa = PBXGroup;
 			children = (
 				D718268CEE9FA55175A4C970 /* SBUBaseChannelSettingsViewController.Deprecated.swift */,
 			);
 			name = ChannelSettings;
-			sourceTree = "<group>";
-		};
-		67092E66125D3CC91C774054 /* Life cycles */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = "Life cycles";
 			sourceTree = "<group>";
 		};
 		6754C1F0FC249AA3CF76DC8B /* GroupChannel */ = {
@@ -1981,20 +1659,6 @@
 				0F064A250043938D4578291E /* SBUBaseChannelListViewModel.swift */,
 			);
 			name = ChannelList;
-			sourceTree = "<group>";
-		};
-		68DE337CACAD92E82ACC79A5 /* MessageCellParams */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = MessageCellParams;
-			sourceTree = "<group>";
-		};
-		6EBAEF56650763BD1332192F /* UserList */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = UserList;
 			sourceTree = "<group>";
 		};
 		70980D033ABEC503CD78CB36 /* VoiceMessage */ = {
@@ -2036,13 +1700,6 @@
 			name = Common;
 			sourceTree = "<group>";
 		};
-		721685B0FD1C61E439C6F1CF /* Replies */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Replies;
-			sourceTree = "<group>";
-		};
 		72BFC9989E263504495EBC5C /* UserCell */ = {
 			isa = PBXGroup;
 			children = (
@@ -2063,20 +1720,6 @@
 				78C1230B0FCB8D68390E184D /* SBUBaseChannelViewController.Unavailable.swift */,
 			);
 			name = Channel;
-			sourceTree = "<group>";
-		};
-		75DFEF0B2D664DABF2F57FAC /* FileMessageContentView */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = FileMessageContentView;
-			sourceTree = "<group>";
-		};
-		772D0C7906D1359E695A137B /* MessageCell */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = MessageCell;
 			sourceTree = "<group>";
 		};
 		777D3B4F33A56450A3FE0435 /* SelectUser */ = {
@@ -2107,72 +1750,12 @@
 			name = CreateChannel;
 			sourceTree = "<group>";
 		};
-		79C06BF926BCAAD8A86B0A59 /* Common */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Common;
-			sourceTree = "<group>";
-		};
-		7AE39880820ADDEC01CFF541 /* Feed */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Feed;
-			sourceTree = "<group>";
-		};
-		7F67E8720B2C89C8DFEB3A6F /* MessageCell */ = {
-			isa = PBXGroup;
-			children = (
-				68DE337CACAD92E82ACC79A5 /* MessageCellParams */,
-				908CDAAD57B7C9627152FA73 /* Forms */,
-				75DFEF0B2D664DABF2F57FAC /* FileMessageContentView */,
-				F5A9D62F2A7A743B94B9203A /* SuggestedReply */,
-				F7662147825285CD1A1A8AAA /* NotificationChannel */,
-				E9032F1798612EC49B04014D /* Replies */,
-				5FFFCDE424E58D7D615C33DC /* Feedback */,
-				CC6312843C4B38E88660BDC9 /* MultipleFilesMessage */,
-				00FAB5253407B5D1B9530C71 /* OpenChannel */,
-				C3FDF1E220D583F040C2F9CC /* CustomView */,
-			);
-			name = MessageCell;
-			sourceTree = "<group>";
-		};
-		7FE0ACC49C541A704658BEF2 /* ScrollPostion */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = ScrollPostion;
-			sourceTree = "<group>";
-		};
-		82654B5608B27B75FB059201 /* MessageThread */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = MessageThread;
-			sourceTree = "<group>";
-		};
-		851433DA6201CCB9052A2D9B /* MessageInput */ = {
-			isa = PBXGroup;
-			children = (
-				A526C9A0332AC9B122D9244D /* ViewParams */,
-			);
-			name = MessageInput;
-			sourceTree = "<group>";
-		};
 		86570A7FAFAC437479D049EE /* User */ = {
 			isa = PBXGroup;
 			children = (
 				6CDE376380F377EB31B5498C /* SBUUserProfileView.swift */,
 			);
 			name = User;
-			sourceTree = "<group>";
-		};
-		8676D063B7AD657FCF3A47CA /* Views */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Views;
 			sourceTree = "<group>";
 		};
 		870BD961F7FD1740CDF74E6D /* ChannelSettings */ = {
@@ -2196,13 +1779,6 @@
 			name = Cell;
 			sourceTree = "<group>";
 		};
-		89692868BAF36796C0AA778E /* User */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = User;
-			sourceTree = "<group>";
-		};
 		8AB979E24787219E91101649 /* UserList */ = {
 			isa = PBXGroup;
 			children = (
@@ -2221,30 +1797,6 @@
 			name = MessageCell;
 			sourceTree = "<group>";
 		};
-		8E52697608B9C4AE99B3CE44 /* GroupChannel */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = GroupChannel;
-			sourceTree = "<group>";
-		};
-		8EDBFC28442B079E564D00CE /* SelectUser */ = {
-			isa = PBXGroup;
-			children = (
-				CDAE121F444789928A2ABFC9 /* RegisterOperator */,
-				EE36F351AABEFDB61799B31E /* InviteUser */,
-				8FEDEE925D4F40912F655F27 /* CreateChannel */,
-			);
-			name = SelectUser;
-			sourceTree = "<group>";
-		};
-		8F09C2CDC84F8C224ED325A0 /* Moderations */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Moderations;
-			sourceTree = "<group>";
-		};
 		8F1E45369202345C770314CB /* Theme */ = {
 			isa = PBXGroup;
 			children = (
@@ -2255,22 +1807,6 @@
 				490984966D54FBC135994C31 /* SBUTheme.swift */,
 			);
 			name = Theme;
-			sourceTree = "<group>";
-		};
-		8FEDEE925D4F40912F655F27 /* CreateChannel */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = CreateChannel;
-			sourceTree = "<group>";
-		};
-		908CDAAD57B7C9627152FA73 /* Forms */ = {
-			isa = PBXGroup;
-			children = (
-				BF6647473E8917CC55C1FD88 /* ViewParams */,
-				8676D063B7AD657FCF3A47CA /* Views */,
-			);
-			name = Forms;
 			sourceTree = "<group>";
 		};
 		91762CADB82DDC47A6047527 /* Moderations */ = {
@@ -2300,16 +1836,10 @@
 			name = View;
 			sourceTree = "<group>";
 		};
-		93660E727BC22DB03407102F /* ViewParams */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = ViewParams;
-			sourceTree = "<group>";
-		};
 		93810A3702A8F4DEB30B56AE /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				D71716642B9251E100B4316C /* Resource */,
 				46068566EA0FAB22F2BFB202 /* Configurations */,
 				171D51D48AE4BF1997D7CC3B /* ViewModel */,
 				4C2BE9B07075324AA163E16C /* Configuration */,
@@ -2329,24 +1859,9 @@
 				1F13E923B8BFC6C2A23879F1 /* View */,
 				66760AC2683FDDD728DFCD95 /* SendbirdUIKit.h */,
 				B46936DEAADB23325D062CF8 /* SBUGlobals.swift */,
-				EB0F84C493D4BA420E796096 /* Resource */,
 				3828200A1CA0989177FD7E82 /* Deprecated */,
 			);
 			name = Sources;
-			sourceTree = "<group>";
-		};
-		942F5EF241C5EF08ED03DD3D /* UserList */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = UserList;
-			sourceTree = "<group>";
-		};
-		94E2441E24E4C06FF1187BB6 /* OpenChannel */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = OpenChannel;
 			sourceTree = "<group>";
 		};
 		9855B94FDFEB4E6007D0735A /* GroupChannel */ = {
@@ -2359,26 +1874,12 @@
 			name = GroupChannel;
 			sourceTree = "<group>";
 		};
-		9893E28257256BF67753753F /* Moderations */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Moderations;
-			sourceTree = "<group>";
-		};
 		996DB25099CB20432F27E6B4 /* Replies */ = {
 			isa = PBXGroup;
 			children = (
 				43113C66A60205F6A3C0B9C3 /* SBUReplyConfiguration.swift */,
 			);
 			name = Replies;
-			sourceTree = "<group>";
-		};
-		999AE26DFE224295E5E4E47C /* VoiceMessage */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = VoiceMessage;
 			sourceTree = "<group>";
 		};
 		9A145803B0281DD1E478F099 /* ViewParams */ = {
@@ -2559,27 +2060,6 @@
 			name = ViewParams;
 			sourceTree = "<group>";
 		};
-		9CE750118F7D88874FC48A33 /* ChatSDK */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = ChatSDK;
-			sourceTree = "<group>";
-		};
-		9FDEA5D4135A8E6962725331 /* Cell */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Cell;
-			sourceTree = "<group>";
-		};
-		A0EA5780DC98DE40AEB58C73 /* MessageThread */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = MessageThread;
-			sourceTree = "<group>";
-		};
 		A0FF82E546338BCA9E5F8FBA /* Channel */ = {
 			isa = PBXGroup;
 			children = (
@@ -2611,20 +2091,6 @@
 			name = UserList;
 			sourceTree = "<group>";
 		};
-		A2C406730676EAEA48459BEA /* Cell */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Cell;
-			sourceTree = "<group>";
-		};
-		A2D8A08206F4806E2E817A8C /* OpenChannel */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = OpenChannel;
-			sourceTree = "<group>";
-		};
 		A3BC29C7BEE55436EBCAD26A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -2632,21 +2098,6 @@
 				9C5DCD48242AFA7C00C41106 /* UserNotifications.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		A4DEFCA27241B164F43C4B66 /* NotificationSettings */ = {
-			isa = PBXGroup;
-			children = (
-				9FDEA5D4135A8E6962725331 /* Cell */,
-			);
-			name = NotificationSettings;
-			sourceTree = "<group>";
-		};
-		A526C9A0332AC9B122D9244D /* ViewParams */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = ViewParams;
 			sourceTree = "<group>";
 		};
 		A64CFCDC06701FD463A6F9A2 /* GroupChannel */ = {
@@ -2875,13 +2326,6 @@
 			name = Replies;
 			sourceTree = "<group>";
 		};
-		A992B31CB9D3A9055A6E7715 /* ChannelCell */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = ChannelCell;
-			sourceTree = "<group>";
-		};
 		AF8BD1EA37D3146052446357 /* Cell */ = {
 			isa = PBXGroup;
 			children = (
@@ -2893,34 +2337,12 @@
 			name = Cell;
 			sourceTree = "<group>";
 		};
-		B08F6A45F29BDA03B426B926 /* CategoryFilterCell */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = CategoryFilterCell;
-			sourceTree = "<group>";
-		};
-		B151827BB25CFCB6B75B26E1 /* MessageCellParams */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = MessageCellParams;
-			sourceTree = "<group>";
-		};
 		B15E4233D5BBA48A280826E7 /* ViewParams */ = {
 			isa = PBXGroup;
 			children = (
 				2BAB8749F4957CDBA1A77155 /* SBUFormViewParams.swift */,
 			);
 			name = ViewParams;
-			sourceTree = "<group>";
-		};
-		BB6F1EA0ACFA0AD61C9CE541 /* Channel */ = {
-			isa = PBXGroup;
-			children = (
-				552786FB56B254267760FF0A /* MessageCell */,
-			);
-			name = Channel;
 			sourceTree = "<group>";
 		};
 		BC012CE05F5EA2B1E883C4CC /* Forms */ = {
@@ -2930,13 +2352,6 @@
 				2BDA24C22CB88DB5E9DE1CE4 /* Views */,
 			);
 			name = Forms;
-			sourceTree = "<group>";
-		};
-		BC2D570A8B4ACC525A1DDB13 /* MessageThread */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = MessageThread;
 			sourceTree = "<group>";
 		};
 		BC7D4D92C0807A0FF1C2B055 /* Model */ = {
@@ -2954,21 +2369,6 @@
 				17227C1A97BBF4ED827E5B9A /* SBUScrollOptions.swift */,
 			);
 			name = Model;
-			sourceTree = "<group>";
-		};
-		BF6647473E8917CC55C1FD88 /* ViewParams */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = ViewParams;
-			sourceTree = "<group>";
-		};
-		C0635F830978558D44B8313F /* SelectUser */ = {
-			isa = PBXGroup;
-			children = (
-				2EDA8B2EF93AF11CCF386CA3 /* CreateChannel */,
-			);
-			name = SelectUser;
 			sourceTree = "<group>";
 		};
 		C2A54A6A00B485F2DABBDFF2 /* Header */ = {
@@ -3005,13 +2405,6 @@
 			name = CreateChannel;
 			sourceTree = "<group>";
 		};
-		C3FDF1E220D583F040C2F9CC /* CustomView */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = CustomView;
-			sourceTree = "<group>";
-		};
 		C5A299F4C3D7FC1AEF73391B /* CustomView */ = {
 			isa = PBXGroup;
 			children = (
@@ -3044,13 +2437,6 @@
 			name = ChannelList;
 			sourceTree = "<group>";
 		};
-		CC6312843C4B38E88660BDC9 /* MultipleFilesMessage */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = MultipleFilesMessage;
-			sourceTree = "<group>";
-		};
 		CC86037A28BE401C36022539 /* MessageView */ = {
 			isa = PBXGroup;
 			children = (
@@ -3072,13 +2458,6 @@
 			name = Protocol;
 			sourceTree = "<group>";
 		};
-		CDAE121F444789928A2ABFC9 /* RegisterOperator */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = RegisterOperator;
-			sourceTree = "<group>";
-		};
 		CE7067967FBB9B6BBC19B624 /* Cell */ = {
 			isa = PBXGroup;
 			children = (
@@ -3093,23 +2472,6 @@
 				868A2C44C30B14A7A107A6C4 /* SBUCategoryFilterCell.swift */,
 			);
 			name = CategoryFilterCell;
-			sourceTree = "<group>";
-		};
-		CFB479CF47CC20FEBA20003A /* Channel */ = {
-			isa = PBXGroup;
-			children = (
-				8E52697608B9C4AE99B3CE44 /* GroupChannel */,
-				2E0B7D4240443B56D212804D /* NotificationChannel */,
-				A2D8A08206F4806E2E817A8C /* OpenChannel */,
-			);
-			name = Channel;
-			sourceTree = "<group>";
-		};
-		CFED3D7FD3A0809126B1787D /* Cell */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Cell;
 			sourceTree = "<group>";
 		};
 		D06531995F2B44F48A85FF23 /* CreateChannel */ = {
@@ -3134,6 +2496,15 @@
 			name = Reaction;
 			sourceTree = "<group>";
 		};
+		D71716642B9251E100B4316C /* Resource */ = {
+			isa = PBXGroup;
+			children = (
+				D71716652B9251E100B4316C /* Assets.xcassets */,
+			);
+			name = Resource;
+			path = ../Sources/Resource;
+			sourceTree = "<group>";
+		};
 		D790EA2F43E7BD0B0C432A7F /* Feedback */ = {
 			isa = PBXGroup;
 			children = (
@@ -3153,26 +2524,12 @@
 			name = Chat;
 			sourceTree = "<group>";
 		};
-		D8C7DAD33BB677D1B79847CA /* NotificationSettings */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = NotificationSettings;
-			sourceTree = "<group>";
-		};
 		DBA7B49C2CEDF23D1C9EB928 /* ViewParams */ = {
 			isa = PBXGroup;
 			children = (
 				17D3E9699F4CDFECC1939B15 /* SBUQuotedBaseMessageViewParams.swift */,
 			);
 			name = ViewParams;
-			sourceTree = "<group>";
-		};
-		E34A0766B87221AFFB331553 /* NotificationSettings */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = NotificationSettings;
 			sourceTree = "<group>";
 		};
 		E4CB44DC6078845BB932E71E /* VoiceNote */ = {
@@ -3190,37 +2547,6 @@
 				2B3CDFC50D2870F53C13F720 /* Views */,
 			);
 			name = SuggestedReply;
-			sourceTree = "<group>";
-		};
-		E6DD66412027794D5800AB91 /* ChannelSettingItem */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = ChannelSettingItem;
-			sourceTree = "<group>";
-		};
-		E859F0BE1AD620DF57D6C1A0 /* CacheManager */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = CacheManager;
-			sourceTree = "<group>";
-		};
-		E9032F1798612EC49B04014D /* Replies */ = {
-			isa = PBXGroup;
-			children = (
-				401FA2F05EC98CFCE7853147 /* MessageView */,
-				2291EE9FBC1BDE38ED9732D2 /* ViewParams */,
-			);
-			name = Replies;
-			sourceTree = "<group>";
-		};
-		EB0F84C493D4BA420E796096 /* Resource */ = {
-			isa = PBXGroup;
-			children = (
-				EF138BA2AA25618180441328 /* Assets.xcassets */,
-			);
-			name = Resource;
 			sourceTree = "<group>";
 		};
 		EB39D504F40CAC9357E9DA48 /* MessageSearch */ = {
@@ -3252,13 +2578,6 @@
 			name = NotificationSettings;
 			sourceTree = "<group>";
 		};
-		EE36F351AABEFDB61799B31E /* InviteUser */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = InviteUser;
-			sourceTree = "<group>";
-		};
 		F1A0EDFB0CB08E29F8881947 /* NotificationSettings */ = {
 			isa = PBXGroup;
 			children = (
@@ -3266,13 +2585,6 @@
 				5C20CD89720A7490016F7F7F /* SBUGroupChannelPushSettingsViewController.swift */,
 			);
 			name = NotificationSettings;
-			sourceTree = "<group>";
-		};
-		F2228E818D57B73166E82B00 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Views;
 			sourceTree = "<group>";
 		};
 		F36C74509DE499615094BF74 /* Enums */ = {
@@ -3285,35 +2597,12 @@
 			name = Enums;
 			sourceTree = "<group>";
 		};
-		F5A9D62F2A7A743B94B9203A /* SuggestedReply */ = {
-			isa = PBXGroup;
-			children = (
-				93660E727BC22DB03407102F /* ViewParams */,
-				F2228E818D57B73166E82B00 /* Views */,
-			);
-			name = SuggestedReply;
-			sourceTree = "<group>";
-		};
-		F61566AA647281E44D2D2272 /* ChannelList */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = ChannelList;
-			sourceTree = "<group>";
-		};
 		F6CC367A1605AFF96A7AD68E /* MessageSearch */ = {
 			isa = PBXGroup;
 			children = (
 				C644E2F67FB79AA5DF42FAB8 /* SBUMessageSearchViewModel.swift */,
 			);
 			name = MessageSearch;
-			sourceTree = "<group>";
-		};
-		F7662147825285CD1A1A8AAA /* NotificationChannel */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = NotificationChannel;
 			sourceTree = "<group>";
 		};
 		F8354825C5F200950157E356 /* OpenChannel */ = {
@@ -3337,13 +2626,6 @@
 			name = ViewModel;
 			sourceTree = "<group>";
 		};
-		F8EDA38ACB6D16FBD8DE18F5 /* PhotoLibrary */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = PhotoLibrary;
-			sourceTree = "<group>";
-		};
 		FC95D96EE183C715B251A317 /* OpenChannel */ = {
 			isa = PBXGroup;
 			children = (
@@ -3355,27 +2637,6 @@
 				A73145727456738206AE6247 /* SBUOpenChannelBaseMessageCell.swift */,
 			);
 			name = OpenChannel;
-			sourceTree = "<group>";
-		};
-		FE7D90EACBFB4194874241F3 /* Mention */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Mention;
-			sourceTree = "<group>";
-		};
-		FF7415C7C68F363A927D36CA /* UserCell */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = UserCell;
-			sourceTree = "<group>";
-		};
-		FFC1D0545EE76F8CEEC698F8 /* Replies */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Replies;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -3406,7 +2667,8 @@
 				9C777D54241B9022006FFE25 /* Frameworks */,
 				9C777D55241B9022006FFE25 /* Resources */,
 				9C442672241CCE0A00FE9975 /* ShellScript */,
-				9C3EBE2828091D2A00B5366B /* Embed App Extensions */,
+				9C3EBE2828091D2A00B5366B /* Embed Foundation Extensions */,
+				D71716252B91C53A00B4316C /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -3427,8 +2689,9 @@
 		9C777D4F241B9022006FFE25 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1330;
-				LastUpgradeCheck = 1150;
+				BuildIndependentTargetsInParallel = YES;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
 				ORGANIZATIONNAME = "SendBird, Inc";
 				TargetAttributes = {
 					9C3EBE1F28091D2A00B5366B = {
@@ -3479,12 +2742,9 @@
 				4992617B2A9D8A4A00B07828 /* MainItemView.xib in Resources */,
 				499261742A9D89BE00B07828 /* ConnectView.xib in Resources */,
 				499261752A9D89BE00B07828 /* MainView.xib in Resources */,
-				DAE9E6E0787D1A59F328E7FF /* Debug.xcconfig in Resources */,
-				ABEA02BACAFC94F208A49A1B /* Release.xcconfig in Resources */,
-				3B04FE2EE0A8A31376CC1827 /* Base.xcconfig in Resources */,
 				FD01187E8EE9025A98EF85A3 /* SBUReactionCollectionViewCell.xib in Resources */,
+				D71716662B9251E100B4316C /* Assets.xcassets in Resources */,
 				B57202A3EA6C8672C87D990B /* SBUMenuCell.xib in Resources */,
-				969C0F6FD83188A29B4A3ADD /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3997,14 +3257,14 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_ENTITLEMENTS = NotificationService/NotificationService.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = "$(inherited)";
-				DEVELOPMENT_TEAM = RM4A5PXTUX;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = NotificationService/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = QuickStart;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2022 SendBird, Inc. All rights reserved.";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -4013,6 +3273,7 @@
 				MARKETING_VERSION = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sendbird.uikit.sample.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -4027,14 +3288,14 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_ENTITLEMENTS = NotificationService/NotificationService.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = "$(inherited)";
-				DEVELOPMENT_TEAM = RM4A5PXTUX;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = NotificationService/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = QuickStart;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2022 SendBird, Inc. All rights reserved.";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -4043,6 +3304,7 @@
 				MARKETING_VERSION = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sendbird.uikit.sample.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -4076,6 +3338,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -4087,6 +3350,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -4101,7 +3365,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 3.11.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -4138,6 +3402,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -4149,6 +3414,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -4157,7 +3423,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 3.11.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -4176,17 +3442,18 @@
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				CODE_SIGN_ENTITLEMENTS = QuickStart/QuickStart.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = "$(inherited)";
 				DEFINES_MODULE = NO;
-				DEVELOPMENT_TEAM = RM4A5PXTUX;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = QuickStart/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -4208,17 +3475,18 @@
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				CODE_SIGN_ENTITLEMENTS = QuickStart/QuickStart.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = "$(inherited)";
 				DEFINES_MODULE = NO;
-				DEVELOPMENT_TEAM = RM4A5PXTUX;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = QuickStart/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

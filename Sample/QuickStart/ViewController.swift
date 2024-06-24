@@ -72,9 +72,7 @@ class ViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        SBUTheme.set(theme: .light)
-        GlobalSetCustomManager.setDefault()
-        
+        GlobalSetCustomManager.setBounceDefault()
         nicknameTextField.text = UserDefaults.loadNickname()
     }
     
@@ -213,6 +211,7 @@ class ViewController: UIViewController {
         }
         
         SBUGlobals.currentUser = SBUUser(userId: userID, nickname: nickname)
+        UserDefaults.standard.setValue(true, forKey: "is_rtl_enabled")
         SendbirdUI.connect { [weak self] user, error in
             self?.loadingIndicator.stopAnimating()
             self?.view.isUserInteractionEnabled = true

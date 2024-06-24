@@ -222,3 +222,66 @@ extension GlobalSetCustomManager {
         SBUModuleSet.GroupChannelModule.InputComponent = SBUGroupChannelModule.Input.self
     }
 }
+
+extension GlobalSetCustomManager {
+    static func setBounceDefault() {
+        setBounceGlobalColorSet()
+        setBounceGlobalFontSet()
+        setBounceGlobalIconSet()
+        setBounceGlobalStringSet()
+        setBounceGlobalTheme()
+        setBounceModuleSet()
+    }
+    
+    /// This is an function of changing the global primary colors to default.
+    static func setBounceGlobalColorSet() {
+        SBUColorSet.primary100 = UIColor(hex: "#09A2AA")
+        SBUColorSet.primary200 = UIColor(hex: "#09A2AA")
+        SBUColorSet.primary300 = UIColor(hex: "#09A2AA")
+        SBUColorSet.primary400 = UIColor(hex: "#09A2AA")
+        SBUColorSet.primary500 = UIColor(hex: "#09A2AA")
+    }
+    
+    /// This is an function of changing the global font set to default.
+    static func setBounceGlobalFontSet() {
+        SBUFontSet.h1 = UIFont.systemFont(ofSize: 18.0, weight: .bold)
+        SBUFontSet.h2 = UIFont.systemFont(ofSize: 18.0, weight: .medium)
+        SBUFontSet.subtitle1 = UIFont.systemFont(ofSize: 16.0, weight: .medium)
+        SBUFontSet.subtitle2 = UIFont.systemFont(ofSize: 16.0, weight: .regular)
+        SBUFontSet.body1 = UIFont.systemFont(ofSize: 16.0, weight: .regular)
+        SBUFontSet.body2 = UIFont.systemFont(ofSize: 14.0, weight: .semibold)
+        SBUFontSet.button1 = UIFont.systemFont(ofSize: 18.0, weight: .semibold)
+        SBUFontSet.button2 = UIFont.systemFont(ofSize: 16.0, weight: .medium)
+        SBUFontSet.button3 = UIFont.systemFont(ofSize: 14.0, weight: .medium)
+        SBUFontSet.caption1 = UIFont.systemFont(ofSize: 12.0, weight: .bold)
+        SBUFontSet.caption2 = UIFont.systemFont(ofSize: 12.0, weight: .regular)
+        SBUFontSet.caption3 = UIFont.systemFont(ofSize: 11.0, weight: .medium)
+    }
+    
+    /// This is an function of changing the global icon set to default.
+    static func setBounceGlobalIconSet() {
+        SBUIconSet.restoreDefaultIcons()
+    }
+    
+    /// This is an function of changing the global string set to default.
+    static func setBounceGlobalStringSet() {
+        SBUStringSet.ChannelList_Header_Title = "Channels"
+        SBUStringSet.ChannelSettings_Header_Title = "Channel information"
+        SBUStringSet.CreateChannel_Header_Title = "New Channel"
+    }
+    
+    /// This is an function of changing the global theme to default.
+    static func setBounceGlobalTheme() {
+        let theme = (UITraitCollection.current.userInterfaceStyle == .dark) ? SBUTheme.dark : SBUTheme.light
+        SBUTheme.set(theme: theme)
+    }
+    
+    static func setBounceModuleSet() {
+        SBUModuleSet.GroupChannelListModule.HeaderComponent = SBUGroupChannelListModule.Header.self
+        SBUModuleSet.GroupChannelListModule.ListComponent = SBUGroupChannelListModule.List.self
+        
+        SBUModuleSet.GroupChannelModule.HeaderComponent = SBUGroupChannelModule.Header.self
+        SBUModuleSet.GroupChannelModule.ListComponent = SBUGroupChannelModule.List.self
+        SBUModuleSet.GroupChannelModule.InputComponent = SBUGroupChannelModule.Input.self
+    }
+}
