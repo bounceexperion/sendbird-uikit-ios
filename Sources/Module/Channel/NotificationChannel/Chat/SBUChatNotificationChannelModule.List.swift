@@ -9,6 +9,7 @@
 import UIKit
 import SendbirdChatSDK
 
+// swiftlint:disable type_name
 /// Event methods for the views updates and performing actions from the list component in a chat notification channel.
 protocol SBUChatNotificationChannelModuleListDelegate: SBUCommonDelegate {
     /// Called when there’s a tap gesture on a notification that includes a web URL. e.g., `"https://www.sendbird.com"`
@@ -82,6 +83,14 @@ protocol SBUChatNotificationChannelModuleListDelegate: SBUCommonDelegate {
     func chatNotificationChannelModuleDidSelectRetry(
         _ listComponent: SBUChatNotificationChannelModule.List
     )
+    
+    /// Called when a message template is not cached and needs to be downloaded.
+    /// - Since: 3.29.0
+    func chatNotificationChannelModule(
+        _ listComponent: SBUChatNotificationChannelModule.List,
+        shouldHandleUncachedTemplateKeys templateKeys: [String],
+        messageCell: SBUBaseMessageCell
+    )
 }
 
 extension SBUChatNotificationChannelModuleListDelegate {
@@ -127,7 +136,16 @@ protocol SBUChatNotificationChannelModuleListDataSource: AnyObject {
         _ listComponent: SBUChatNotificationChannelModule.List,
         startingPointIn tableView: UITableView
     ) -> Int64?
+    
+    /// Ask to data source to return template load state cache.
+    /// - Returns: If the result is `nil`, it means that no attempt was made to load the template.
+    /// - Since: 3.29.0
+    func chatNotificationChannelModule(
+        _ listComponent: SBUChatNotificationChannelModule.List,
+        didHandleUncachedTemplateKeys templateKeys: [String]
+    ) -> Bool?
 }
+// swiftlint:enable type_name
 
 extension SBUChatNotificationChannelModule {
     /// A module component that represent the list of `SBUChatNotificationChannelModule`.
@@ -141,6 +159,7 @@ extension SBUChatNotificationChannelModule {
         var tableView = UITableView()
         
         /// A view that shows when there is no notification in the channel.
+        /// The default view type is ``SBUNotificationEmptyView``.
         var emptyView: UIView? {
             didSet { self.tableView.backgroundView = self.emptyView }
         }
@@ -402,14 +421,13 @@ extension SBUChatNotificationChannelModule {
                     receiptState: .notUsed
                 )
                 configuration.profileImageURL = self.channel?.coverURL
-                notificationCell.delegate = self
                 
                 // Read status
                 let hasRead = notification.createdAt <= self.lastSeenAt
                 notificationCell.updateReadStatus(hasRead)
                 
                 // Action handler
-                notificationCell.notificationActionHandler = { [weak self, indexPath] action in
+                notificationCell.messageTemplateActionHandler = { [weak self, indexPath] action in
                     guard let self = self else { return }
                     
                     // Action Events
@@ -452,6 +470,18 @@ extension SBUChatNotificationChannelModule {
                     messageOffsetTimestamp: channel.messageOffsetTimestamp
                 )
                 notificationCell.configure(with: configuration)
+            }
+            
+            notificationCell.reloadCellHandler = { [weak self] cell in
+                self?.tableView.sbu_reloadCell(cell)
+            }
+            notificationCell.uncachedMessageTemplateDownloadHandler = { [weak self] keys, cell in
+                guard let self = self else { return }
+                self.delegate?.chatNotificationChannelModule(self, shouldHandleUncachedTemplateKeys: keys, messageCell: cell)
+            }
+            notificationCell.uncachedMessageTemplateStateHandler = { [weak self] keys in
+                guard let self = self else { return nil }
+                return self.dataSource?.chatNotificationChannelModule(self, didHandleUncachedTemplateKeys: keys)
             }
             
             UIView.setAnimationsEnabled(true)
@@ -566,16 +596,6 @@ extension SBUChatNotificationChannelModule {
             
             return Date.sbu_from(nextCreatedAt).isSameDay(as: Date.sbu_from(curCreatedAt))
         }
-    }
-}
-
-// MARK: - SBUNotificationCellDelegate
-extension SBUChatNotificationChannelModule.List: SBUNotificationCellDelegate {
-    func notificationCellShouldReload(_ cell: SBUNotificationCell) {
-        guard let indexPath = tableView.indexPath(for: cell) else { return }
-        guard let visibleIndexPaths = tableView.indexPathsForVisibleRows else { return }
-        guard visibleIndexPaths.contains(indexPath) else { return }
-        self.tableView.reloadRows(at: [indexPath], with: .none)
     }
 }
 

@@ -84,7 +84,7 @@ open class SBUSimpleFeedbackView: SBUFeedbackView {
         super.setupLayouts()
         
         self.stackView
-            .sbu_constraint(equalTo: self.container, left: 50, top: 0, bottom: 0)
+            .sbu_constraint(equalTo: self.container, leading: 50, top: 0, bottom: 0)
             .sbu_constraint(height: 36)
         
         self.goodButton
@@ -157,7 +157,8 @@ open class SBUSimpleFeedbackView: SBUFeedbackView {
     }
     
     /// action for like
-    @objc open func onClickLike() {
+    @objc
+    open func onClickLike() {
         guard let feedback = self.feedback else {
             self.onAction(with: .rating, rating: .good)
             return
@@ -169,7 +170,8 @@ open class SBUSimpleFeedbackView: SBUFeedbackView {
     }
     
     /// action for dislike
-    @objc open func onClickDislike() {
+    @objc
+    open func onClickDislike() {
         guard let feedback = self.feedback else {
             self.onAction(with: .rating, rating: .bad)
             return

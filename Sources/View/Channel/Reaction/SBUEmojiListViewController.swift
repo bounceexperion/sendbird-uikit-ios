@@ -9,18 +9,22 @@
 import UIKit
 import SendbirdChatSDK
 
-/// Emoji List
-class SBUEmojiListViewController: SBUBaseViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, SBUBottomSheetControllerDelegate, UIGestureRecognizerDelegate {
+/// A view controller that displays a list of emojis.
+///
+/// This class is responsible for managing and displaying a collection of emojis. It handles user interactions with the emojis and communicates with the bottom sheet controller.
+///
+/// - Since: 3.28.0
+open class SBUEmojiListViewController: SBUBaseViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, SBUBottomSheetControllerDelegate, UIGestureRecognizerDelegate {
 
-    lazy var collectionView = UICollectionView(frame: self.view.bounds, collectionViewLayout: layout)
-    let layout: UICollectionViewFlowLayout = SBUCollectionViewFlowLayout()
-    let emojiList: [Emoji] = SBUEmojiManager.getAllEmojis()
-    let message: BaseMessage?
+    public private(set) lazy var collectionView = UICollectionView(frame: self.view.bounds, collectionViewLayout: layout)
+    public let layout: UICollectionViewFlowLayout = SBUCollectionViewFlowLayout()
+    public let emojiList: [Emoji]
+    public let message: BaseMessage?
     
     @SBUThemeWrapper(theme: SBUTheme.componentTheme)
-    var theme: SBUComponentTheme
+    public var theme: SBUComponentTheme
 
-    var maxEmojiOneLine = 6
+    public var maxEmojiOneLine = 6
 
     lazy var bottomSheet: SBUBottomSheetController? = {
         self.presentationController as? SBUBottomSheetController
@@ -32,35 +36,46 @@ class SBUEmojiListViewController: SBUBaseViewController, UICollectionViewDelegat
     }
     
     // MARK: - Action
-    var emojiTapHandler: ((_ emojiKey: String, _ setSelect: Bool) -> Void)?
+    /// A handler that gets called when an emoji is tapped.
+    ///
+    /// - Parameters:
+    ///   - emojiKey: The key of the tapped emoji.
+    ///   - setSelect: A boolean indicating whether the emoji should be selected.
+    /// - Since: 3.28.0
+    public var emojiTapHandler: ((_ emojiKey: String, _ setSelect: Bool) -> Void)?
     
     // MARK: - Lifecycle
     @available(*, unavailable, renamed: "SBUEmojiListViewController.init(message:)")
-    required init?(coder: NSCoder) {
+    required public init?(coder: NSCoder) {
         self.message = nil
+        self.emojiList = SBUEmojiManager.getAllEmojis()
         super.init(coder: coder)
     }
 
     /// Use this function when initialize.
     /// - Parameter message: BaseMessage
-    init(message: BaseMessage) {
+    required public init(message: BaseMessage) {
         self.message = message
+        
+        // Filter emojis if custom `SBUGlobals.emojiCategoryFilter` is defined.
+        emojiList = SBUEmojiManager.getAvailableEmojis(message: message)
+        
         super.init(nibName: nil, bundle: nil)
     }
 
-    override func viewDidLayoutSubviews() {
+    open override func viewDidLayoutSubviews() {
         self.updateLayouts()
         
         super.viewDidLayoutSubviews()
     }
 
-    override func viewDidLoad() {
+    open override func viewDidLoad() {
         super.viewDidLoad()
         if let bottomSheet = self.bottomSheet {
             self.collectionView.isScrollEnabled = bottomSheet.currentSnapPoint == .top
 
             let maxMiddleHeight = SBUConstant.bottomSheetMaxMiddleHeight + safeBottomPadding
-            let calculatedHeieht = calculateCollectionViewContentHieght()
+            let calculatedHeieht = calculateCollectionViewContentHeight()
             let contentHeight = calculatedHeieht <= maxMiddleHeight
                 ? calculatedHeieht
                 : maxMiddleHeight
@@ -71,7 +86,7 @@ class SBUEmojiListViewController: SBUBaseViewController, UICollectionViewDelegat
         }
     }
 
-    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+    open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
 
         guard emojiList.count > 0 else { return }
@@ -79,7 +94,7 @@ class SBUEmojiListViewController: SBUBaseViewController, UICollectionViewDelegat
     }
     
     // MARK: - Sendbird UIKit Life cycle
-    override func setupViews() {
+    open override func setupViews() {
         // collectionView
         self.layout.itemSize = SBUConstant.emojiListCollectionViewCellSize
         self.layout.sectionInset = UIEdgeInsets(
@@ -94,7 +109,7 @@ class SBUEmojiListViewController: SBUBaseViewController, UICollectionViewDelegat
         self.collectionView.dataSource = self
         self.collectionView.delegate = self
         self.collectionView.register(
-            SBUReactionCollectionViewCell.sbu_loadNib(),
+            SBUReactionCollectionViewCell.self,
             forCellWithReuseIdentifier: SBUReactionCollectionViewCell.sbu_className
         ) // for xib
         self.collectionView.bounces = false
@@ -108,12 +123,12 @@ class SBUEmojiListViewController: SBUBaseViewController, UICollectionViewDelegat
         self.view.addSubview(self.collectionView)
     }
 
-    override func setupLayouts() {
+    open override func setupLayouts() {
         self.collectionView.sbu_constraint(equalTo: self.view, left: 0, right: 0, top: 0, bottom: 0)
         self.collectionView.layoutIfNeeded()
     }
     
-    override func updateLayouts() {
+    open override func updateLayouts() {
         let itemCount = CGFloat(
             emojiList.count < maxEmojiOneLine
             ? emojiList.count
@@ -134,12 +149,17 @@ class SBUEmojiListViewController: SBUBaseViewController, UICollectionViewDelegat
         self.collectionView.isScrollEnabled = self.bottomSheet?.currentSnapPoint == .top
     }
 
-    override func setupStyles() {
+    open override func setupStyles() {
         self.view.backgroundColor = theme.backgroundColor
     }
 
     // MARK: - Common
-    func calculateCollectionViewContentHieght() -> CGFloat {
+    
+    /// Calculates the height of the collection view content based on the number of emojis.
+    ///
+    /// - Returns: The total height required to display all emojis in the collection view.
+    /// - Since: 3.28.0
+    open func calculateCollectionViewContentHeight() -> CGFloat {
         let lineCount = CGFloat((emojiList.count + maxEmojiOneLine - 1) / maxEmojiOneLine)
         return lineCount * layout.itemSize.height
             + (lineCount - 1) * layout.minimumLineSpacing
@@ -148,34 +168,46 @@ class SBUEmojiListViewController: SBUBaseViewController, UICollectionViewDelegat
     }
 
     // MARK: - UICollectionView relations
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
+    open func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 1
     }
 
-    func collectionView(_ collectionView: UICollectionView,
-                        numberOfItemsInSection section: Int) -> Int {
+    open func collectionView(
+        _ collectionView: UICollectionView,
+        numberOfItemsInSection section: Int
+    ) -> Int {
         return emojiList.count
     }
 
-    func collectionView(_ collectionView: UICollectionView,
-                        cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    open func collectionView(
+        _ collectionView: UICollectionView,
+        cellForItemAt indexPath: IndexPath
+    ) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(
             withReuseIdentifier: SBUReactionCollectionViewCell.sbu_className,
             for: indexPath
-            ) as? SBUReactionCollectionViewCell else { return .init() }
+        ) as? SBUReactionCollectionViewCell else {
+            return .init()
+        }
 
         let emoji = emojiList[indexPath.row]
         cell.configure(type: .messageMenu, url: emoji.url)
 
-        guard let currentUesr = SBUGlobals.currentUser else { return cell }
-        let didSelect = self.message?.reactions.first {
-            $0.key == emoji.key
-            }?.userIds.contains(currentUesr.userId) ?? false
+        guard let currentUesr = SBUGlobals.currentUser else {
+            return cell
+        }
+        let didSelect = self.message?.reactions
+            .first { $0.key == emoji.key }?
+            .userIds.contains(currentUesr.userId) ?? false
         cell.isSelected = didSelect
+        
         return cell
     }
 
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+    open func collectionView(
+        _ collectionView: UICollectionView,
+        didSelectItemAt indexPath: IndexPath
+    ) {
         guard let currentUesr = SBUGlobals.currentUser else { self.dismiss(animated: true); return }
 
         let emoji = emojiList[indexPath.row]
@@ -188,8 +220,11 @@ class SBUEmojiListViewController: SBUBaseViewController, UICollectionViewDelegat
         self.dismiss(animated: true)
     }
 
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
-                           shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+    // MARK: - UIGestureRecognizerDelegate
+    open func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+    ) -> Bool {
         if let panGesture = gestureRecognizer as? UIPanGestureRecognizer,
             panGesture == bottomSheet?.panGesture {
             
@@ -205,7 +240,10 @@ class SBUEmojiListViewController: SBUBaseViewController, UICollectionViewDelegat
     }
 
     // MARK: - SBUBottomSheetControllerDelegate
-    func bottomSheet(moveTo position: SBUBottomSheetSnapPoint) {
+    
+    /// This function is called when the bottom sheet moves to a specific position.
+    /// - Since: 3.28.0
+    open func bottomSheet(moveTo position: SBUBottomSheetSnapPoint) {
         switch position {
         case .top:
             collectionView.isScrollEnabled = true

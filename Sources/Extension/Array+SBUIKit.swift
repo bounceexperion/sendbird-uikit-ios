@@ -24,6 +24,9 @@ public extension Array where Element: SBUUser {
         return userNicknames
     }
     
+    /// This function updates the operator status of each user in the array based on the given channel.
+    /// - Parameter channel: The channel where the operator status will be checked.
+    /// - Returns: The array of users with updated operator status.
     func sbu_updateOperatorStatus(channel: BaseChannel) -> [SBUUser] {
         if let channel = channel as? OpenChannel {
             for user in self {
@@ -53,6 +56,34 @@ public extension Array where Element: Member {
     }
 }
 
+extension Array where Element: BaseMessage {
+    
+    /// If only Stream messages exist, functions that return just that one message
+    /// - Returns: optional Base Message
+    /// - Since: 3.20.0
+    public func hasStreamMessageOnly(with latestMessage: BaseMessage?) -> BaseMessage? {
+        guard let latestMessage = latestMessage else { return nil }
+        guard self.count == 1 else { return nil }
+        guard let message = self.first else { return nil }
+        guard message.messageId == latestMessage.messageId else { return nil }
+        guard message.updatedAt == 0 else { return  nil }
+        guard message.sendingStatus == .succeeded else { return nil }
+        guard message.sender?.userId != SBUGlobals.currentUser?.userId else { return nil }
+        if message.isStreamMessage == true { return message }
+        if latestMessage.isStreamMessage == true { return message }
+        return nil
+    }
+}
+
+extension Array where Element: UIBarButtonItem {
+    func isUsingDefaultButton(_ defaultButton: UIBarButtonItem) -> Bool {
+        for button in self where button == defaultButton {
+            return true
+        }
+        return false
+    }
+}
+
 public extension NSArray {
     /// This is a function that extracts the userId array using the `SBUUser` type array.
     /// This is a function used in Objective-C.
@@ -76,5 +107,37 @@ public extension NSArray {
     func sbu_convertUserList() -> [SBUUser] {
         guard let users = self as? [User] else { return [] }
         return users.sbu_convertUserList()
+    }
+}
+
+extension Array where Element == String {
+    func toggle(_ value: String) -> [String] {
+        var copy = self
+        if let index = copy.firstIndex(of: value) {
+            copy.remove(at: index)
+        } else {
+            copy.append(value)
+        }
+        return copy
+    }
+}
+
+extension Array where Element == BaseMessage {
+    /// A value that determines whether to disable the MessageInputView.
+    /// The values of sequential messages with `disable_chat_input` enabled are reviewed internally.
+    /// - Since: 3.27.2
+    public func getChatInputDisableState(hasNext: Bool?) -> Bool {
+        if hasNext == true { return false }
+        
+        var types = [BaseMessage.ChatInputDisableType]()
+        
+        for element in self {
+            let type = element.getChatInputDisableType(hasNext: hasNext)
+            if type == .none { break }
+            types.append(type)
+        }
+        
+        // Component type must be included to exit the disable_chat_input state.
+        return types.contains(where: { $0 == .component })
     }
 }

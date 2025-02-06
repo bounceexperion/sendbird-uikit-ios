@@ -131,6 +131,9 @@ open class SBUBaseChannelViewModel: NSObject {
     weak var baseDataSource: SBUBaseChannelViewModelDataSource?
     weak var baseDelegate: SBUBaseChannelViewModelDelegate?
     
+    // MARK: SwiftUI (Internal)
+    var baseDelegates = WeakDelegateStorage<SBUBaseChannelViewModelDelegate>()
+    
     let prevLock = NSLock()
     let nextLock = NSLock()
     let initialLock = NSLock()
@@ -193,9 +196,11 @@ open class SBUBaseChannelViewModel: NSObject {
     ///   - startingPoint: Starting point to load messages from, or `nil` to load from the latest. (`Int64.max`)
     ///   - showIndicator: Whether to show indicator on load or not.
     ///   - initialMessages: Custom messages to start the messages from.
-    public func loadInitialMessages(startingPoint: Int64?,
-                             showIndicator: Bool,
-                             initialMessages: [BaseMessage]?) {}
+    public func loadInitialMessages(
+        startingPoint: Int64?,
+        showIndicator: Bool,
+        initialMessages: [BaseMessage]?
+    ) {}
     
     /// Loads previous messages.
     public func loadPrevMessages() {}
@@ -222,13 +227,14 @@ open class SBUBaseChannelViewModel: NSObject {
         let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
         let messageParams = UserMessageCreateParams(message: text)
         
-        SBUGlobalCustomParams.userMessageParamsSendBuilder?(messageParams)
-        
         if let parentMessage = parentMessage,
             SendbirdUI.config.groupChannel.channel.replyType != .none {
             messageParams.parentMessageId = parentMessage.messageId
             messageParams.isReplyToChannel = true
         }
+        
+        SBUGlobalCustomParams.userMessageParamsSendBuilder?(messageParams)
+
         messageParams.mentionedMessageTemplate = ""
         messageParams.mentionedUserIds = []
         
@@ -248,13 +254,14 @@ open class SBUBaseChannelViewModel: NSObject {
     open func sendUserMessage(text: String, mentionedMessageTemplate: String, mentionedUserIds: [String], parentMessage: BaseMessage? = nil) {
         let messageParams = UserMessageCreateParams(message: text)
         
-        SBUGlobalCustomParams.userMessageParamsSendBuilder?(messageParams)
-        
         if let parentMessage = parentMessage,
            SendbirdUI.config.groupChannel.channel.replyType != .none {
             messageParams.parentMessageId = parentMessage.messageId
             messageParams.isReplyToChannel = true
         }
+        
+        SBUGlobalCustomParams.userMessageParamsSendBuilder?(messageParams)
+
         messageParams.mentionedMessageTemplate = mentionedMessageTemplate
         messageParams.mentionedUserIds = mentionedUserIds
         self.sendUserMessage(messageParams: messageParams, parentMessage: parentMessage)
@@ -293,12 +300,15 @@ open class SBUBaseChannelViewModel: NSObject {
         }
         
         let context = MessageContext(source: .eventMessageSent, sendingStatus: .succeeded)
-        self.baseDelegate?.baseChannelViewModel(
-            self,
-            shouldUpdateScrollInMessageList: self.fullMessageList,
-            forContext: context,
-            keepsScroll: false
-        )
+        self.baseDelegates.forEach {
+            $0.baseChannelViewModel(
+                self,
+                shouldUpdateScrollInMessageList: self.fullMessageList,
+                forContext: context,
+                keepsScroll: false
+            )
+        }
+        
     }
     
     /// Sends a file message with file data, file name, mime type.
@@ -332,13 +342,14 @@ open class SBUBaseChannelViewModel: NSObject {
             }
         }
         
-        SBUGlobalCustomParams.fileMessageParamsSendBuilder?(messageParams)
-        
         if let parentMessage = parentMessage,
            SendbirdUI.config.groupChannel.channel.replyType != .none {
             messageParams.parentMessageId = parentMessage.messageId
             messageParams.isReplyToChannel = true
         }
+        
+        SBUGlobalCustomParams.fileMessageParamsSendBuilder?(messageParams)
+        
         self.sendFileMessage(messageParams: messageParams, parentMessage: parentMessage)
     }
     
@@ -360,14 +371,14 @@ open class SBUBaseChannelViewModel: NSObject {
         messageParams.fileSize = UInt(fileData.count)
         messageParams.metaArrays = [durationMetaArray, typeMetaArray]
 
-        SBUGlobalCustomParams.voiceFileMessageParamsSendBuilder?(messageParams)
-        
         if let parentMessage = parentMessage,
            SendbirdUI.config.groupChannel.channel.replyType != .none {
             messageParams.parentMessageId = parentMessage.messageId
             messageParams.isReplyToChannel = true
         }
-        
+
+        SBUGlobalCustomParams.voiceFileMessageParamsSendBuilder?(messageParams)
+
         self.sendFileMessage(messageParams: messageParams, parentMessage: parentMessage)
     }
     
@@ -452,12 +463,14 @@ open class SBUBaseChannelViewModel: NSObject {
         self.sortAllMessageList(needReload: true)
         
         let context = MessageContext(source: .eventMessageSent, sendingStatus: .succeeded)
-        self.baseDelegate?.baseChannelViewModel(
-            self,
-            shouldUpdateScrollInMessageList: self.fullMessageList,
-            forContext: context,
-            keepsScroll: false
-        )
+        self.baseDelegates.forEach {
+            $0.baseChannelViewModel(
+                self,
+                shouldUpdateScrollInMessageList: self.fullMessageList,
+                forContext: context,
+                keepsScroll: false
+            )
+        }
     }
     
     /// Updates a user message with message object.
@@ -512,7 +525,9 @@ open class SBUBaseChannelViewModel: NSObject {
         ) { [weak self] _, _ in
             guard let self = self else { return }
             guard let channel = self.channel else { return }
-            self.baseDelegate?.baseChannelViewModel(self, shouldFinishEditModeForChannel: channel)
+            self.baseDelegates.forEach {
+                $0.baseChannelViewModel(self, shouldFinishEditModeForChannel: channel)
+            }
         }
     }
     
@@ -650,12 +665,15 @@ open class SBUBaseChannelViewModel: NSObject {
     ///   - needUpdateNewMessage: If set to `true`, increases new message count.
     ///   - needReload: If set to `true`, the tableview will be call reloadData.
     /// - Since: 1.2.5
-    public func upsertMessagesInList(messages: [BaseMessage]?,
-                                      needUpdateNewMessage: Bool = false,
-                                      needReload: Bool) {
+    public func upsertMessagesInList(
+        messages: [BaseMessage]?,
+        needUpdateNewMessage: Bool = false,
+        needReload: Bool
+    ) {
         SBULog.info("First : \(String(describing: messages?.first)), Last : \(String(describing: messages?.last))")
         
         var needMarkAsRead = false
+        let myLastRead = (channel as? GroupChannel)?.myLastRead
         
         messages?.forEach { message in
             if let index = SBUUtils.findIndex(of: message, in: self.messageList) {
@@ -675,7 +693,9 @@ open class SBUBaseChannelViewModel: NSObject {
             
             if needUpdateNewMessage {
                 guard let channel = self.channel else { return }
-                self.baseDelegate?.baseChannelViewModel(self, didReceiveNewMessage: message, forChannel: channel)
+                self.baseDelegates.forEach {
+                    $0.baseChannelViewModel(self, didReceiveNewMessage: message, forChannel: channel)
+                }
             }
             
             if message.sendingStatus == .succeeded {
@@ -686,7 +706,9 @@ open class SBUBaseChannelViewModel: NSObject {
                     requestId: message.requestId
                 )
                 
-                needMarkAsRead = true
+                if let myLastRead, myLastRead < message.createdAt {
+                    needMarkAsRead = true
+                }
                 
             } else if message.sendingStatus == .failed ||
                         message.sendingStatus == .pending {
@@ -699,12 +721,19 @@ open class SBUBaseChannelViewModel: NSObject {
             }
         }
         
-        if needMarkAsRead, let channel = self.channel as? GroupChannel, !self.isThreadMessageMode {
-            channel.markAsRead { [weak self] _ in
-                self?.sortAllMessageList(needReload: needReload)
+        let sortAllMessageListBlock = { [weak self] in
+            self?.sortAllMessageList(needReload: needReload)
+        }
+        
+        if needMarkAsRead,
+           let channel = self.channel as? GroupChannel,
+           !self.isThreadMessageMode,
+            SendbirdChat.getConnectState() == .open {
+            channel.markAsRead { error in
+                sortAllMessageListBlock()
             }
         } else {
-            self.sortAllMessageList(needReload: needReload)
+            sortAllMessageListBlock()
         }
     }
     
@@ -737,7 +766,9 @@ open class SBUBaseChannelViewModel: NSObject {
         if let editMessage = inEditingMessage,
            messageIds.contains(editMessage.messageId),
            let channel = self.channel {
-            self.baseDelegate?.baseChannelViewModel(self, shouldFinishEditModeForChannel: channel)
+            self.baseDelegates.forEach {
+                $0.baseChannelViewModel(self, shouldFinishEditModeForChannel: channel)
+            }
         }
         
         var toBeDeleteIndexes: [Int] = []
@@ -844,13 +875,15 @@ open class SBUBaseChannelViewModel: NSObject {
                                     + typingMessageArray
         }
         
-        self.baseDelegate?.shouldUpdateLoadingState(false)
-        self.baseDelegate?.baseChannelViewModel(
-            self,
-            didChangeMessageList: self.fullMessageList,
-            needsToReload: needReload,
-            initialLoad: self.isInitialLoading
-        )
+        self.baseDelegates.forEach {
+            $0.shouldUpdateLoadingState(false)
+            $0.baseChannelViewModel(
+                self,
+                didChangeMessageList: self.fullMessageList,
+                needsToReload: needReload,
+                initialLoad: self.isInitialLoading
+            )
+        }
     }
     
     /// This functions clears current message lists
@@ -878,7 +911,10 @@ open class SBUBaseChannelViewModel: NSObject {
         
         self.messageListParams.includeThreadInfo = SBUGlobals.reply.includesThreadInfo
         self.messageListParams.includeParentMessageInfo = SBUGlobals.reply.includesParentMessageInfo
-        self.messageListParams.replyType = SendbirdUI.config.groupChannel.channel.replyType.filterValue
+        
+        if SendbirdUI.config.groupChannel.channel.replyType.filterValue == .none {
+            self.messageListParams.replyType = SendbirdUI.config.groupChannel.channel.replyType.filterValue
+        }
         
         self.messageListParams.includeMetaArray = true
     }
@@ -894,8 +930,14 @@ open class SBUBaseChannelViewModel: NSObject {
         if didSelect {
             SBULog.info("[Request] Add Reaction")
             self.channel?.addReaction(with: message, key: emojiKey) { reactionEvent, error in
+                // INFO:
+                // In **super group channel limited mode**, current user can only addReaction and never deleteReaction.
+                // If currentUser reacts to an already reacted emoji, the request succeeds, but Chat SDK returns a decoding error (80000).
+                // (the response doesn't contain "updated_at" field, but Chat SDK tries to decode this as a non-optional property)
                 if let error = error {
-                    self.baseDelegate?.didReceiveError(error, isBlocker: false)
+                    self.baseDelegates.forEach {
+                        $0.didReceiveError(error, isBlocker: false)
+                    }
                 }
                 
                 SBULog.info("[Response] \(reactionEvent?.key ?? "") reaction")
@@ -903,13 +945,17 @@ open class SBUBaseChannelViewModel: NSObject {
                 if reactionEvent.messageId == message.messageId {
                     message.apply(reactionEvent)
                 }
-                self.baseDelegate?.baseChannelViewModel(self, didUpdateReaction: reactionEvent, forMessage: message)
+                self.baseDelegates.forEach {
+                    $0.baseChannelViewModel(self, didUpdateReaction: reactionEvent, forMessage: message)
+                }
             }
         } else {
             SBULog.info("[Request] Delete Reaction")
             self.channel?.deleteReaction(with: message, key: emojiKey) { reactionEvent, error in
                 if let error = error {
-                    self.baseDelegate?.didReceiveError(error, isBlocker: false)
+                    self.baseDelegates.forEach {
+                        $0.didReceiveError(error, isBlocker: false)
+                    }
                 }
 
                 SBULog.info("[Response] \(reactionEvent?.key ?? "") reaction")
@@ -917,7 +963,9 @@ open class SBUBaseChannelViewModel: NSObject {
                 if reactionEvent.messageId == message.messageId {
                     message.apply(reactionEvent)
                 }
-                self.baseDelegate?.baseChannelViewModel(self, didUpdateReaction: reactionEvent, forMessage: message)
+                self.baseDelegates.forEach {
+                    $0.baseChannelViewModel(self, didUpdateReaction: reactionEvent, forMessage: message)
+                }
             }
         }
     }

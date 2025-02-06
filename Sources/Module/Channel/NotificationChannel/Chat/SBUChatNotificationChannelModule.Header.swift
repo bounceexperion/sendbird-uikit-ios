@@ -9,6 +9,7 @@
 import UIKit
 import SendbirdChatSDK
 
+// swiftlint:disable type_name
 /// Event methods for the views updates and performing actions from the header component in a group channel.
 protocol SBUChatNotificationChannelModuleHeaderDelegate: SBUCommonDelegate {
     /// Called when the value of  ``SBUChatNotificationChannelModule/Header/titleView`` has been updated.
@@ -65,17 +66,20 @@ protocol SBUChatNotificationChannelModuleHeaderDelegate: SBUCommonDelegate {
         didTapRightItem rightItem: UIBarButtonItem
     )
 }
+// swiftlint:enable type_name
 
 extension SBUChatNotificationChannelModule {
     
     /// A module component that represent the header of `SBUChatNotificationChannelModule`.
     /// - Since: 3.5.0
+    @objc(SBUChatNotificationChannelModuleHeader)
     @objcMembers
     public class Header: UIView {
         
         // MARK: - UI properties (Public)
         
         /// Specifies a custom view of the channel title in the center of the navigation bar of the header component.
+        /// The default view type is ``SBUChannelTitleView``.
         /// - NOTE: When the value is updated, ``SBUChatNotificationChannelModuleHeaderDelegate/chatNotificationChannelModule(_:didUpdateTitleView:)`` delegate function is called.
         /// - NOTE: To update title text when you using default title view, please calls ``SBUChatNotificationChannelViewController/updateChannelTitle(_:)`` in ``SBUChatNotificationChannelViewController``
         var titleView: UIView? {
@@ -88,6 +92,7 @@ extension SBUChatNotificationChannelModule {
         }
         
         /// Specifies an array of  `UIBarButtonItem` that is used as a button on the left side of the navigation bar.
+        /// The default view type is `[UIBarButtonItem]`.
         /// - NOTE: When the value is updated, ``SBUChatNotificationChannelModuleHeaderDelegate/chatNotificationChannelModule(_:didUpdateLeftItems:)``  delegate function is called.
         var leftBarButtons: [UIBarButtonItem]? {
             didSet {
@@ -127,7 +132,7 @@ extension SBUChatNotificationChannelModule {
         /// "Notifications"
         lazy var defaultLeftBarButton: UIBarButtonItem = {
             let backButton = SBUBarButtonItem.backButton(
-                vc: self,
+                target: self,
                 selector: #selector(onTapLeftBarButton(_:))
             )
             return backButton
@@ -193,11 +198,9 @@ extension SBUChatNotificationChannelModule {
                 titleView.titleLabel.textColor = self.theme.textColor
             }
             
-            self.leftBarButtons?
-                .forEach { $0.tintColor = self.theme.buttonIconTintColor }
+            self.leftBarButtons?.forEach { $0.tintColor = self.theme.buttonIconTintColor }
             
-            self.rightBarButtons?
-                .forEach { $0.tintColor = self.theme.buttonIconTintColor }
+            self.rightBarButtons?.forEach { $0.tintColor = self.theme.buttonIconTintColor }
         }
         
         /// Updates styles of the views in the header component.

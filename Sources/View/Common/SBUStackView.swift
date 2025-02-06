@@ -7,6 +7,9 @@
 //
 
 import UIKit
+#if canImport(SendbirdUIMessageTemplate)
+import SendbirdUIMessageTemplate
+#endif
 
 public class SBUStackView: UIStackView {
     override init(frame: CGRect) {
@@ -27,5 +30,14 @@ public class SBUStackView: UIStackView {
         self.axis = axis
         self.alignment = alignment
         self.spacing = spacing
+        self.isUserInteractionEnabled = true
+    }
+    
+    public override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let view = super.hitTest(point, with: event)
+        #if canImport(SendbirdUIMessageTemplate)
+        if view is SendbirdUIMessageTemplate.HitPassViewType { return nil }
+        #endif
+        return view
     }
 }

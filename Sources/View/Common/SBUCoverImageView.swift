@@ -9,7 +9,7 @@
 import UIKit
 import SendbirdChatSDK
 
-public class SBUCoverImageView: UIView {
+open class SBUCoverImageView: UIView {
 
     // MARK: - UI properties (Public)
     @SBUThemeWrapper(theme: SBUTheme.componentTheme)
@@ -48,7 +48,7 @@ public class SBUCoverImageView: UIView {
     
     // MARK: - Life cycle
     
-    public init() {
+    required public init() {
         super.init(frame: .zero)
     }
     
@@ -56,7 +56,7 @@ public class SBUCoverImageView: UIView {
         super.init(frame: frame)
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
     
@@ -64,7 +64,7 @@ public class SBUCoverImageView: UIView {
     
     /// This function sets the image using the cover image URL.
     /// - Parameter coverURL: Cover image url string
-    public func setImage(withCoverURL coverURL: String) {
+    open func setImage(withCoverURL coverURL: String) {
         self.setImage(with: coverURL)
     }
     
@@ -72,7 +72,7 @@ public class SBUCoverImageView: UIView {
     /// - Parameters:
     ///     - CoverURL: Cover image url string
     ///     - makeCircle: A default value is `true`. If it's `true`, the image has rounded corners
-    public func setImage(with coverURL: String, makeCircle: Bool = true) {
+    open func setImage(with coverURL: String, makeCircle: Bool = true) {
         let imageView = UIImageView(
             frame: CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
         )
@@ -91,19 +91,16 @@ public class SBUCoverImageView: UIView {
         self.addSubview(imageView)
 
         let subviews = self.subviews
-        for subView in subviews {
-            if subView != imageView {
-                subView.removeFromSuperview()
-            }
+        for subView in subviews where subView != imageView {
+            subView.removeFromSuperview()
         }
-        
         if makeCircle {
             self.makeCircularWithSpacing(spacing: 0)
         }
     }
     
     /// This function sets the broadcast icon
-    public func setBroadcastIcon() {
+    open func setBroadcastIcon() {
         self.setIconImage(
             type: .iconBroadcast,
             tintColor: self.theme.broadcastIconTintColor,
@@ -115,7 +112,7 @@ public class SBUCoverImageView: UIView {
     /// - Parameter type: IconSet type
     /// - Parameter iconSize: Icon size
     /// - Since: 3.2.0
-    public func setPlaceholder(type: SBUIconSetType, iconSize: CGSize? = nil) {
+    open func setPlaceholder(type: SBUIconSetType, iconSize: CGSize? = nil) {
         self.setIconImage(
             type: type,
             tintColor: self.theme.placeholderTintColor,
@@ -130,7 +127,7 @@ public class SBUCoverImageView: UIView {
     ///   - backgroundColor: background color
     ///   - makeCircle: If this value set to `true`, image will be circle.
     ///   - contentMode: The `ContentMode` value of `UIImageView`. The default value is `.center`
-    public func setImage(
+    open func setImage(
         withImage image: UIImage,
         backgroundColor: UIColor? = nil,
         makeCircle: Bool = false,
@@ -147,21 +144,42 @@ public class SBUCoverImageView: UIView {
             self.addSubview(imageView)
             
             let subviews = self.subviews
-            for subView in subviews {
-                if subView != imageView {
-                    subView.removeFromSuperview()
-                }
+            for subView in subviews where subView != imageView {
+                subView.removeFromSuperview()
             }
             
             self.makeCircularWithSpacing(spacing: 0)
         }
     }
     
+    /// This function sets the image using user objects.
+    ///
+    /// The image is created using up to four user objects.
+    /// - Parameter users: `SBUUser` object array
+    open func setImage(withUsers users: [User]) {
+        let filteredUsers = users.filter { $0.userId != SBUGlobals.currentUser?.userId }
+        let index = (filteredUsers.count > 3) ? 4 : filteredUsers.count
+        let newUsers = Array(filteredUsers[0..<index])
+        
+        let stackView = self.setupImageStack(users: newUsers)
+
+        self.addSubview(stackView)
+        
+        let subviews = self.subviews
+        for subView in subviews where subView != stackView {
+            subView.removeFromSuperview()
+        }
+        
+        self.makeCircularWithSpacing(spacing: 0)
+    }
+    
     // MARK: - Internal
-    func setIconImage(type: SBUIconSetType,
-                              tintColor: UIColor?,
-                              backgroundColor: UIColor? = nil,
-                              iconSize: CGSize? = nil) {
+    func setIconImage(
+        type: SBUIconSetType,
+        tintColor: UIColor?,
+        backgroundColor: UIColor? = nil,
+        iconSize: CGSize? = nil
+    ) {
         let iconSize = iconSize ?? self.iconSize
         let imageView = self.createImageView(
             withImage: type.image(with: tintColor, to: iconSize),
@@ -172,10 +190,8 @@ public class SBUCoverImageView: UIView {
         self.addSubview(imageView)
         
         let subviews = self.subviews
-        for subView in subviews {
-            if subView != imageView {
-                subView.removeFromSuperview()
-            }
+        for subView in subviews where subView != imageView {
+            subView.removeFromSuperview()
         }
         
         self.makeCircularWithSpacing(spacing: 0)
@@ -200,29 +216,6 @@ public class SBUCoverImageView: UIView {
         }
         
         return imageView
-    }
-    
-    /// This function sets the image using user objects.
-    ///
-    /// The image is created using up to four user objects.
-    /// - Parameter users: `SBUUser` object array
-    public func setImage(withUsers users: [User]) {
-        let filteredUsers = users.filter { $0.userId != SBUGlobals.currentUser?.userId }
-        let index = (filteredUsers.count > 3) ? 4 : filteredUsers.count
-        let newUsers = Array(filteredUsers[0..<index])
-        
-        let stackView = self.setupImageStack(users: newUsers)
-
-        self.addSubview(stackView)
-        
-        let subviews = self.subviews
-        for subView in subviews {
-            if subView != stackView {
-                subView.removeFromSuperview()
-            }
-        }
-        
-        self.makeCircularWithSpacing(spacing: 0)
     }
     
     private func setupImageStack(users: [User]) -> UIStackView {
@@ -270,10 +263,8 @@ public class SBUCoverImageView: UIView {
                 if mainStackView.arrangedSubviews.count < 2 {
                     mainStackView.addArrangedSubview(stackView)
                 } else {
-                    for subView in mainStackView.arrangedSubviews {
-                        if (subView as? UIStackView)?.arrangedSubviews.count == 1 {
-                            (subView as? UIStackView)?.addArrangedSubview(imageView)
-                        }
+                    for subView in mainStackView.arrangedSubviews where (subView as? UIStackView)?.arrangedSubviews.count == 1 {
+                        (subView as? UIStackView)?.addArrangedSubview(imageView)
                     }
                 }
             }
@@ -290,6 +281,10 @@ public class SBUCoverImageView: UIView {
 }
 
 extension UIImageView {
+    /// Sets the profile image view for a user.
+    /// - Parameters:
+    ///   - user: The user for whom the profile image view is being set.
+    ///   - defaultImage: The default image to be used if the user does not have a profile image.
     public func sbu_setProfileImageView(for user: User, defaultImage: UIImage) {
         guard URL(string: ImageUtil.transformUserProfileImage(user: user)) != nil else {
             DispatchQueue.main.async { [weak self] in
@@ -303,7 +298,7 @@ extension UIImageView {
             urlString: ImageUtil.transformUserProfileImage(user: user),
             placeholder: defaultImage,
             subPath: SBUCacheManager.PathType.userProfile
-        )        
+        )
     }
 }
 

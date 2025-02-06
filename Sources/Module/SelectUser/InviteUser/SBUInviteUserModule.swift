@@ -10,35 +10,39 @@ import UIKit
 
 // MARK: SBUInviteUserModule
 
-open class SBUInviteUserModule {
+/// The class that represents the invite user module.
+extension SBUInviteUserModule {
     /// The module component that contains ``SBUBaseSelectUserModule/Header/titleView``, ``SBUBaseSelectUserModule/Header/leftBarButton`` and ``SBUBaseSelectUserModule/Header/rightBarButton``
     /// - Since: 3.6.0
     public static var HeaderComponent: SBUInviteUserModule.Header.Type = SBUInviteUserModule.Header.self
     /// The module component that shows the list of the user to invite to the channel
     /// - Since: 3.6.0
     public static var ListComponent: SBUInviteUserModule.List.Type = SBUInviteUserModule.List.self
+}
+
+// MARK: Header
+extension SBUInviteUserModule.Header {
+    /// Represents the metatype of left bar button in ``SBUInviteUserModule.Header``.
+    /// - Since: 3.28.0
+    public static var LeftBarButton: SBUBarButtonItem.Type = SBUBarButtonItem.self
     
-    // MARK: Properties (Public)
-    @available(*, deprecated, message: "Use `SBUInviteUserModule.HeaderComponent` instead.")
-    public var headerComponent: SBUInviteUserModule.Header? {
-        get { _headerComponent ?? Self.HeaderComponent.init() }
-        set { _headerComponent = newValue }
-    }
-    @available(*, deprecated, message: "Use `SBUInviteUserModule.ListComponent` instead.")
-    public var listComponent: SBUInviteUserModule.List? {
-        get { _listComponent ?? Self.ListComponent.init() }
-        set { _listComponent = newValue }
-    }
+    /// Represents the metatype of title view in ``SBUInviteUserModule.Header``.
+    /// - Since: 3.28.0
+    public static var TitleView: SBUNavigationTitleView.Type = SBUNavigationTitleView.self
     
-    // MARK: Properties (Holder)
-    private var _headerComponent: SBUInviteUserModule.Header?
-    private var _listComponent: SBUInviteUserModule.List?
+    /// Represents the metatype of right bar button in ``SBUInviteUserModule.Header``.
+    /// - Since: 3.28.0
+    public static var RightBarButton: SBUBarButtonItem.Type = SBUBarButtonItem.self
+}
+
+// MARK: List
+extension SBUInviteUserModule.List {
     
-    // MARK: -
-    @available(*, deprecated, message: "Use `SBUModuleSet.InviteUserModule")
-    public required init(headerComponent: SBUInviteUserModule.Header? = nil,
-                listComponent: SBUInviteUserModule.List? = nil) {
-        self.headerComponent = headerComponent
-        self.listComponent = listComponent
-    }
+    /// Represents the type of empty view on the invite user module.
+    /// - Since: 3.28.0
+    public static var EmptyView: SBUEmptyView.Type = SBUEmptyView.self
+    
+    /// Represents the type of user cell on the invite user module.
+    /// - Since: 3.28.0
+    public static var UserCell: SBUUserCell.Type = SBUUserCell.self
 }

@@ -9,6 +9,7 @@
 import Foundation
 import SendbirdChatSDK
 
+/// `SBUEmojiManager` is a class responsible for managing emojis in the application.
 public class SBUEmojiManager {
     // MARK: - Private keys
     static let kEmojiCacheKey = "LOCAL_CACHING_EMOJI_CONTAINER"
@@ -95,13 +96,43 @@ public class SBUEmojiManager {
         return category.emojis
     }
     
+    static func getEmojis(with categoryIds: [Int64]) -> [Emoji] {
+        guard let container = shared.container else {
+            SBULog.error("[Failed] Emojis with categoryIds")
+            return []
+        }
+        
+        let categories = container.categories
+        guard !categories.isEmpty else {
+            return []
+        }
+        
+        let filteredEmojiCategories = categories.filter { categoryIds.contains($0.cid) }
+        let filteredEmojis = filteredEmojiCategories.reduce([]) { $0 + $1.emojis}
+        
+        if filteredEmojis.isEmpty {
+            SBULog.warning("Emojis for emojiCategoryIds is empty.")
+        }
+        
+        return filteredEmojis
+    }
+    
     // MARK: - private function
     static func isReactionEnabled(channel: BaseChannel?) -> Bool {
         guard let groupChannel = channel as? GroupChannel else { return false }
         
-        return SBUAvailable.isSupportReactions()
-        && !groupChannel.isSuper
-        && !groupChannel.isBroadcast
+        return !groupChannel.isBroadcast &&
+            (groupChannel.isSuper ?
+            SBUAvailable.isSupportReactions(for: .superGroup) :
+            SBUAvailable.isSupportReactions(for: .group))
+    }
+    
+    /// Decides whether to show the member list for each reaction upon long press on an emoji.
+    /// - Since: 3.19.0
+    static func isEmojiLongPressEnabled(channel: BaseChannel?) -> Bool {
+        guard let groupChannel = channel as? GroupChannel else { return false }
+        
+        return !groupChannel.isSuper
     }
     
     /// Loads all Emojis from ChatSDK.
@@ -157,6 +188,29 @@ public class SBUEmojiManager {
     private func didSetContainer() {
         if let serializedContainer = container?.serialize() {
             UserDefaults.standard.setValue(serializedContainer, forKey: SBUEmojiManager.kEmojiCacheKey)
+        }
+    }
+    
+    /// Checks if an emoji is available in current app.
+    /// - Since: 3.27.0
+    static func isEmojiAvailable(
+        emojiKey: String,
+        message: BaseMessage
+    ) -> Bool {
+        if let categoryIds = SBUGlobals.emojiCategoryFilter(message) {
+            let emojiKeys = getEmojis(with: categoryIds).map { $0.key }
+            if emojiKeys.contains(emojiKey) == false {
+                return false
+            }
+        }
+        return true
+    }
+    
+    static func getAvailableEmojis(message: BaseMessage?) -> [Emoji] {
+        if let message, let categoryIds = SBUGlobals.emojiCategoryFilter(message) {
+            return getEmojis(with: categoryIds)
+        } else {
+            return getAllEmojis()
         }
     }
 }

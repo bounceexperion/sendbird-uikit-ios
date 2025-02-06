@@ -19,51 +19,75 @@ public protocol SBUUserProfileViewDelegate: AnyObject {
 
 /// This protocol is used to create a custom `UserView`.
 public protocol SBUUserProfileViewProtocol {
+    /// This function sets up the views.
     func setupViews()
+    /// This function sets up the styles for the view.
     func setupStyles()
     
-    /// This function shows selector view.
+    /// This function shows the selector view.
+    /// - Parameters:
+    ///   - baseView: The base view where the selector will be shown.
     func show(baseView: UIView, user: SBUUser?)
+    
+    /// This function shows the selector view.
+    /// - Parameters:
+    ///   - baseView: The base view where the selector will be shown.
+    ///   - user: The user object that will be used in the selector.
+    ///   - isOpenChannel: A boolean value indicating whether the channel is open or not.
     func show(baseView: UIView, user: SBUUser?, isOpenChannel: Bool)
 
     /// This function dismisses selector view.
     func dismiss()
 }
 
-class SBUUserProfileView: UIView, SBUUserProfileViewProtocol {
+/// Default user profile view
+/// - Since: 3.28.0
+open class SBUUserProfileView: UIView, SBUUserProfileViewProtocol {
     
     // MARK: - Property
-    weak var delegate: SBUUserProfileViewDelegate?
-    var user: SBUUser?
     
+    /// View event delegate
+    public private(set) weak var delegate: SBUUserProfileViewDelegate?
+    
+    /// User model used in profile views
+    public private(set) var user: SBUUser?
+    
+    /// user profile theme
     @SBUThemeWrapper(theme: SBUTheme.userProfileTheme)
-    var theme: SBUUserProfileTheme
-
-    var baseView = UIView()
-    var contentView: UIView = {
+    public var theme: SBUUserProfileTheme
+    
+    /// Base view where the selector will be shown
+    public var baseView = UIView()
+    
+    /// Contents view
+    public var contentView: UIView = {
         let view = UIView()
         view.roundCorners(corners: [.topLeft, .topRight], radius: 10)
         return view
     }()
     
-    lazy var profileImageView: UIImageView = {
+    /// Profile image view
+    public lazy var profileImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.roundCorners(corners: .allCorners, radius: kProfileImageSize/2)
         return imageView
     }()
     
-    lazy var userNameLabel = UILabel()
+    /// Name label
+    public lazy var userNameLabel = UILabel()
     
-    lazy var menuStackView: UIStackView = {
+    /// Stack view in which the menu will be displayed
+    public lazy var menuStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .horizontal
         stackView.alignment = .center
         stackView.distribution = .fillEqually
         return stackView
     }()
-
-    lazy var largeMessageButton: UIButton = {
+    
+    /// Message button
+    public lazy var largeMessageButton: UIButton = {
         let button = UIButton()
         button.addTarget(self, action: #selector(onClickMessage), for: .touchUpInside)
         button.layer.cornerRadius = 4.0
@@ -78,32 +102,36 @@ class SBUUserProfileView: UIView, SBUUserProfileViewProtocol {
         return button
     }()
     
-    lazy var separatorView = UIView()
+    /// Separator view
+    public lazy var separatorView = UIView()
     
-    lazy var userIdTitleLabel: UILabel = {
-       let label = UILabel()
-        label.textAlignment = .left
-        return label
-    }()
-    lazy var userIdLabel: UILabel = {
-       let label = UILabel()
-        label.textAlignment = .left
+    /// User id title label
+    public lazy var userIdTitleLabel: UILabel = {
+        let label = UILabel()
         return label
     }()
     
-    lazy var backgroundCloseButton: UIButton = {
+    /// User id value label
+    public lazy var userIdLabel: UILabel = {
+        let label = UILabel()
+        return label
+    }()
+    
+    /// Background close button
+    public lazy var backgroundCloseButton: UIButton = {
         let button = UIButton()
         button.addTarget(self, action: #selector(onClickClose), for: .touchUpInside)
         return button
     }()
+    
+    /// Value to indicate whether menu is hidden
+    public private(set) var isMenuStackViewHidden = false
     
     var separatorYAxisAnchor: NSLayoutYAxisAnchor = NSLayoutYAxisAnchor() {
         didSet {
             setNeedsLayout()
         }
     }
-    
-    var isMenuStackViewHidden = false
     
     var separatorTop: NSLayoutConstraint?
     var contentTopConstraint: NSLayoutConstraint?
@@ -114,7 +142,7 @@ class SBUUserProfileView: UIView, SBUUserProfileViewProtocol {
     let kItemSize: CGSize = .init(width: 64, height: 68)
     
     // MARK: - View Lifecycle
-    init(delegate: SBUUserProfileViewDelegate?) {
+    public required init(delegate: SBUUserProfileViewDelegate?) {
         super.init(frame: .zero)
         
         self.delegate = delegate
@@ -126,11 +154,12 @@ class SBUUserProfileView: UIView, SBUUserProfileViewProtocol {
     }
     
     @available(*, unavailable, renamed: "SBUUserProfileView.init(delegate:)")
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
+    public required init?(coder: NSCoder) {
+        super.init(frame: .zero)
     }
     
-    func setupViews() {
+    /// This function handles the initialization of views.
+    open func setupViews() {
         // View
         self.userNameLabel.textAlignment = .center
         
@@ -165,7 +194,7 @@ class SBUUserProfileView: UIView, SBUUserProfileViewProtocol {
         
         // Text
         self.userNameLabel.text = self.user?.refinedNickname()
-
+        
         self.largeMessageButton.setTitle(SBUStringSet.UserProfile_Message, for: .normal)
         
         self.userIdTitleLabel.text = ""
@@ -173,11 +202,12 @@ class SBUUserProfileView: UIView, SBUUserProfileViewProtocol {
         
     }
     
-    func setupStyles() {
+    /// This function handles the initialization of styles.
+    open func setupStyles() {
         self.backgroundColor = .clear
         
         self.contentView.backgroundColor = self.theme.backgroundColor
-
+        
         self.profileImageView.backgroundColor = self.theme.userPlaceholderBackgroundColor
         
         self.userNameLabel.textColor = self.theme.usernameTextColor
@@ -197,9 +227,10 @@ class SBUUserProfileView: UIView, SBUUserProfileViewProtocol {
         self.userIdLabel.textColor = self.theme.informationDesctiptionColor
     }
     
-    func setupLayouts() {
+    /// This function handles the initialization of autolayouts.
+    open func setupLayouts() {
         self.sbu_constraint(equalTo: self.baseView, leading: 0, trailing: 0, top: 0, bottom: 0)
-
+        
         self.backgroundCloseButton
             .sbu_constraint(equalTo: self, leading: 0, trailing: 0, top: 0, bottom: 0)
         
@@ -208,7 +239,7 @@ class SBUUserProfileView: UIView, SBUUserProfileViewProtocol {
         self.profileImageView
             .sbu_constraint(equalTo: self.contentView, top: 32, centerX: 0)
             .sbu_constraint(width: kProfileImageSize, height: kProfileImageSize)
-
+        
         self.largeMessageButton
             .sbu_constraint(height: kLargeItemSize, priority: .defaultHigh)
         
@@ -229,7 +260,7 @@ class SBUUserProfileView: UIView, SBUUserProfileViewProtocol {
             self.separatorView.leadingAnchor.constraint(equalTo: self.contentView.safeAreaLayoutGuide.leadingAnchor, constant: 24),
             self.separatorView.trailingAnchor.constraint(equalTo: self.contentView.safeAreaLayoutGuide.trailingAnchor, constant: -25)
         ])
-
+        
         NSLayoutConstraint.sbu_activate(baseView: self.userIdTitleLabel, constraints: [
             self.userIdTitleLabel.topAnchor.constraint(equalTo: self.separatorView.bottomAnchor, constant: 26),
             self.userIdTitleLabel.heightAnchor.constraint(equalToConstant: 20),
@@ -259,7 +290,7 @@ class SBUUserProfileView: UIView, SBUUserProfileViewProtocol {
         
         let bottomInset = UIApplication.shared.currentWindow?.safeAreaInsets.bottom ?? 0.0
         let bottomMargin: CGFloat = 20 + bottomInset
-
+        
         self.userIdLabel.sbu_constraint(equalTo: self.contentView, bottom: bottomMargin, priority: .defaultLow)
         
         self.contentBottomConstraint = self.contentView.bottomAnchor.constraint(
@@ -274,8 +305,8 @@ class SBUUserProfileView: UIView, SBUUserProfileViewProtocol {
         self.contentTopConstraint?.isActive = true
     }
     
-    override func draw(_ rect: CGRect) {
-
+    open override func draw(_ rect: CGRect) {
+        
     }
     
     public override func layoutSubviews() {
@@ -283,22 +314,33 @@ class SBUUserProfileView: UIView, SBUUserProfileViewProtocol {
     }
     
     // MARK: - Actions
+    /// Methods called when the close button is clicked
     @objc
-    func onClickClose() {
+    open func onClickClose() {
         self.delegate?.didSelectClose()
     }
     
+    /// Methods called when last message is clicked
     @objc
-    func onClickMessage() {
+    open func onClickMessage() {
         self.delegate?.didSelectMessage(userId: self.user?.userId)
     }
-    
+
     // MARK: SBUUserProfileViewProtocol
-    func show(baseView: UIView, user: SBUUser?) {
+    
+    /// This function shows the selector view.
+    /// - Parameters:
+    ///   - baseView: The base view where the selector will be shown.
+    open func show(baseView: UIView, user: SBUUser?) {
         self.show(baseView: baseView, user: user, isOpenChannel: false)
     }
     
-    func show(baseView: UIView, user: SBUUser?, isOpenChannel: Bool) {
+    /// This function shows the selector view.
+    /// - Parameters:
+    ///   - baseView: The base view where the selector will be shown.
+    ///   - user: The user object that will be used in the selector.
+    ///   - isOpenChannel: A boolean value indicating whether the channel is open or not.
+    open func show(baseView: UIView, user: SBUUser?, isOpenChannel: Bool) {
         self.baseView = baseView
         self.user = user
         self.isMenuStackViewHidden = isOpenChannel
@@ -315,29 +357,41 @@ class SBUUserProfileView: UIView, SBUUserProfileViewProtocol {
         self.userIdLabel.text = ""
 
         self.layer.backgroundColor = UIColor.clear.cgColor
-        UIView.animate(withDuration: 0.3, animations: {
+        UIView.animate(withDuration: 0.3) {
             self.layoutIfNeeded()
             self.layer.backgroundColor = self.theme.overlayColor.cgColor
-        }) { _ in
+        } completion: { _ in
             self.userIdTitleLabel.text = SBUStringSet.UserProfile_UserID
             self.userIdLabel.text = self.user?.userId
         }
     }
     
-    func dismiss() {
+    /// This function dismisses selector view.
+    open func dismiss() {
         self.contentBottomConstraint?.isActive = false
         self.contentTopConstraint?.isActive = true
         self.userIdTitleLabel.text = ""
         self.userIdLabel.text = ""
 
-        UIView.animate(withDuration: 0.3, animations: {
+        UIView.animate(withDuration: 0.3) {
             self.layoutIfNeeded()
             
             self.layer.backgroundColor = UIColor.clear.cgColor
-        }) { _ in
+        } completion: { _ in
             self.contentBottomConstraint?.isActive = false
             self.contentTopConstraint?.isActive = false
             self.removeFromSuperview()
         }
+    }
+}
+
+extension SBUUserProfileView {
+    static func createDefault(
+        _ viewType: SBUUserProfileView.Type,
+        delegate: SBUUserProfileViewDelegate?
+    ) -> SBUUserProfileView {
+        return viewType.init(
+            delegate: delegate
+        )
     }
 }

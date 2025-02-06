@@ -72,43 +72,46 @@ open class SBUSuggestedReplyView: SBUView, SBUSuggestedReplyOptionViewDelegate {
         }
         return optionViews
     }
-}
-
-/// This is a vertical suggested reply view for displaying a list of `options`.
-/// - Since: 3.11.0
-open class SBUVerticalSuggestedReplyView: SBUSuggestedReplyView {
-    // MARK: - Properties
-    /// ``SBUStackView`` instance. The default value is a vertical stack view that contains ``topSpacer`` and the array of ``SBUSuggestedReplyOptionView``s
-    public var stackView: UIStackView = SBUStackView(
-        axis: .vertical,
-        alignment: .trailing,
-        spacing: 8
-    )
-
-    /// The view to provide top spacing to the ``stackView``
-    public var topSpacer: UIView = {
-        let view = UIView()
-        view.sbu_constraint(height: 12)
-        return view
-    }()
-
-    // MARK: - Sendbird UIKit Life Cycle
     
-    open override func setupViews() {
-        super.setupViews()
-
-        let optionViews = self.createSuggestedReplyOptionViews(options: self.options)
-        self.stackView.setVStack(optionViews)
-        self.optionViews = optionViews
+    /// This is class method to create and set up the `SBUSuggestedReplyView`.
+    /// - Parameters:
+    ///   - options: The string array that configured the view list
+    ///   - message: base message
+    ///   - shouldHide: optional value for hiding suggested replies
+    ///   - delegate: delegate for event delivery
+    ///   - factory: factory method closure for generating suggested replies
+    /// - since: 3.27.2
+    open class func updateSuggestedReplyView(
+        with options: [String]?,
+        message: BaseMessage?,
+        shouldHide: Bool,
+        delegate: SBUSuggestedReplyViewDelegate? = nil,
+        factory: (() -> SBUSuggestedReplyView?)? = nil
+    ) -> SBUSuggestedReplyView? {
+        guard shouldHide == false else { return nil }
+        guard SendbirdUI.config.groupChannel.channel.isSuggestedRepliesEnabled else { return nil }
         
-        self.stackView.insertArrangedSubview(self.topSpacer, at: 0)
-        self.addSubview(stackView)
+        guard let options = options else { return nil }
+        guard let messageId = message?.messageId else { return nil }
+        
+        let suggestedReplyView = factory?() ?? Self.createDefaultSuggestedReplyView()
+        let configuration = SBUSuggestedReplyViewParams(
+            messageId: messageId,
+            replyOptions: options
+        )
+        suggestedReplyView.configure(with: configuration, delegate: delegate)
+        return suggestedReplyView
     }
-
-    open override func setupLayouts() {
-        super.setupLayouts()
-
-        self.stackView
-            .sbu_constraint(equalTo: self, leading: 0, trailing: 0, top: 0, bottom: 0)
+    
+    /// Class method to use when you want to fully customize the design of the ``SBUSuggestedReplyView``.
+    /// Create your own view that inherits from ``SBUSuggestedReplyView`` and return it.
+    /// NOTE: The default view is ``SBUVerticalSuggestedReplyView``, which is a vertically organized option view.
+    /// - Returns: Views that inherit from ``SBUSuggestedReplyView``.
+    /// - since: 3.27.2
+    open class func createDefaultSuggestedReplyView() -> SBUSuggestedReplyView {
+        switch SendbirdUI.config.groupChannel.channel.suggestedRepliesDirection {
+        case .vertical: return  SBUVerticalSuggestedReplyView()
+        case .horizontal: return SBUHorizontalSuggestedReplyView()
+        }
     }
 }

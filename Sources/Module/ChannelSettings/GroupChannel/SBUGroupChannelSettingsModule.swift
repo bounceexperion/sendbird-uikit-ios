@@ -11,45 +11,38 @@ import UIKit
 // MARK: SBUGroupChannelSettingsModule
 
 /// The class that represents the group channel setting module.
-open class SBUGroupChannelSettingsModule {
+extension SBUGroupChannelSettingsModule {
     /// The module component that contains ``SBUBaseChannelSettingsModule/Header/titleView``, ``SBUBaseChannelSettingsModule/Header/leftBarButton``, and ``SBUBaseChannelSettingsModule/Header/rightBarButton``.
     /// - Since: 3.6.0
     public static var HeaderComponent: SBUGroupChannelSettingsModule.Header.Type = SBUGroupChannelSettingsModule.Header.self
     /// The module component that shows the list of setting menus in the channel.
     /// - Since: 3.6.0
     public static var ListComponent: SBUGroupChannelSettingsModule.List.Type = SBUGroupChannelSettingsModule.List.self
+}
+
+// MARK: Header
+extension SBUGroupChannelSettingsModule.Header {
+    /// Represents the metatype of left bar button on the group channel settings module.
+    /// - Since: 3.28.0
+    public static var LeftBarButton: SBUBarButtonItem.Type = SBUBarButtonItem.self
     
-    // MARK: Properties (Public)
+    /// Represents the metatype of right bar button on the group channel settings module.
+    /// - Since: 3.28.0
+    public static var RightBarButton: SBUBarButtonItem.Type = SBUBarButtonItem.self
     
-    /// The module component that contains ``SBUBaseChannelSettingsModule/Header/titleView``, ``SBUBaseChannelSettingsModule/Header/leftBarButton``, and ``SBUBaseChannelSettingsModule/Header/rightBarButton``.
-    ///
-    /// The default function of each button is as below:
-    ///   - `title`: Shows the title that uses ``SBUStringSet/ChannelSettings_Header_Title`` in ``SBUStringSet``
-    /// - `leftBarButton`: Goes back to the previous view.
-    /// - `rightBarButton`: Shows the channel edits menu and uses ``SBUStringSet/Edit`` in ``SBUStringSet`` as its title.
-    @available(*, deprecated, message: "Use `SBUGroupChannelSettingsModule.HeaderComponent` instead.")
-    public var headerComponent: SBUGroupChannelSettingsModule.Header? {
-        get { _headerComponent ?? Self.HeaderComponent.init() }
-        set { _headerComponent = newValue }
-    }
+    /// Represents the metatype of title view on the group channel settings module.
+    /// - Since: 3.28.0
+    public static var TitleView: SBUNavigationTitleView.Type = SBUNavigationTitleView.self
+}
+
+// MARK: List
+extension SBUGroupChannelSettingsModule.List {
     
-    /// The module component that shows the list of setting menus in the channel.
-    @available(*, deprecated, message: "Use `SBUGroupChannelSettingsModule.ListComponent` instead.")
-    public var listComponent: SBUGroupChannelSettingsModule.List? {
-        get { _listComponent ?? Self.ListComponent.init() }
-        set { _listComponent = newValue }
-    }
+    /// Represents the metatype of channel info view on the group channel settings module.
+    /// - Since: 3.28.0
+    public static var ChannelInfoView: SBUChannelSettingsChannelInfoView.Type = SBUChannelSettingsChannelInfoView.self
     
-    // MARK: Properties (Holder)
-    private var _headerComponent: SBUGroupChannelSettingsModule.Header?
-    private var _listComponent: SBUGroupChannelSettingsModule.List?
-    
-    // MARK: -
-    /// Initializes module with components.
-    @available(*, deprecated, message: "Use `SBUModuleSet.GroupChannelSettingsModule`")
-    public required init(headerComponent: SBUGroupChannelSettingsModule.Header? = nil,
-                listComponent: SBUGroupChannelSettingsModule.List? = nil) {
-        self.headerComponent = headerComponent
-        self.listComponent = listComponent
-    }
+    /// Represents the metatype of setting cell on the group channel settings module.
+    /// - Since: 3.28.0
+    public static var SettingCell: SBUGroupChannelSettingCell.Type = SBUGroupChannelSettingCell.self
 }

@@ -9,8 +9,9 @@
 import UIKit
 import SendbirdChatSDK
 
-// TODO: Need improvement
-public class SBUChannelSettingsChannelInfoView: SBUView {
+/// Info view used in channel setting
+/// - Since: 3.28.0
+open class SBUChannelSettingsChannelInfoView: SBUView {
     public lazy var stackView = UIStackView()
     public lazy var coverImage = SBUCoverImageView()
     public lazy var channelNameField = UITextField()
@@ -20,16 +21,17 @@ public class SBUChannelSettingsChannelInfoView: SBUView {
     public lazy var urlLineView = UIView()
     
     @SBUThemeWrapper(theme: SBUTheme.channelSettingsTheme)
-    var theme: SBUChannelSettingsTheme
+    public var theme: SBUChannelSettingsTheme
     
-    var channel: BaseChannel?
+    public private(set) var channel: BaseChannel?
     
-    let kCoverImageSize: CGFloat = 64.0
+    /// cover image size
+    public var coverImageSize: CGFloat = 64.0
     
     var lineViewBottomConstraint: NSLayoutConstraint?
     var urlLineViewBottomConstraint: NSLayoutConstraint?
      
-    override init() {
+    public required override init() {
         super.init(frame: .zero)
     }
     
@@ -42,7 +44,7 @@ public class SBUChannelSettingsChannelInfoView: SBUView {
     }
     
     @available(*, unavailable, renamed: "SBUChannelSettingsChannelInfoView(frame:)")
-    required convenience init?(coder: NSCoder) {
+    public required convenience init?(coder: NSCoder) {
         fatalError()
     }
 
@@ -50,10 +52,6 @@ public class SBUChannelSettingsChannelInfoView: SBUView {
         super.setupViews()
         
         self.channelNameField.textAlignment = .center
-        let paddingView: UIView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
-        self.channelNameField.leftView = paddingView
-        self.channelNameField.leftViewMode = .always
-        self.channelNameField.rightView = paddingView
         self.channelNameField.rightViewMode = .always
         self.channelNameField.returnKeyType = .done
         self.channelNameField.isUserInteractionEnabled = false
@@ -87,20 +85,26 @@ public class SBUChannelSettingsChannelInfoView: SBUView {
         super.setupLayouts()
         
         self.coverImage
-            .sbu_constraint(width: kCoverImageSize, height: kCoverImageSize)
+            .sbu_constraint(width: self.coverImageSize, height: self.coverImageSize)
         
         self.stackView
             .sbu_constraint_equalTo(
-                leftAnchor: self.safeAreaLayoutGuide.leftAnchor, left: 0,
-                rightAnchor: self.safeAreaLayoutGuide.rightAnchor, right: 0,
-                topAnchor: self.topAnchor, top: 20
+                leftAnchor: self.safeAreaLayoutGuide.leftAnchor, 
+                left: 16,
+                rightAnchor: self.safeAreaLayoutGuide.rightAnchor,
+                right: 16,
+                topAnchor: self.topAnchor,
+                top: 20
             )
         
         self.lineView
             .sbu_constraint_equalTo(
-                leftAnchor: self.safeAreaLayoutGuide.leftAnchor, left: 16,
-                rightAnchor: self.safeAreaLayoutGuide.rightAnchor, right: 16,
-                topAnchor: self.stackView.bottomAnchor, top: 20
+                leftAnchor: self.safeAreaLayoutGuide.leftAnchor, 
+                left: 16,
+                rightAnchor: self.safeAreaLayoutGuide.rightAnchor,
+                right: 16,
+                topAnchor: self.stackView.bottomAnchor,
+                top: 20
             )
             .sbu_constraint(height: 0.5)
         
@@ -109,23 +113,32 @@ public class SBUChannelSettingsChannelInfoView: SBUView {
         
         self.urlTitleLabel
             .sbu_constraint_equalTo(
-                leftAnchor: self.safeAreaLayoutGuide.leftAnchor, left: 24,
-                rightAnchor: self.safeAreaLayoutGuide.rightAnchor, right: 24,
-                topAnchor: self.lineView.bottomAnchor, top: 15
+                leftAnchor: self.safeAreaLayoutGuide.leftAnchor,
+                left: 24,
+                rightAnchor: self.safeAreaLayoutGuide.rightAnchor,
+                right: 24,
+                topAnchor: self.lineView.bottomAnchor,
+                top: 15
             )
         
         self.urlLabel
             .sbu_constraint_equalTo(
-                leftAnchor: self.safeAreaLayoutGuide.leftAnchor, left: 24,
-                rightAnchor: self.safeAreaLayoutGuide.rightAnchor, right: 24,
-                topAnchor: self.urlTitleLabel.bottomAnchor, top: 2
+                leftAnchor: self.safeAreaLayoutGuide.leftAnchor,
+                left: 24,
+                rightAnchor: self.safeAreaLayoutGuide.rightAnchor,
+                right: 24,
+                topAnchor: self.urlTitleLabel.bottomAnchor,
+                top: 2
             )
         
         self.urlLineView
             .sbu_constraint_equalTo(
-                leftAnchor: self.safeAreaLayoutGuide.leftAnchor, left: 16,
-                rightAnchor: self.safeAreaLayoutGuide.rightAnchor, right: 16,
-                topAnchor: self.urlLabel.bottomAnchor, top: 16
+                leftAnchor: self.safeAreaLayoutGuide.leftAnchor, 
+                left: 16,
+                rightAnchor: self.safeAreaLayoutGuide.rightAnchor,
+                right: 16,
+                topAnchor: self.urlLabel.bottomAnchor,
+                top: 16
             )
             .sbu_constraint(height: 0.5)
         
@@ -155,7 +168,7 @@ public class SBUChannelSettingsChannelInfoView: SBUView {
     open override func layoutSubviews() {
         super.layoutSubviews()
         
-        self.coverImage.layer.cornerRadius = kCoverImageSize / 2
+        self.coverImage.layer.cornerRadius = self.coverImageSize / 2
         self.coverImage.layer.borderColor = UIColor.clear.cgColor
         self.coverImage.layer.borderWidth = 1
     }

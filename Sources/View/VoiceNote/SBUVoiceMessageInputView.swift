@@ -28,8 +28,8 @@ public protocol SBUVoiceMessageInputViewDelegate: AnyObject {
 
 /// This class is used to record voice message
 /// - Since: 3.4.0
-public class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
-    enum Status {
+open class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
+    public enum Status {
         case none // record icon
         case recording // stop icon
         case finishRecording // play icon
@@ -43,19 +43,20 @@ public class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
     @SBUThemeWrapper(theme: SBUTheme.voiceMessageInputTheme)
     public var theme: SBUVoiceMessageInputTheme
 
-    var canvasView = UIView()
+    public private(set) var canvasView = UIView()
     
-    var baseView = UIView()
-    var overlayView = UIButton()
-    var contentView = UIView()
+    public private(set) var baseView = UIView()
+    public private(set) var overlayView = UIButton()
+    public private(set) var contentView = UIView()
     
-    var progressView = UIProgressView(progressViewStyle: .bar)
-    var progressTimeLabel = UILabel()
-    var progressRecordingIcon = UIImageView()
+    public private(set) var progressContainerView = UIView()
+    public private(set) var progressView = UIProgressView(progressViewStyle: .bar)
+    public private(set) var progressTimeLabel = UILabel()
+    public private(set) var progressRecordingIcon = UIImageView()
     
-    var cancelButton = UIButton()
-    var statusButton = UIButton()
-    var sendButton = UIButton()
+    public private(set) var cancelButton = UIButton()
+    public private(set) var statusButton = UIButton()
+    public private(set) var sendButton = UIButton()
     
     // MARK: - Logic properties (Private)
     weak var delegate: SBUVoiceMessageInputViewDelegate?
@@ -63,9 +64,9 @@ public class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
     var isSendButtonEnabled = false
     var status: Status = .none
     
-    var voiceRecorder: SBUVoiceRecorder?
-    var voicePlayer: SBUVoicePlayer?
-    var voiceFileInfo: SBUVoiceFileInfo?
+    public private(set) var voicePlayer: SBUVoicePlayer?
+    public private(set) var voiceRecorder: SBUVoiceRecorder?
+    public private(set) var voiceFileInfo: SBUVoiceFileInfo?
     
     var recordingTime: TimeInterval = 0
     var currentPlayTime: TimeInterval = 0
@@ -75,7 +76,7 @@ public class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
     var isShowing = false
 
     // MARK: - UIKit View Lifecycle
-    public override init() {
+    required public override init() {
         super.init()
     }
     
@@ -84,7 +85,7 @@ public class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
     }
     
     // MARK: SBUViewLifeCycle
-    public func setupViews() {
+    open func setupViews() {
         self.voiceRecorder = SBUVoiceRecorder(delegate: self)
         self.voicePlayer = SBUVoicePlayer(delegate: self)
         
@@ -99,16 +100,19 @@ public class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
         )
 
         // BaseView
-        self.baseView.frame = self.canvasView.bounds
         self.baseView.addSubview(self.overlayView)
         self.baseView.addSubview(self.contentView)
         
+        self.progressContainerView.backgroundColor = .clear
+        
         // Progress
         self.progressView.progress = 0.0
+        self.progressView.semanticContentAttribute = .forceLeftToRight
         self.progressTimeLabel.text = SBUUtils.convertToPlayTime(0)
-        self.progressView.addSubview(self.progressTimeLabel)
-        self.progressView.addSubview(self.progressRecordingIcon)
-        self.contentView.addSubview(self.progressView)
+        self.progressContainerView.addSubview(self.progressView)
+        self.progressContainerView.addSubview(self.progressTimeLabel)
+        self.progressContainerView.addSubview(self.progressRecordingIcon)
+        self.contentView.addSubview(self.progressContainerView)
         
         // Buttons
         self.cancelButton.addTarget(self, action: #selector(onTapCancel), for: .touchUpInside)
@@ -123,10 +127,8 @@ public class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
         self.canvasView.addSubview(self.baseView)
     }
     
-    public func setupLayouts() {
-//        guard let window = UIApplication.shared.currentWindow else { return }
-        
-        self.baseView.frame = self.canvasView.bounds
+    open func setupLayouts() {
+        self.baseView.sbu_constraint(equalTo: self.canvasView, leading: 0, trailing: 0, top: 0, bottom: 0)
         
         self.overlayView.sbu_constraint(
             equalTo: self.baseView,
@@ -142,19 +144,24 @@ public class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
             .sbu_constraint(height: 134)
         
         // progress
-        self.progressView
+        self.progressContainerView
             .sbu_constraint(equalTo: self.contentView, leading: 16, trailing: -16, top: 24)
             .sbu_constraint(height: 36)
         
+        self.progressView
+            .sbu_constraint(equalTo: self.progressContainerView, leading: 0, trailing: 0, top: 0, bottom: 0)
+
         self.progressTimeLabel
-            .sbu_constraint(equalTo: self.progressView, trailing: -16)
-            .sbu_constraint(equalTo: self.progressView, centerY: 0)
+            .sbu_constraint(equalTo: self.progressContainerView, trailing: -16)
+            .sbu_constraint(equalTo: self.progressContainerView, centerY: 0)
         
         self.progressRecordingIcon
             .sbu_constraint(width: 12, height: 12)
             .sbu_constraint_equalTo(
-                trailingAnchor: self.progressTimeLabel.leadingAnchor, trailing: -6,
-                centerYAnchor: self.progressTimeLabel.centerYAnchor, centerY: 0
+                trailingAnchor: self.progressTimeLabel.leadingAnchor, 
+                trailing: -6,
+                centerYAnchor: self.progressTimeLabel.centerYAnchor, 
+                centerY: 0
             )
         
         // Button
@@ -169,11 +176,11 @@ public class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
             .sbu_constraint(width: 34, height: 34)
     }
     
-    public func updateLayouts() {
+    open func updateLayouts() {
         self.setupLayouts()
     }
     
-    public func setupStyles() {
+    open func setupStyles() {
         self.overlayView.backgroundColor = self.theme.overlayColor
         
         self.contentView.backgroundColor = self.theme.backgroundColor
@@ -200,8 +207,12 @@ public class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
         self.updateSendButton(with: self.status)
     }
     
-    public func updateStyles() {
+    open func updateStyles() {
         self.setupStyles()
+    }
+    
+    open func setupActions() {
+        
     }
     
     // MARK: Progress & Status
@@ -227,15 +238,12 @@ public class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
         case .none:
             self.progressView.trackTintColor = self.theme.progressTrackDeactivatedTintColor
             self.progressTimeLabel.textColor = self.theme.progressDeactivatedTimeColor
-
-            break
         case .recording:
-            if Float(Int(time) / 1000) > 0.1 {
+            if Float(Int(time) / 500) > 0.1 {
                 progress = Float(time / SBUGlobals.voiceMessageConfig.recorder.maxRecordingTime)
             }
-            let isEvenSeconds = Int(time / 1000) % 2 == 1
+            let isEvenSeconds = Int(time / 500) % 2 == 1
             self.progressRecordingIcon.isHidden = isEvenSeconds
-            break
         case .finishRecording:
             break
         case .playing:
@@ -243,13 +251,11 @@ public class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
             self.progressTimeLabel.text = SBUUtils.convertToPlayTime(remainingTime)
             let playtime = self.voiceFileInfo?.playtime ?? 1.0
             progress = Float(time / playtime)
-            break
         case .pause:
             let remainingTime = (self.voiceFileInfo?.playtime ?? 0) - time
             self.progressTimeLabel.text = SBUUtils.convertToPlayTime(remainingTime)
             let playtime = self.voiceFileInfo?.playtime ?? 1.0
             progress = Float(time / playtime)
-            break
         case .finishPlaying:
             break
         }
@@ -324,21 +330,16 @@ public class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
         )
     }
     
-    public func setupActions() {
-        
-    }
-    
     // MARK: - Show/Dismiss
-    
     func show(delegate: SBUVoiceMessageInputViewDelegate, canvasView: UIView?) {
         self.dismiss()
         
         self.delegate = delegate
         
-        if let canvasView = canvasView {
-            self.canvasView = canvasView
-        } else if let window = UIApplication.shared.currentWindow {
+        if let window = UIApplication.shared.currentWindow {
             self.canvasView = window
+        } else if let canvasView = canvasView {
+            self.canvasView = canvasView
         }
         
         self.setupViews()
@@ -405,12 +406,14 @@ public class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
 
     // MARK: - Actions
     
-    @objc func onTapCancel() {
+    @objc
+    func onTapCancel() {
         self.reset()
         self.delegate?.voiceMessageInputViewDidTapCacel(self)
     }
     
-    @objc func onTapStatus() {
+    @objc
+    func onTapStatus() {
         switch self.status {
         case .none:
             // Record
@@ -450,7 +453,8 @@ public class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
         }
     }
     
-    @objc func onTapSend() {
+    @objc
+    func onTapSend() {
         if self.status == .none { return }
         
         if self.status == .recording {
@@ -480,8 +484,6 @@ public class SBUVoiceMessageInputView: NSObject, SBUViewLifeCycle {
         }
 
         self.prevOrientation = currentOrientation
-        
-        self.updateLayouts()
     }
 }
 

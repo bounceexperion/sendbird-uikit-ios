@@ -118,7 +118,8 @@ public protocol SBUGroupChannelModuleInputDataSource: SBUBaseChannelModuleInputD
 extension SBUGroupChannelModule {
     /// The `SBUGroupChannelModule`'s component class that represents input
     @objc(SBUGroupChannelModuleInput)
-    @objcMembers open class Input: SBUBaseChannelModule.Input, SBUMentionManagerDelegate, SBUSuggestedMentionListDelegate {
+    @objcMembers
+    open class Input: SBUBaseChannelModule.Input, SBUMentionManagerDelegate, SBUSuggestedMentionListDelegate {
         public var suggestedMentionList: SBUSuggestedMentionList?
         
         /// A current quoted message in message input view. This value is only available when the `messageInputView` is type of `SBUMessageInputView` that supports the message replying feature.
@@ -126,9 +127,9 @@ extension SBUGroupChannelModule {
             guard let messageInputView = messageInputView as? SBUMessageInputView else { return nil }
             var parentMessage: BaseMessage?
             switch messageInputView.option {
-                case .quoteReply(let message):
-                    parentMessage = message
-                default: break
+            case .quoteReply(let message):
+                parentMessage = message
+            default: break
             }
             return parentMessage
         }
@@ -153,6 +154,14 @@ extension SBUGroupChannelModule {
         /// The object that acts as the data source of the mention manager. The data source must adopt the `SBUMentionManagerDataSource`.
         public weak var mentionManagerDataSource: SBUMentionManagerDataSource?
         
+        // MARK: - Logic Properties (Private)
+        private lazy var defaultMessageInputView: SBUMessageInputView = {
+            let messageInputView = SBUModuleSet.GroupChannelModule.InputComponent.MessageInputView.init()
+            messageInputView.delegate = self
+            messageInputView.datasource = self
+            return messageInputView
+        }()
+        
         /// String constants used when sending a multiple files message.
         /// - Since: 3.10.0
         struct MultipleFilesConstants {
@@ -174,6 +183,7 @@ extension SBUGroupChannelModule {
         // MARK: Mention
         public var mentionManager: SBUMentionManager?
         
+        // MARK: - LifeCycle
         /// Configures component with parameters.
         /// - Parameters:
         ///   - delegate: `SBUGroupChannelModuleListDelegate` type listener
@@ -200,7 +210,21 @@ extension SBUGroupChannelModule {
         }
         
         open override func setupViews() {
-            super.setupViews()
+            // NOTE: Input entireContnet interface has been temporarily closed.
+//            #if SWIFTUI
+//            if self.applyViewConverter(.entireContent) { return }
+//            #endif
+            
+            /// It does not call `super.setupViews()` because it creates `messageInputView` differently for each channelType
+            if self.messageInputView == nil {
+                self.messageInputView = defaultMessageInputView
+            }
+            if let messageInputView = messageInputView {
+                inputVStackView.setVStack([
+                    messageInputView
+                ])
+                self.addSubview(inputVStackView)
+            }
         }
         
         open override func setupLayouts() {
@@ -238,28 +262,28 @@ extension SBUGroupChannelModule {
             }
             
             switch mimeType {
-                case "image/gif":
-                    let gifData = try? Data(contentsOf: imageURL)
-                    
-                    self.delegate?.groupChannelModule(
-                        self,
-                        didPickFileData: gifData,
-                        fileName: imageName,
-                        mimeType: mimeType,
-                        parentMessage: self.currentQuotedMessage
-                    )
-                default:
-                    let originalImage = info[.originalImage] as? UIImage
-                    guard let image = originalImage?.fixedOrientation(),
-                          let imageData = image.sbu_convertToData() else { return }
+            case "image/gif":
+                let gifData = try? Data(contentsOf: imageURL)
                 
-                    self.delegate?.groupChannelModule(
-                        self,
-                        didPickFileData: imageData,
-                        fileName: imageName,
-                        mimeType: mimeType,
-                        parentMessage: self.currentQuotedMessage
-                    )
+                self.delegate?.groupChannelModule(
+                    self,
+                    didPickFileData: gifData,
+                    fileName: imageName,
+                    mimeType: mimeType,
+                    parentMessage: self.currentQuotedMessage
+                )
+            default:
+                let originalImage = info[.originalImage] as? UIImage
+                guard let image = originalImage?.fixedOrientation(),
+                      let imageData = image.sbu_convertToData() else { return }
+                
+                self.delegate?.groupChannelModule(
+                    self,
+                    didPickFileData: imageData,
+                    fileName: imageName,
+                    mimeType: mimeType,
+                    parentMessage: self.currentQuotedMessage
+                )
             }
         }
         
@@ -389,10 +413,11 @@ extension SBUGroupChannelModule {
         open override func pickImageFile(itemProvider: NSItemProvider) {
             let operation = BlockingOperation(asyncTask: { operation in
                 defer {  operation.complete() }
-                
+                // swiftlint:disable large_tuple
                 guard let (imageData, fileName, mimeType) = operation.userInfo[MultipleFilesConstants.image] as? (Data, String, String) else {
                     return
                 }
+                // swiftlint:enable large_tuple
 
                 DispatchQueue.main.async { [self, imageData, fileName, mimeType] in
                     self.delegate?.groupChannelModule(
@@ -420,9 +445,11 @@ extension SBUGroupChannelModule {
             let operation = BlockingOperation(asyncTask: { operation in
                 defer { operation.complete() }
                 
+                // swiftlint:disable large_tuple
                 guard let (gifData, fileName, mimeType) = operation.userInfo[MultipleFilesConstants.gif] as? (Data, String, String) else {
                     return
                 }
+                // swiftlint:enable large_tuple
 
                 DispatchQueue.main.async { [self, gifData, fileName, mimeType] in
                     self.delegate?.groupChannelModule(
@@ -452,10 +479,12 @@ extension SBUGroupChannelModule {
             
             let operation = BlockingOperation(asyncTask: { operation in
                 defer { operation.complete() }
-                
+            
+                // swiftlint:disable large_tuple
                 guard let (videoFileData, videoName, mimeType) = operation.userInfo[MultipleFilesConstants.video] as? (Data, String, String) else {
                     return
                 }
+                // swiftlint:enable large_tuple
 
                 DispatchQueue.main.async { [self, videoFileData, videoName, mimeType] in
                     // load전에 operation 등록을 미리해야함. 등록은 async로 감싸면 X
@@ -941,10 +970,10 @@ extension SBUGroupChannelModule {
             var parentMessage: BaseMessage?
             
             switch messageInputView.option {
-                case .quoteReply(let message):
-                    parentMessage = message
-                default:
-                    break
+            case .quoteReply(let message):
+                parentMessage = message
+            default:
+                break
             }
             self.delegate?.groupChannelModule(
                 self,

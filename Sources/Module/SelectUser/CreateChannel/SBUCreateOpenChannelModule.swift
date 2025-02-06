@@ -11,45 +11,37 @@ import UIKit
 // MARK: SBUCreateOpenChannelModul
 
 /// The class that represents the module for creating a new open channel.
-open class SBUCreateOpenChannelModule {
+extension SBUCreateOpenChannelModule {
     /// The module component that contains ``SBUBaseSelectUserModule/Header/titleView``, ``SBUBaseSelectUserModule/Header/leftBarButton``, and ``SBUBaseSelectUserModule/Header/rightBarButton``.
     /// - Since: 3.6.0
     public static var HeaderComponent: SBUCreateOpenChannelModule.Header.Type = SBUCreateOpenChannelModule.Header.self
     /// The module component that shows the body to create a new channel.
     /// - Since: 3.6.0
     public static var ProfileInputComponent: SBUCreateOpenChannelModule.ProfileInput.Type = SBUCreateOpenChannelModule.ProfileInput.self
-    
-    // MARK: Properties (Public)
-    
-    /// The module component that contains ``SBUBaseSelectUserModule/Header/titleView``, ``SBUBaseSelectUserModule/Header/leftBarButton``, and ``SBUBaseSelectUserModule/Header/rightBarButton``.
-    ///
-    /// - The default function of each button is as below:
-    ///   - `title`: Shows the title that uses ``SBUStringSet/CreateOpenChannel_Header_Title`` in ``SBUStringSet``
-    ///   - `leftBarButton`: Goes back to the previous view.
-    ///   - `rightBarButton`: Creates a new channel and uses ``SBUStringSet/CreateOpenChannel_Create`` in ``SBUStringSet`` as its title.
-    @available(*, deprecated, message: "Use `SBUCreateOpenChannelModule.HeaderComponent` instead.")
-    public var headerComponent: SBUCreateOpenChannelModule.Header? {
-        get { _headerComponent ?? Self.HeaderComponent.init() }
-        set { _headerComponent = newValue }
-    }
-    
-    /// The module component that shows the body to create a new channel.
-    @available(*, deprecated, message: "Use `SBUCreateOpenChannelModule.ProfileInputComponent` instead.")
-    public var profileInputComponent: SBUCreateOpenChannelModule.ProfileInput? {
-        get { _profileInputComponent ?? Self.ProfileInputComponent.init() }
-        set { _profileInputComponent = newValue }
-    }
-    
-    // MARK: Properties (Holder)
-    private var _headerComponent: SBUCreateOpenChannelModule.Header?
-    private var _profileInputComponent: SBUCreateOpenChannelModule.ProfileInput?
-    
-    // MARK: -
-    @available(*, deprecated, message: "Use `SBUModuleSet.CreateOpenChannelModule`")
-    public required init(headerComponent: SBUCreateOpenChannelModule.Header? = nil,
-                profileInputComponent: SBUCreateOpenChannelModule.ProfileInput? = nil) {
-        self.headerComponent = headerComponent
-        self.profileInputComponent = profileInputComponent
-    }
+}
 
+// MARK: Header
+extension SBUCreateOpenChannelModule.Header {
+    /// Represents the metatype of left bar button in ``SBUCreateOpenChannelModule.Header``.
+    /// - Since: 3.28.0
+    public static var LeftBarButton: SBUBarButtonItem.Type = SBUBarButtonItem.self
+    
+    /// Represents the metatype of title view in ``SBUCreateOpenChannelModule.Header``.
+    /// - Since: 3.28.0
+    public static var TitleView: SBUNavigationTitleView.Type = SBUNavigationTitleView.self
+    
+    /// Represents the metatype of right bar button in ``SBUCreateOpenChannelModule.Header``.
+    /// - Since: 3.28.0
+    public static var RightBarButton: SBUBarButtonItem.Type = SBUBarButtonItem.self
+}
+
+// MARK: List
+extension SBUCreateOpenChannelModule.ProfileInput {
+    /// The view that displays the channel image in Create channel.
+    /// - Since: 3.28.0
+    public static var ChannelImageView: SBUCoverImageView.Type = SBUCoverImageView.self
+    
+    /// The view that displays the channel name inputField in Create channel.
+    /// - Since: 3.28.0
+    public static var ChannelNameInputField: SBUUnderLineTextField.Type = SBUUnderLineTextField.self
 }

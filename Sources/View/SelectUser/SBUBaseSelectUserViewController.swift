@@ -71,7 +71,14 @@ open class SBUBaseSelectUserViewController: SBUBaseViewController, SBUBaseSelect
     
     // MARK: - Sendbird UIKit Life cycle
     open override func setupLayouts() {
-        self.baseListComponent?.sbu_constraint(equalTo: self.view, left: 0, right: 0, top: 0, bottom: 0)
+        self.baseListComponent?.sbu_constraint(
+            equalTo: self.view,
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            useSafeArea: true
+        )
     }
     
     open override func setupStyles() {
@@ -102,10 +109,20 @@ open class SBUBaseSelectUserViewController: SBUBaseViewController, SBUBaseSelect
                   return
               }
         
-        for vc in navigationController.viewControllers where vc is SBUBaseChannelViewController {
-            navigationController.popToViewController(vc, animated: true)
+        for viewController in navigationController.viewControllers where viewController is SBUBaseChannelViewController {
+            navigationController.popToViewController(viewController, animated: true)
             return
         }
+        
+        #if SWIFTUI
+        for viewController in navigationController.viewControllers where viewController.children.first is SBUBaseChannelViewController {
+            /// NOTE: hostingViewController case
+            /// HostingViewController
+            ///   ㄴ SBUBaseChannelViewController
+            navigationController.popToViewController(viewController, animated: true)
+            return
+        }
+        #endif
         
         navigationController.popToRootViewController(animated: true)
     }

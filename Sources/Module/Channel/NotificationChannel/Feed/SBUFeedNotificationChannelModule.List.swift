@@ -9,6 +9,7 @@
 import UIKit
 import SendbirdChatSDK
 
+// swiftlint:disable type_name
 /// Event methods for the views updates and performing actions from the list component in a feed notification channel.
 protocol SBUFeedNotificationChannelModuleListDelegate: SBUCommonDelegate {
     /// Called when there’s a tap gesture on a notification that includes a web URL. e.g., `"https://www.sendbird.com"`
@@ -83,19 +84,27 @@ protocol SBUFeedNotificationChannelModuleListDelegate: SBUCommonDelegate {
         _ listComponent: SBUFeedNotificationChannelModule.List
     )
     
-    /// Called when the log impression needs to be sent.
+    /// Called when the viewed action needs to be sent.
     /// - Parameters:
     ///   - listComponent: `SBUFeedNotificationChannelModule.List` object.
-    ///   - messages: The messages that should be sent as log impression.
+    ///   - messages: The messages that should be sent as viewed action.
     func feedNotificationChannelModule(
         _ listComponent: SBUFeedNotificationChannelModule.List,
-        shouldLogImpression messages: [BaseMessage]
+        shouldMarkAsViewed messages: [BaseMessage]
     )
     
-    /// Called when the timer of the log impression has to be invalidated.
+    /// Called when the timer of the markAsViewed has to be invalidated.
     ///   - listComponent: `SBUFeedNotificationChannelModule.List` object.
-    func feedNotificationChannelModuleStopLogImpressionTimer(
+    func feedNotificationChannelModuleStopMarkAsViewedTimer(
         _ listComponent: SBUFeedNotificationChannelModule.List
+    )
+    
+    /// Called when a message template is not cached and needs to be downloaded.
+    /// - Since: 3.29.0
+    func feedNotificationChannelModule(
+        _ listComponent: SBUFeedNotificationChannelModule.List,
+        shouldHandleUncachedTemplateKeys templateKeys: [String],
+        messageCell: SBUBaseMessageCell
     )
 }
 
@@ -141,7 +150,16 @@ protocol SBUFeedNotificationChannelModuleListDataSource: AnyObject {
         _ listComponent: SBUFeedNotificationChannelModule.List,
         startingPointIn tableView: UITableView
     ) -> Int64?
+    
+    /// Ask to data source to return template load state cache.
+    /// - Returns: If the result is `nil`, it means that no attempt was made to load the template.
+    /// - Since: 3.29.0
+    func feedNotificationChannelModule(
+        _ listComponent: SBUFeedNotificationChannelModule.List,
+        didHandleUncachedTemplateKeys templateKeys: [String]
+    ) -> Bool?
 }
+// swiftlint:enable type_name
 
 extension SBUFeedNotificationChannelModule {
     /// A module component that represents the list of ``SBUFeedNotificationChannelModule``
@@ -241,9 +259,15 @@ extension SBUFeedNotificationChannelModule {
         
         @available(*, unavailable, renamed: "SBUFeedNotificationChannelModule.List()")
         public override init(frame: CGRect) { super.init(frame: frame) }
+
+        var viewParams: SBUFeedNotificationChannelViewParams?
+        public required init(viewParams: SBUFeedNotificationChannelViewParams? = nil) {
+            self.init()
+            self.viewParams = viewParams
+        }
         
         deinit {
-            self.delegate?.feedNotificationChannelModuleStopLogImpressionTimer(self)
+            self.delegate?.feedNotificationChannelModuleStopMarkAsViewedTimer(self)
             SBULog.info(#function)
         }
         
@@ -252,6 +276,9 @@ extension SBUFeedNotificationChannelModule {
             // empty view
             if self.emptyView == nil {
                 self.emptyView = self.defaultEmptyView
+            }
+            if let emptyView = self.emptyView as? SBUNotificationEmptyView {
+                emptyView.showEmptyViewIcon = self.viewParams?.showEmptyViewIcon ?? true
             }
             
             // table view
@@ -357,6 +384,9 @@ extension SBUFeedNotificationChannelModule {
             indexPath: IndexPath
         ) {
             // .. Implement long tap gesture here
+            #if INSPECTION
+            notification.inspect()
+            #endif
         }
         
         // MARK: - Notification cell
@@ -423,14 +453,13 @@ extension SBUFeedNotificationChannelModule {
                     isTemplateLabelEnabled: self.channel?.isTemplateLabelEnabled,
                     isCategoryFilterEnabled: self.channel?.isCategoryFilterEnabled
                 )
-                notificationCell.delegate = self
 
                 // Read status
                 let hasRead = notification.createdAt <= self.lastSeenAt
                 notificationCell.updateReadStatus(hasRead)
                 
                 // Action handler
-                notificationCell.notificationActionHandler = { [weak self, indexPath] action in
+                notificationCell.messageTemplateActionHandler = { [weak self, indexPath] action in
                     guard let self = self else { return }
                     
                     // Action Events
@@ -470,6 +499,18 @@ extension SBUFeedNotificationChannelModule {
                 notificationCell.configure(with: configuration)
             }
             
+            notificationCell.reloadCellHandler = { [weak self] cell in
+                self?.tableView.sbu_reloadCell(cell)
+            }
+            notificationCell.uncachedMessageTemplateDownloadHandler = { [weak self] keys, cell in
+                guard let self = self else { return }
+                self.delegate?.feedNotificationChannelModule(self, shouldHandleUncachedTemplateKeys: keys, messageCell: cell)
+            }
+            notificationCell.uncachedMessageTemplateStateHandler = { [weak self] keys in
+                guard let self = self else { return nil }
+                return self.dataSource?.feedNotificationChannelModule(self, didHandleUncachedTemplateKeys: keys)
+            }
+            
             UIView.setAnimationsEnabled(true)
         }
         
@@ -491,7 +532,7 @@ extension SBUFeedNotificationChannelModule {
                 self.isTableViewReloading = false
                 self.delegate?.feedNotificationChannelModule(
                     self,
-                    shouldLogImpression: self.getVisibleMessages()
+                    shouldMarkAsViewed: self.getVisibleMessages()
                 )
             } else {
                 DispatchQueue.main.async { [weak self] in
@@ -503,7 +544,7 @@ extension SBUFeedNotificationChannelModule {
                     self.isTableViewReloading = false
                     self.delegate?.feedNotificationChannelModule(
                         self,
-                        shouldLogImpression: self.getVisibleMessages()
+                        shouldMarkAsViewed: self.getVisibleMessages()
                     )
                 }
             }
@@ -533,8 +574,6 @@ extension SBUFeedNotificationChannelModule {
             
             self.configureCell(notificationCell, notification: notification, forRowAt: indexPath)
             
-            cell.layoutIfNeeded()
-            
             return cell
         }
         
@@ -555,7 +594,7 @@ extension SBUFeedNotificationChannelModule {
         public func scrollViewDidScroll(_ scrollView: UIScrollView) {
             guard scrollView == self.tableView else { return }
             self.delegate?.feedNotificationChannelModule(self, didScroll: scrollView)
-            self.delegate?.feedNotificationChannelModule(self, shouldLogImpression: self.getVisibleMessages())
+            self.delegate?.feedNotificationChannelModule(self, shouldMarkAsViewed: self.getVisibleMessages())
         }
         
         // MARK: - EmptyView
@@ -585,17 +624,6 @@ extension SBUFeedNotificationChannelModule {
             return cells.filter { $0.isRendered }
                 .compactMap { $0.message }
         }
-    }
-}
-
-// MARK: - SBUNotificationCellDelegate
-extension SBUFeedNotificationChannelModule.List: SBUNotificationCellDelegate {
-    func notificationCellShouldReload(_ cell: SBUNotificationCell) {
-        guard let indexPath = tableView.indexPath(for: cell) else { return }
-        guard let visibleIndexPaths = tableView.indexPathsForVisibleRows else { return }
-        guard visibleIndexPaths.contains(indexPath) else { return }
-        self.tableView.reloadRows(at: [indexPath], with: .none)
-        self.tableView.layoutIfNeeded()
     }
 }
 

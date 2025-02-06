@@ -11,44 +11,37 @@ import UIKit
 // MARK: SBUCreateChannelModule
 
 /// The class that represents the module for creating a new channel.
-open class SBUCreateChannelModule {
+extension SBUCreateChannelModule {
     /// The module component that contains ``SBUBaseSelectUserModule/Header/titleView``, ``SBUBaseSelectUserModule/Header/leftBarButton`` and ``SBUBaseSelectUserModule/Header/rightBarButton``
     /// - Since: 3.6.0
     public static var HeaderComponent: SBUCreateChannelModule.Header.Type = SBUCreateChannelModule.Header.self
     /// The module component that shows the list of users to create a new channel.
     /// - Since: 3.6.0
     public static var ListComponent: SBUCreateChannelModule.List.Type = SBUCreateChannelModule.List.self
+}
+
+// MARK: Header
+extension SBUCreateChannelModule.Header {
+    /// Represents the metatype of left bar button in ``SBUCreateChannelModule.Header``.
+    /// - Since: 3.28.0
+    public static var LeftBarButton: SBUBarButtonItem.Type = SBUBarButtonItem.self
     
-    // MARK: Properties (Public)
+    /// Represents the metatype of title view in ``SBUCreateChannelModule.Header``.
+    /// - Since: 3.28.0
+    public static var TitleView: SBUNavigationTitleView.Type = SBUNavigationTitleView.self
     
-    /// The module component that contains ``SBUBaseSelectUserModule/Header/titleView``, ``SBUBaseSelectUserModule/Header/leftBarButton``, and ``SBUBaseSelectUserModule/Header/rightBarButton``.
-    /// 
-    /// - The default function of each button is as below:
-    ///   - `title`: Shows the title that uses ``SBUStringSet/CreateChannel_Header_Select_Members`` in ``SBUStringSet``
-    ///   - `leftBarButton`: Goes back to the previous view.
-    /// - `rightBarButton`: Creates a new channel and uses  ``SBUStringSet/CreateChannel_Create`` in ``SBUStringSet`` as its title.
-    @available(*, deprecated, message: "Use `SBUCreateChannelModule.HeaderComponent` instead.")
-    public var headerComponent: SBUCreateChannelModule.Header? {
-        get { _headerComponent ?? Self.HeaderComponent.init() }
-        set { _headerComponent = newValue }
-    }
+    /// Represents the metatype of right bar button in ``SBUCreateChannelModule.Header``.
+    /// - Since: 3.28.0
+    public static var RightBarButton: SBUBarButtonItem.Type = SBUBarButtonItem.self
+}
+
+// MARK: List
+extension SBUCreateChannelModule.List {
+    /// Represents the type of empty view on the create channel module.
+    /// - Since: 3.28.0
+    public static var EmptyView: SBUEmptyView.Type = SBUEmptyView.self
     
-    /// The module component that shows the list of users to create a new channel.
-    @available(*, deprecated, message: "Use `SBUCreateChannelModule.ListComponent` instead.")
-    public var listComponent: SBUCreateChannelModule.List? {
-        get { _listComponent ?? Self.ListComponent.init() }
-        set { _listComponent = newValue }
-    }
-    
-    // MARK: Properties (Holder)
-    private var _headerComponent: SBUCreateChannelModule.Header?
-    private var _listComponent: SBUCreateChannelModule.List?
-    
-    // MARK: -
-    @available(*, deprecated, message: "Use `SBUModuleSet.CreateGroupChannelModule`")
-    public required init(headerComponent: SBUCreateChannelModule.Header? = nil,
-                listComponent: SBUCreateChannelModule.List? = nil) {
-        self.headerComponent = headerComponent
-        self.listComponent = listComponent
-    }
+    /// Represents the type of user cell on the create channel module.
+    /// - Since: 3.28.0
+    public static var UserCell: SBUUserCell.Type = SBUUserCell.self
 }

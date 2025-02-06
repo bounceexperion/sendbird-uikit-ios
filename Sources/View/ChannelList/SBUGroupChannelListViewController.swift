@@ -8,6 +8,19 @@
 
 import UIKit
 import SendbirdChatSDK
+#if SWIFTUI
+import SwiftUI
+#endif
+
+#if SWIFTUI
+// MARK: GroupChannelListViewEventDelegate
+/// A delegate that propagates events from ``SBUGroupChannelListViewController`` to ``GroupChannelListView``.
+protocol GroupChannelListViewEventDelegate: AnyObject {
+    func groupChannelListView(didSelectRowAt indexPath: IndexPath)
+    func groupChannelListView(didSelectLeaveFrom channel: GroupChannel)
+    func groupChannelListView(didChangePushTriggerOption channel: GroupChannel)
+}
+#endif
 
 @objcMembers
 open class SBUGroupChannelListViewController: SBUBaseChannelListViewController, SBUGroupChannelListModuleHeaderDelegate, SBUGroupChannelListModuleListDelegate, SBUGroupChannelListModuleListDataSource, SBUCreateChannelTypeSelectorDelegate, SBUCommonViewModelDelegate, SBUGroupChannelListViewModelDelegate {
@@ -25,11 +38,12 @@ open class SBUGroupChannelListViewController: SBUBaseChannelListViewController, 
     @SBUThemeWrapper(theme: SBUTheme.groupChannelListTheme)
     public var theme: SBUGroupChannelListTheme
 
+    /// The default view type is ``SBUCreateChannelTypeSelector``.
     public lazy var createChannelTypeSelector: UIView? = nil
-    
+
     // MARK: - UI properties (Private)
     private lazy var defaultCreateChannelTypeSelector: SBUCreateChannelTypeSelector = {
-        let view = SBUCreateChannelTypeSelector(delegate: self)
+        let view = SBUModuleSet.GroupChannelList.Common.CreateChannelTypeSelector.init(delegate: self)
         view.isHidden = true
         return view
     }()
@@ -46,6 +60,18 @@ open class SBUGroupChannelListViewController: SBUBaseChannelListViewController, 
     /// This is a property that allows you to show the channel type selector when creating a channel. (default: `true`)
     /// - Since: 3.0.0
     public var enableCreateChannelTypeSelector: Bool = true
+
+    // MARK: - SwiftUI
+    #if SWIFTUI
+    var groupChannelViewBuilder: GroupChannelViewBuilder?
+    var createChannelViewBuilder: CreateGroupChannelViewBuilder?
+    
+    weak var swiftUIDelegate: (SBUGroupChannelListViewModelDelegate & GroupChannelListViewEventDelegate)? {
+        didSet {
+            self.viewModel?.baseDelegates.addDelegate(self.swiftUIDelegate, type: .swiftui)
+        }
+    }
+    #endif
     
     // MARK: - Lifecycle
     @available(*, unavailable, renamed: "SBUGroupChannelListViewController()")
@@ -65,8 +91,8 @@ open class SBUGroupChannelListViewController: SBUBaseChannelListViewController, 
         super.init(nibName: nil, bundle: nil)
         
         self.createViewModel(channelListQuery: nil)
-        self.headerComponent = SBUModuleSet.groupChannelListModule.headerComponent
-        self.listComponent = SBUModuleSet.groupChannelListModule.listComponent
+        self.headerComponent = SBUModuleSet.GroupChannelListModule.HeaderComponent.init()
+        self.listComponent = SBUModuleSet.GroupChannelListModule.ListComponent.init()
     }
     
     /// You can initialize the class through this function.
@@ -87,8 +113,8 @@ open class SBUGroupChannelListViewController: SBUBaseChannelListViewController, 
         SBULog.info("")
         
         self.createViewModel(channelListQuery: channelListQuery)
-        self.headerComponent = SBUModuleSet.groupChannelListModule.headerComponent
-        self.listComponent = SBUModuleSet.groupChannelListModule.listComponent
+        self.headerComponent = SBUModuleSet.GroupChannelListModule.HeaderComponent.init()
+        self.listComponent = SBUModuleSet.GroupChannelListModule.ListComponent.init()
     }
     
     open override func viewDidLoad() {
@@ -100,6 +126,10 @@ open class SBUGroupChannelListViewController: SBUBaseChannelListViewController, 
     open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.updateStyles()
+        
+        #if INSPECTION
+        NotificationCenter.default.post(name: Notification.Name.bringInspectionViewToFront, object: nil)
+        #endif
     }
     
     open override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -118,7 +148,7 @@ open class SBUGroupChannelListViewController: SBUBaseChannelListViewController, 
     /// - Parameter channelListQuery: Customer's own `GroupChannelListQuery` object
     /// - Since: 3.0.0
     open func createViewModel(channelListQuery: GroupChannelListQuery?) {
-        self.viewModel = SBUGroupChannelListViewModel(
+        self.viewModel = SBUViewModelSet.GroupChannelListViewModel.init(
             delegate: self,
             channelListQuery: channelListQuery
         )
@@ -194,8 +224,8 @@ open class SBUGroupChannelListViewController: SBUBaseChannelListViewController, 
     ///   - channelURL: channel url for use in channelViewController.
     ///   - messageListParams: If there is a messageListParams set directly for use in Channel, set it up here
     open override func showChannel(channelURL: String, messageListParams: MessageListParams? = nil) {
-        GroupChannel.getChannel(url: channelURL) { channel, error in
-            guard error == nil, let channel = channel else { return }
+        GroupChannel.getChannel(url: channelURL) { [weak self] channel, error in
+            guard let self, error == nil, let channel = channel else { return }
             
             if channel.isChatNotification {
                 let channelVC = SBUViewControllerSet.ChatNotificationChannelViewController.init(
@@ -212,6 +242,14 @@ open class SBUGroupChannelListViewController: SBUBaseChannelListViewController, 
                 )
                 self.navigationController?.pushViewController(channelVC, animated: true)
             } else {
+                #if SWIFTUI
+                if let groupChannelViewBuilder = self.groupChannelViewBuilder {
+                    let view = groupChannelViewBuilder(channelURL, nil, messageListParams)
+                    let channelVC = UIHostingController(rootView: view)
+                    self.navigationController?.pushViewControllerNonFlickering(channelVC, animated: true)
+                    return
+                }
+                #endif
                 let channelVC = SBUViewControllerSet.GroupChannelViewController.init(
                     channelURL: channelURL,
                     messageListParams: messageListParams,
@@ -226,6 +264,8 @@ open class SBUGroupChannelListViewController: SBUBaseChannelListViewController, 
     /// If it cannot be set, this function shows the channel creation screen.
     /// - Since: 3.0.0
     open func showCreateChannelOrTypeSelector() {
+        // TODO: SwiftUI - 다른 곳들 updateHiddenState 또는 updateEnableState 관련 로직 추가
+        
         if (SBUAvailable.isSupportSuperGroupChannel() || SBUAvailable.isSupportBroadcastChannel())
             && self.createChannelTypeSelector != nil
             && self.enableCreateChannelTypeSelector {
@@ -251,6 +291,15 @@ open class SBUGroupChannelListViewController: SBUBaseChannelListViewController, 
     /// If you want to use a custom createChannelViewController, override it and implement it.
     /// - Parameter type: Using the Specified Type in CreateChannelViewController (default: `.group`)
     open func showCreateChannel(type: ChannelCreationType = .group) {
+        #if SWIFTUI
+        if let createChannelViewBuilder = self.createChannelViewBuilder {
+            let customUsers = (self.swiftUIDelegate as? CreateGroupChannelViewProvider)?.customUsers
+            let view = createChannelViewBuilder(customUsers, type)
+            let createChannelVC = UIHostingController(rootView: view)
+            self.navigationController?.pushViewControllerNonFlickering(createChannelVC, animated: true)
+            return
+        }
+        #endif
         let createChannelVC = SBUViewControllerSet.CreateChannelViewController.init(type: type)
         self.navigationController?.pushViewController(createChannelVC, animated: true)
     }
@@ -265,41 +314,75 @@ open class SBUGroupChannelListViewController: SBUBaseChannelListViewController, 
     }
 
     // MARK: - SBUGroupChannelListModuleHeaderDelegate
-    open func baseChannelListModule(_ headerComponent: SBUBaseChannelListModule.Header,
-                                didUpdateTitleView titleView: UIView?) {
+    open func baseChannelListModule(
+        _ headerComponent: SBUBaseChannelListModule.Header,
+        didUpdateTitleView titleView: UIView?
+    ) {
         self.navigationItem.titleView = titleView
     }
     
-    open func baseChannelListModule(_ headerComponent: SBUBaseChannelListModule.Header,
-                                didUpdateLeftItem leftItem: UIBarButtonItem?) {
+    open func baseChannelListModule(
+        _ headerComponent: SBUBaseChannelListModule.Header,
+        didUpdateLeftItem leftItem: UIBarButtonItem?
+    ) {
         self.navigationItem.leftBarButtonItem = leftItem
     }
     
-    open func baseChannelListModule(_ headerComponent: SBUBaseChannelListModule.Header,
-                                didUpdateRightItem rightItem: UIBarButtonItem?) {
+    open func baseChannelListModule(
+        _ headerComponent: SBUBaseChannelListModule.Header,
+        didUpdateRightItem rightItem: UIBarButtonItem?
+    ) {
         self.navigationItem.rightBarButtonItem = rightItem
     }
     
-    open func baseChannelListModule(_ headerComponent: SBUBaseChannelListModule.Header,
-                                didTapLeftItem leftItem: UIBarButtonItem) {
+    /// 3.28.0
+    open func baseChannelListModule(
+        _ headerComponent: SBUBaseChannelListModule.Header,
+        didUpdateLeftItems leftItems: [UIBarButtonItem]?
+    ) {
+        self.navigationItem.leftBarButtonItems = leftItems
+    }
+    
+    /// 3.28.0
+    open func baseChannelListModule(
+        _ headerComponent: SBUBaseChannelListModule.Header,
+        didUpdateRightItems rightItems: [UIBarButtonItem]?
+    ) {
+        self.navigationItem.rightBarButtonItems = rightItems
+    }
+    
+    open func baseChannelListModule(
+        _ headerComponent: SBUBaseChannelListModule.Header,
+        didTapLeftItem leftItem: UIBarButtonItem
+    ) {
         self.onClickBack()
     }
     
-    open func baseChannelListModule(_ headerComponent: SBUBaseChannelListModule.Header,
-                                didTapRightItem rightItem: UIBarButtonItem) {
+    open func baseChannelListModule(
+        _ headerComponent: SBUBaseChannelListModule.Header,
+        didTapRightItem rightItem: UIBarButtonItem
+    ) {
         self.showCreateChannelOrTypeSelector()
     }
     
     // MARK: - SBUGroupChannelListModuleListDelegate
-    open func baseChannelListModule(_ listComponent: SBUBaseChannelListModule.List,
-                                didSelectRowAt indexPath: IndexPath) {
+    open func baseChannelListModule(
+        _ listComponent: SBUBaseChannelListModule.List,
+        didSelectRowAt indexPath: IndexPath
+    ) {
         guard self.channelList.count > indexPath.row else { return }
         let channel = self.channelList[indexPath.row]
         self.showChannel(channelURL: channel.channelURL)
+        
+        #if SWIFTUI
+        self.swiftUIDelegate?.groupChannelListView(didSelectRowAt: indexPath)
+        #endif
     }
     
-    open func baseChannelListModule(_ listComponent: SBUBaseChannelListModule.List,
-                                didDetectPreloadingPosition indexPath: IndexPath) {
+    open func baseChannelListModule(
+        _ listComponent: SBUBaseChannelListModule.List,
+        didDetectPreloadingPosition indexPath: IndexPath
+    ) {
         self.viewModel?.loadNextChannelList(reset: false)
     }
     
@@ -311,20 +394,34 @@ open class SBUGroupChannelListViewController: SBUBaseChannelListViewController, 
         self.viewModel?.loadNextChannelList(reset: true)
     }
     
-    open func groupChannelListModule(_ listComponent: SBUGroupChannelListModule.List,
-                                didSelectLeave channel: GroupChannel) {
+    open func groupChannelListModule(
+        _ listComponent: SBUGroupChannelListModule.List,
+        didSelectLeave channel: GroupChannel
+    ) {
         self.viewModel?.leaveChannel(channel)
+        
+        #if SWIFTUI
+        self.swiftUIDelegate?.groupChannelListView(didSelectLeaveFrom: channel)
+        #endif
     }
     
-    open func groupChannelListModule(_ listComponent: SBUGroupChannelListModule.List,
-                                didChangePushTriggerOption option: GroupChannelPushTriggerOption,
-                                channel: GroupChannel) {
+    open func groupChannelListModule(
+        _ listComponent: SBUGroupChannelListModule.List,
+        didChangePushTriggerOption option: GroupChannelPushTriggerOption,
+        channel: GroupChannel
+    ) {
         self.viewModel?.changePushTriggerOption(option: option, channel: channel)
+        
+        #if SWIFTUI
+        self.swiftUIDelegate?.groupChannelListView(didChangePushTriggerOption: channel)
+        #endif
     }
     
     // MARK: - SBUGroupChannelListModuleListDataSource
-    open func baseChannelListModule(_ listComponent: SBUBaseChannelListModule.List,
-                                channelsInTableView tableView: UITableView) -> [BaseChannel]? {
+    open func baseChannelListModule(
+        _ listComponent: SBUBaseChannelListModule.List,
+        channelsInTableView tableView: UITableView
+    ) -> [BaseChannel]? {
         return self.channelList
     }
     

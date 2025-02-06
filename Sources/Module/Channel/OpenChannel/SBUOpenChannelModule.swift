@@ -11,7 +11,7 @@ import UIKit
 // MARK: SBUOpenChannelModule
 
 /// The class that represents the open channel module
-open class SBUOpenChannelModule {
+extension SBUOpenChannelModule {
     /// The module component that contains ``SBUBaseChannelModule/Header/titleView``, ``SBUBaseChannelModule/Header/leftBarButton``, and ``SBUBaseChannelModule/Header/rightBarButton``
     /// - Since: 3.6.0
     public static var HeaderComponent: SBUOpenChannelModule.Header.Type = SBUOpenChannelModule.Header.self
@@ -24,58 +24,73 @@ open class SBUOpenChannelModule {
     /// The module component that represents the media in the open channel such as photo or video.
     /// - Since: 3.6.0
     public static var MediaComponent: SBUOpenChannelModule.Media.Type = SBUOpenChannelModule.Media.self
+}
+
+// MARK: Header
+extension SBUOpenChannelModule.Header {
+    /// Represents the type of left bar button on the open channel module.
+    /// - Since: 3.28.0
+    public static var LeftBarButton: SBUBarButtonItem.Type = SBUBarButtonItem.self
     
-    // MARK: Properties (Public)
+    /// Represents the type of right bar button on the open channel module.
+    /// - Since: 3.28.0
+    public static var RightBarButton: SBUBarButtonItem.Type = SBUBarButtonItem.self
     
-    /// The module component that contains `titleView`, `leftBarButton`, and `rightBarButton`
-    /// - NOTE: The default function of each button is as below:
-    ///     - `title`: Shows the channel name
-    ///     - `leftBarButton`: Goes back to the previous view.
-    ///     - `rightBarButton`: Shows the channel settings or the list of participants.
-    @available(*, deprecated, message: "Use `SBUOpenChannelModule.HeaderComponent` instead.")
-    public var headerComponent: SBUOpenChannelModule.Header? {
-        get { _headerComponent ?? Self.HeaderComponent.init() }
-        set { _headerComponent = newValue }
-    }
+    /// Represents the type of title view on the open channel module.
+    /// - Since: 3.28.0
+    public static var TitleView: SBUChannelTitleView.Type = SBUChannelTitleView.self
+}
+
+// MARK: List
+extension SBUOpenChannelModule.List {
+    /// Represents the type of empty view on the open channel module.
+    /// - Since: 3.28.0
+    public static var EmptyView: SBUEmptyView.Type = SBUEmptyView.self
     
-    /// The module component that shows the list of message in the open channel.
-    @available(*, deprecated, message: "Use `SBUOpenChannelModule.ListComponent` instead.")
-    public var listComponent: SBUOpenChannelModule.List? {
-        get { _listComponent ?? Self.ListComponent.init() }
-        set { _listComponent = newValue }
-    }
+    /// Represents the type of admin message cell on the open channel module.
+    /// - Since: 3.28.0
+    public static var AdminMessageCell: SBUOpenChannelBaseMessageCell.Type = SBUOpenChannelAdminMessageCell.self
     
-    /// The module component that contains `messageInputView`.
-    @available(*, deprecated, message: "Use `SBUOpenChannelModule.InputComponent` instead.")
-    public var inputComponent: SBUOpenChannelModule.Input? {
-        get { _inputComponent ?? Self.InputComponent.init() }
-        set { _inputComponent = newValue }
-    }
+    /// Represents the type of user message cell on the open channel module.
+    /// - Since: 3.28.0
+    public static var UserMessageCell: SBUOpenChannelBaseMessageCell.Type = SBUOpenChannelUserMessageCell.self
     
-    /// The module component that represents the media in the open channel such as photo or video.
-    @available(*, deprecated, message: "Use `SBUOpenChannelModule.MediaComponent` instead.")
-    public var mediaComponent: SBUOpenChannelModule.Media? {
-        get { _mediaComponent ?? Self.MediaComponent.init() }
-        set { _mediaComponent = newValue }
-    }
+    /// Represents the type of file message cell on the open channel module.
+    /// - Since: 3.28.0
+    public static var FileMessageCell: SBUOpenChannelBaseMessageCell.Type = SBUOpenChannelFileMessageCell.self
     
-    // MARK: Properties (Holder)
-    private var _headerComponent: SBUOpenChannelModule.Header?
-    private var _listComponent: SBUOpenChannelModule.List?
-    private var _inputComponent: SBUOpenChannelModule.Input?
-    private var _mediaComponent: SBUOpenChannelModule.Media?
+    /// Represents the type of unknown message cell on the open channel module.
+    /// - Since: 3.28.0
+    public static var UnknownMessageCell: SBUOpenChannelBaseMessageCell.Type = SBUOpenChannelUnknownMessageCell.self
     
-    // MARK: -
-    @available(*, deprecated, message: "Use `SBUModuleSet.OpenChannelModule`")
-    public required init(
-        headerComponent: SBUOpenChannelModule.Header? = nil,
-        listComponent: SBUOpenChannelModule.List? = nil,
-        inputComponent: SBUOpenChannelModule.Input? = nil,
-        mediaComponent: SBUOpenChannelModule.Media? = nil
-    ) {
-        self._headerComponent = headerComponent
-        self._listComponent = listComponent
-        self._inputComponent = inputComponent
-        self._mediaComponent = mediaComponent
-    }
+    /// Represents the type of custom message cell on the open channel module.
+    /// - Since: 3.28.0
+    public static var CustomMessageCell: SBUOpenChannelBaseMessageCell.Type?
+    
+    /// Represents the type of channel state banner on the open channel module.
+    /// - Since: 3.28.0
+    public static var ChannelStateBanner: SBUChannelStateBanner.Type = SBUChannelStateBanner.self
+    
+    /// Represents the type of scroll bottom view on the open channel module.
+    /// - Since: 3.28.0
+    public static var ScrollBottomView: SBUScrollBottomView.Type = SBUScrollBottomView.self
+    
+    /// Represents the type of user profile view on the open channel module.
+    /// - Since: 3.28.0
+    public static var UserProfileView: SBUUserProfileView.Type = SBUUserProfileView.self
+}
+
+// MARK: Input
+extension SBUOpenChannelModule.Input {
+    /// The component property that the message input view.
+    /// - Since: 3.28.0
+    public static var MessageInputView: SBUMessageInputView.Type = SBUMessageInputView.self
+}
+
+// MARK: Media
+extension SBUOpenChannelModule.Media {
+    /// A view to shows media or other contents in the open channel.
+    /// - Since: 3.28.0
+    public static var MediaView: SBUMediaView.Type = SBUMediaView.self
+    
 }

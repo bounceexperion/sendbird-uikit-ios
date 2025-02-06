@@ -10,15 +10,17 @@ import UIKit
 import SendbirdChatSDK
 
 open class SBUOpenChannelUnknownMessageCell: SBUOpenChannelUserMessageCell {
-    open override func configure(_ message: BaseMessage,
-                                   hideDateView: Bool,
-                                   groupPosition: MessageGroupPosition,
-                                   isOverlay: Bool = false) {
-        self.configure(
+    open override func configure(
+        _ message: BaseMessage,
+        hideDateView: Bool,
+        groupPosition: MessageGroupPosition,
+        isOverlay: Bool = false
+    ) {
+        super.configure(
             message,
             hideDateView: hideDateView,
             groupPosition: groupPosition,
-            withTextView: false,
+            withTextView: true,
             isOverlay: isOverlay
         )
         

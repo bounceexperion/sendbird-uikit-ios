@@ -9,6 +9,8 @@
 import UIKit
 import SendbirdChatSDK
 
+/// `SendbirdUI` is a main class of Sendbird UIKit.
+/// It is responsible for initializing and configuring the Sendbird UIKit.
 public class SendbirdUI {
     
     /// SendbirdUIKit configuration
@@ -137,20 +139,35 @@ public class SendbirdUI {
     /// Sets extensions to the SendbirdChat SDK
     static func setExtensionSettingsForSendbirdChat() {
         // Call after SendbirdChat initialization
+        #if SWIFTUI
+        let sdkInfo = __SendbirdSDKInfo(
+            product: .swiftuiChat,
+            platform: .ios,
+            version: SendbirdUI.shortVersion
+        )
+        #else
         let sdkInfo = __SendbirdSDKInfo(
             product: .uikitChat,
             platform: .ios,
             version: SendbirdUI.shortVersion
         )
+        #endif
         _ = SendbirdChat.__addSendbirdExtensions(
             extensions: [sdkInfo],
             customData: nil
         )
         
+        #if SWIFTUI
+        SendbirdChat.__addExtension(
+            SBUConstant.extensionSwiftUI,
+            version: SendbirdUI.shortVersion
+        )
+        #else
         SendbirdChat.__addExtension(
             SBUConstant.extensionKeyUIKit,
             version: SendbirdUI.shortVersion
         )
+        #endif
 
         SendbirdChatOptions.setMemberInfoInMessage(true)
         
@@ -211,7 +228,8 @@ public class SendbirdUI {
         
         let userId = currentUser.userId.trimmingCharacters(in: .whitespacesAndNewlines)
         let nickname = currentUser.nickname?.trimmingCharacters(in: .whitespacesAndNewlines)
-        SendbirdChat.connect(userId: userId, authToken: SBUGlobals.accessToken) { [userId, nickname] user, error in
+        
+        SendbirdChat.connect(userId: userId, authToken: SBUGlobals.accessToken, apiHost: SBUGlobals.apiHost, wsHost: SBUGlobals.wsHost) { [userId, nickname] user, error in
             defer {
                 SBUEmojiManager.loadAllEmojis { _, _ in }
             }
@@ -265,8 +283,10 @@ public class SendbirdUI {
                 }
                 
                 self.config.loadDashboardConfig { _ in
-                    self.loadNotificationChannelSettings { _ in
-                        completionHandler(user, error)
+                    self.loadMessageTemplateList { _ in
+                        self.loadNotificationChannelSettings { _ in
+                            completionHandler(user, error)
+                        }
                     }
                 }
             }
@@ -298,24 +318,17 @@ public class SendbirdUI {
         completionHandler: @escaping (_ user: User?, _ error: SBError?) -> Void
     ) {
         SendbirdChat.executeOrWaitForInitialization {
-            if SendbirdChat.getConnectState() == .open {
-                completionHandler(SendbirdChat.getCurrentUser(), nil)
-            } else {
-                SBULog.info("currentUser: \(String(describing: SendbirdChat.getCurrentUser()?.userId))")
-                if SendbirdChat.isLocalCachingEnabled,
-                   let currentUSer = SendbirdChat.getCurrentUser() {
-                    completionHandler(currentUSer, nil)
-                    SendbirdUI.authenticateFeedAndUpdates(needToUpdateExtraData: needToUpdateExtraData) { _, _ in }
-                } else {
-                    SendbirdUI.authenticateFeedAndUpdates(needToUpdateExtraData: needToUpdateExtraData, completionHandler: completionHandler)
-                }
-            }
+            SendbirdUI.authenticateFeedAndUpdates(
+                needToUpdateExtraData: needToUpdateExtraData,
+                completionHandler: completionHandler
+            )
         }
     }
     
     /// This function is used to check authentication state and authenticate to the Sendbird server or local caching database.
     /// - Parameter completionHandler: The handler block to execute.
-    static func authenticateFeedAndUpdates(needToUpdateExtraData: Bool = true,
+    static func authenticateFeedAndUpdates(
+        needToUpdateExtraData: Bool = true,
         completionHandler: @escaping (_ user: User?, _ error: SBError?) -> Void
     ) {
         SBULog.info("[Request] Authentication to Sendbird")
@@ -328,7 +341,7 @@ public class SendbirdUI {
         
         let userId = currentUser.userId.trimmingCharacters(in: .whitespacesAndNewlines)
         let nickname = currentUser.nickname?.trimmingCharacters(in: .whitespacesAndNewlines)
-        SendbirdChat.authenticateFeed(userId: userId, authToken: SBUGlobals.accessToken) { [userId, nickname] user, error in
+        SendbirdChat.authenticate(userId: userId, authToken: SBUGlobals.accessToken, apiHost: SBUGlobals.apiHost) { [userId, nickname] user, error in
             guard let user = user else {
                 SBULog.error("[Failed] Authentication to Sendbird: \(error?.localizedDescription ?? "")")
                 completionHandler(nil, error)
@@ -398,17 +411,37 @@ public class SendbirdUI {
         SBUNotificationChannelManager.loadGlobalNotificationChannelSettings { success in
             if !success { SBULog.error("[Failed] Load global notification channel settings") }
             
-            self.loadTemplateList(completionHandler: completionHandler)
+            self.loadNotificationTemplateList(completionHandler: completionHandler)
         }
     }
     
-    static func loadTemplateList(completionHandler: @escaping (_ succeeded: Bool) -> Void) {
-        SBUNotificationChannelManager.loadTemplateList { success in
-            if !success { SBULog.error("[Failed] Load template list") }
+    static func loadNotificationTemplateList(completionHandler: @escaping (_ succeeded: Bool) -> Void) {
+        SBUMessageTemplateManager.loadTemplateList(type: .notification) { success in
+            if !success { SBULog.error("[Failed] Load notification message template list") }
             completionHandler(success)
         }
     }
     
+    static func loadMessageTemplateList(completionHandler: @escaping (_ succeeded: Bool) -> Void) {
+        guard SBUAvailable.isGroupMessageTemplateEnabled == true else {
+            completionHandler(false)
+            return
+        }
+        
+        SBUMessageTemplateManager.loadTemplateList(type: .message) { success in
+            if !success { SBULog.error("[Failed] Load group message template list") }
+            completionHandler(success)
+        }
+    }
+    
+    /// Updates the user information.
+    ///
+    /// This function is used to update the user's nickname and profile URL.
+    /// It takes a completion handler as a parameter which returns an optional `SBError`.
+    /// If the update is successful, the error returned is `nil`.
+    /// Otherwise, it contains an instance of `SBError` with details about the failure.
+    ///
+    /// - Parameter completionHandler: A closure that is called when the update is complete.
     public static func updateUserInfo(completionHandler: @escaping (_ error: SBError?) -> Void) {
         guard let sbuUser = SBUGlobals.currentUser else {
             SBULog.error("[Failed] Connection to Sendbird: CurrentUser value is not set")
@@ -461,6 +494,7 @@ public class SendbirdUI {
         
         SendbirdChat.disconnect(completionHandler: {
             SBULog.info("[Succeed] Disconnection to Sendbird")
+            SBUNotificationChannelManager.resetNotificationSettingCache()
             SBUGlobals.currentUser = nil
             completionHandler?()
         })
@@ -738,10 +772,20 @@ public class SendbirdUI {
                                           channelType: channelType)
             }
         } else {
-            let viewController: UIViewController? = findChannelListViewController(
-                rootViewController: rootViewController,
-                channelType: channelType
-            )
+            let viewController: UIViewController? = {
+            #if SWIFTUI
+                findChannelListViewControllerFromSwiftUI(
+                    rootViewController: rootViewController,
+                    channelType: channelType
+                )
+            #else
+                findChannelListViewController(
+                    rootViewController: rootViewController,
+                    channelType: channelType
+                )
+            #endif
+            }()
+            
             showChannelViewController(with: viewController ?? rootViewController,
                                       channelURL: channelURL,
                                       basedOnChannelList: basedOnChannelList,
@@ -822,34 +866,15 @@ public class SendbirdUI {
         if let channelListVc = navigationController
             .viewControllers
             .first(where: {
-                switch channelType {
-                case .open:
-                    // shouldn't be instance of SBUGroupChannelListViewController since this is for group channel.
-                    return !($0 is SBUGroupChannelListViewController) && $0 is SBUBaseChannelListViewController
-                case .group:
-                    return $0 is SBUGroupChannelListViewController
-                case .feed:
-                    return $0 is SBUGroupChannelListViewController // Not used now
-                @unknown default:
-                    return false
-                }
+                matchChannelListViewController($0, channelType: channelType)
             }) {
             return channelListVc
         } else {
             return navigationController
-                .viewControllers
-                .last(where: {
-                    switch channelType {
-                    case .open:
-                        return $0 is SBUOpenChannelViewController
-                    case .group:
-                        return $0 is SBUGroupChannelViewController
-                    case .feed:
-                        return $0 is SBUFeedNotificationChannelViewController
-                    @unknown default:
-                        return false
-                    }
-                })
+            .viewControllers
+            .last(where: {
+                matchChannelViewController($0, channelType: channelType)
+            })
         }
     }
     
@@ -963,6 +988,36 @@ public class SendbirdUI {
 }
 
 extension SendbirdUI {
+    static func matchChannelListViewController(_ viewController: UIViewController, channelType: ChannelType) -> Bool {
+        switch channelType {
+        case .open:
+            // shouldn't be instance of SBUGroupChannelListViewController since this is for group channel.
+            return !(viewController is SBUGroupChannelListViewController)
+                    && viewController is SBUBaseChannelListViewController
+        case .group:
+            return viewController is SBUGroupChannelListViewController
+        case .feed:
+            return viewController is SBUGroupChannelListViewController // Not used now
+        @unknown default:
+            return false
+        }
+    }
+    
+    static func matchChannelViewController(_ viewController: UIViewController, channelType: ChannelType) -> Bool {
+        switch channelType {
+        case .open:
+            return viewController is SBUOpenChannelViewController
+        case .group:
+            return viewController is SBUGroupChannelViewController
+        case .feed:
+            return viewController is SBUFeedNotificationChannelViewController
+        @unknown default:
+            return false
+        }
+    }
+}
+
+extension SendbirdUI {
     private static var botUserListQuery: ApplicationUserListQuery?
     
     /// this is a function that brings up a screen to chat with the bot.
@@ -1034,6 +1089,9 @@ extension SendbirdUI {
 }
 
 extension SendbirdUI {
+    /// This function checks if remote notifications are available.
+    /// It returns true if the app is running on a device or on an iOS 16 (or later) simulator.
+    /// Otherwise, it returns false.
     public static func isRemoteNotificationAvailable() -> Bool {
         #if targetEnvironment(simulator)
         // iOS 16 or later running in the simulator

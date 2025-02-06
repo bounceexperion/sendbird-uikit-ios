@@ -30,7 +30,8 @@ public protocol SBUGroupChannelListModuleListDataSource: SBUBaseChannelListModul
 extension SBUGroupChannelListModule {
     /// A module component that represent the list of `SBUGroupChannelListModule`.
     @objc(SBUGroupChannelListModuleList)
-    @objcMembers open class List: SBUBaseChannelListModule.List {
+    @objcMembers 
+    open class List: SBUBaseChannelListModule.List {
         
         // MARK: - UI properties (Public)
         /// The object that is used as the theme of the list component. The theme must adopt the `SBUGroupChannelListTheme` class.
@@ -52,6 +53,10 @@ extension SBUGroupChannelListModule {
         /// The current channel list object from `baseChannelListModule(_:channelsInTableView:)` data source method.
         public var channelList: [GroupChannel]? {
             self.baseChannelList as? [GroupChannel]
+        }
+        
+        override func createDefaultEmptyView() -> SBUEmptyView {
+            SBUEmptyView.createDefault(Self.EmptyView, delegate: self)
         }
 
         // MARK: - LifeCycle
@@ -85,11 +90,17 @@ extension SBUGroupChannelListModule {
         
         /// Set values of the views in the list component when it needs.
         open override func setupViews() {
-            super.setupViews()
-            
-            // register cell
-            if self.channelCell == nil {
-                self.register(channelCell: SBUGroupChannelCell())
+            var didApplyTableViewConverter = false
+            #if SWIFTUI
+            didApplyTableViewConverter = self.applyViewConverter(.entireContent)
+            #endif
+            if !didApplyTableViewConverter {
+                super.setupViews()
+                
+                // register cell
+                if self.channelCell == nil {
+                    self.register(channelCell: Self.ChannelCell.init())
+                }
             }
         }
         
@@ -105,6 +116,19 @@ extension SBUGroupChannelListModule {
         }
         
         // MARK: - TableView
+        open override func reloadTableView() {
+            var didApplyTableViewConverter = false
+            #if SWIFTUI
+            didApplyTableViewConverter = self.applyViewConverter(.entireContent)
+            #endif
+            // No need to update the table view,
+            // as the table view is already removed from superview
+            // if SwiftUI view builder is used.
+            if !didApplyTableViewConverter {
+                super.reloadTableView()
+                return
+            }
+        }
         
         /// Creates leave contextual action for a particular swipped cell.
         /// - Parameter indexPath: An index path representing the `channelCell`
@@ -199,6 +223,42 @@ extension SBUGroupChannelListModule {
             
             return alarmAction
         }
+        #if INSPECTION
+        func inspectContextualAction(with indexPath: IndexPath) -> UIContextualAction? {
+            guard let channel = self.channelList?[indexPath.row] else { return nil }
+            
+            let size = tableView.visibleCells[0].frame.height
+            let itemSize: CGFloat = 40.0
+            
+            let inspectAction = UIContextualAction(
+                style: .normal,
+                title: ""
+            ) { [weak self] _, _, actionHandler in
+                guard let self = self else { return }
+                channel.inspect()
+            }
+            
+            let inspectTypeView = UIImageView(
+                frame: CGRect(
+                    x: (size-itemSize)/2,
+                    y: (size-itemSize)/2,
+                    width: itemSize,
+                    height: itemSize
+                ))
+            inspectTypeView.layer.cornerRadius = itemSize/2
+            inspectTypeView.backgroundColor = SBUColorSet.primary400
+            inspectTypeView.image = SBUIconSetType.iconSearch.image(
+                with: .white,
+                to: SBUIconSetType.Metric.defaultIconSize
+            )
+            inspectTypeView.contentMode = .center
+            
+            inspectAction.image = inspectTypeView.asImage()
+            inspectAction.backgroundColor = .white
+            
+            return inspectAction
+        }
+        #endif
     }
 }
 
@@ -212,14 +272,16 @@ extension SBUGroupChannelListModule.List {
         self.delegate?.baseChannelListModule(self, didSelectRowAt: indexPath)
     }
     
-    open override func tableView(_ tableView: UITableView,
-                        cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    open override func tableView(
+        _ tableView: UITableView,
+        cellForRowAt indexPath: IndexPath
+    ) -> UITableViewCell {
         guard indexPath.row < self.channelList?.count ?? 0 else {
             let error = SBError(domain: "The index is out of range.", code: -1, userInfo: nil)
             self.delegate?.didReceiveError(error, isBlocker: false)
             return UITableViewCell()
         }
-        
+    
         var cell: SBUBaseChannelCell?
         if let channelCell = self.channelCell {
             cell = tableView.dequeueReusableCell(
@@ -240,9 +302,11 @@ extension SBUGroupChannelListModule.List {
         return cell ?? UITableViewCell()
     }
     
-    open override func tableView(_ tableView: UITableView,
-                        willDisplay cell: UITableViewCell,
-                        forRowAt indexPath: IndexPath) {
+    open override func tableView(
+        _ tableView: UITableView,
+        willDisplay cell: UITableViewCell,
+        forRowAt indexPath: IndexPath
+    ) {
         let rowForPreloading = Int(SBUGroupChannelListViewModel.channelLoadLimit)/2
         let channelListCount = self.channelList?.count ?? 0
         if channelListCount > 0,
@@ -257,8 +321,10 @@ extension SBUGroupChannelListModule.List {
         return self.channelList?.count ?? 0
     }
     
-    open override func tableView(_ tableView: UITableView,
-                        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
+    open override func tableView(
+        _ tableView: UITableView,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
+    )
     -> UISwipeActionsConfiguration? {
         if self.channelList?.count ?? 0 > indexPath.row,
            let channelList = channelList {
@@ -275,6 +341,11 @@ extension SBUGroupChannelListModule.List {
         if let alarmAction = alarmContextualAction(with: indexPath) {
             actions.append(alarmAction)
         }
+        #if INSPECTION
+        if let inspectContextualAction = inspectContextualAction(with: indexPath) {
+            actions.append(inspectContextualAction)
+        }
+        #endif
         
         return UISwipeActionsConfiguration(actions: actions)
     }

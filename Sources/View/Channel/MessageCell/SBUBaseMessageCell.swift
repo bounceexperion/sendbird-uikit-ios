@@ -9,13 +9,15 @@
 import UIKit
 import SendbirdChatSDK
 
- @IBDesignable
+@IBDesignable
 open class SBUBaseMessageCell: SBUTableViewCell, SBUMessageCellProtocol, SBUFeedbackViewDelegate {
     // MARK: - Public
     public var message: BaseMessage?
     public var position: MessagePosition = .center
     public var groupPosition: MessageGroupPosition = .none
     public var receiptState: SBUMessageReceiptState = .none
+    
+    var configuration: SBUBaseMessageCellParams?
 
     public lazy var messageContentView: UIView = {
         let view = UIView()
@@ -55,7 +57,13 @@ open class SBUBaseMessageCell: SBUTableViewCell, SBUMessageCellProtocol, SBUFeed
     /// - Since: 3.15.0
     public internal(set) var feedbackView: SBUFeedbackView?
     
+    /// If this flag is set to true,
+    /// the layout will be reset when `prepareForReuse()` is called.
+    /// - Since: 3.21.0
+    public var isMessyViewHierarchy: Bool = false
+    
     // MARK: - Action
+    var reloadCellHandler: ((_ cell: SBUBaseMessageCell) -> Void)?
     var userProfileTapHandler: (() -> Void)?
     var tapHandlerToContent: (() -> Void)?
     var longPressHandlerToContent: (() -> Void)?
@@ -63,6 +71,7 @@ open class SBUBaseMessageCell: SBUTableViewCell, SBUMessageCellProtocol, SBUFeed
     var moreEmojiTapHandler: (() -> Void)?
     var emojiLongPressHandler: ((_ emojiKey: String) -> Void)?
     var mentionTapHandler: ((_ user: SBUUser) -> Void)?
+    var errorHandler: ((_ error: SBError) -> Void)?
     
     /// The action of ``SBUSuggestedReplyView`` that is called when a ``SBUSuggestedReplyOptionView`` is selected.
     /// - Parameter selectedOptionView: The selected ``SBUSuggestedReplyOptionView`` object.
@@ -73,13 +82,27 @@ open class SBUBaseMessageCell: SBUTableViewCell, SBUMessageCellProtocol, SBUFeed
     ///    - form: The ``SendbirdChatSDK.Form`` object that will be submitted.
     ///    - messageCell: The current ``SBUBaseMessageCell`` object.
     ///  - Since: 3.16.0
+    @available(*, deprecated, message: "This method is deprecated in 3.27.0.")
     var submitFormHandler: ((_ form: SendbirdChatSDK.Form, _ messageCell: SBUBaseMessageCell) -> Void)?
+    
+    /// The action of ``SBUMessageFormView`` that is called when a ``SendbirdChatSDK.MessageForm`` is submitted.
+    /// - Parameters:
+    ///    - messageForm: The current ``MessageForm`` object.
+    ///    - messageCell: The current ``SBUBaseMessageCell`` object.
+    ///  - Since: 3.27.0
+    var submitMessageFormHandler: ((_ messageForm: SendbirdChatSDK.MessageForm, _ messageCell: SBUBaseMessageCell) -> Void)?
     
     /// The action of ``SBUFeedbackView`` that is called when a `Feedback` is updated.
     /// - Parameters:
     ///    - feedbackAnswer: The ``SBUFeedbackAnswer`` object that will be submitted.
     ///    - messageCell: The current ``SBUBaseMessageCell`` object.
     var updateFeedbackHandler: ((_ feedbackAnswer: SBUFeedbackAnswer, _ messageCell: SBUBaseMessageCell) -> Void)?
+    
+    // MARK: - message template handlers
+    var messageTemplateActionHandler: ((_ action: SBUMessageTemplate.Action) -> Void)?
+    var uncachedMessageTemplateStateHandler: ((_ templateKeys: [String]) -> Bool?)?
+    var uncachedMessageTemplateDownloadHandler: ((_ templateKeys: [String], _ messageCell: SBUBaseMessageCell) -> Void)?
+    var uncachedMessageTemplateImageHandler: ((_ cacheData: [String: String], _ messageCell: SBUBaseMessageCell) -> Void)?
     
     // MARK: - View Lifecycle
     
@@ -125,13 +148,15 @@ open class SBUBaseMessageCell: SBUTableViewCell, SBUMessageCellProtocol, SBUFeed
             && self.groupPosition != .top
         let constant: CGFloat = isGrouped ? 4 : 16
 
-        self.stackViewTopConstraint?.isActive = false
-        self.stackViewTopConstraint = self.stackView.topAnchor.constraint(
-            equalTo: self.contentView.topAnchor,
-            constant: constant
-        )
-        self.stackViewTopConstraint?.priority = .defaultHigh
-        self.stackViewTopConstraint?.isActive = true
+        if self.stackView.superview != nil {
+            self.stackViewTopConstraint?.isActive = false
+            self.stackViewTopConstraint = self.stackView.topAnchor.constraint(
+                equalTo: self.contentView.topAnchor,
+                constant: constant
+            )
+            self.stackViewTopConstraint?.priority = .defaultHigh
+            self.stackViewTopConstraint?.isActive = true
+        }
     }
     
     // MARK: - Common
@@ -142,6 +167,7 @@ open class SBUBaseMessageCell: SBUTableViewCell, SBUMessageCellProtocol, SBUFeed
      - Parameter configuration: `SBUBaseMessageCellParams` object.
      */
     open func configure(with configuration: SBUBaseMessageCellParams) {
+        self.configuration = configuration
         self.message = configuration.message
         self.position = configuration.messagePosition
         self.groupPosition = configuration.groupPosition
@@ -149,13 +175,24 @@ open class SBUBaseMessageCell: SBUTableViewCell, SBUMessageCellProtocol, SBUFeed
         self.receiptState = configuration.receiptState
         self.shouldHideFeedback = configuration.shouldHideFeedback
         
-        if let dateView = self.dateView as? SBUMessageDateView,
-           let message = self.message {
-            dateView.configure(timestamp: message.createdAt)
+        var didApplyEntireCellViewConverter = false
+        #if SWIFTUI
+        if self.configuration?.isThreadMessage == false {
+            didApplyEntireCellViewConverter = self.applyViewConverter(.entireContent)
+        } else {
+            didApplyEntireCellViewConverter = self.applyViewConverterForMessageThread(.entireContent)
         }
         
-        // MARK: Feedback Views
-        self.updateFeedbackView(with: self.message)
+        #endif
+        if !didApplyEntireCellViewConverter {
+            if let dateView = self.dateView as? SBUMessageDateView,
+               let message = self.message {
+                dateView.configure(timestamp: message.createdAt)
+            }
+            
+            // MARK: Feedback Views
+            self.updateFeedbackView(with: self.message)
+        }
     }
     
     open func configure(highlightInfo: SBUHighlightMessageInfo?) {
@@ -187,11 +224,28 @@ open class SBUBaseMessageCell: SBUTableViewCell, SBUMessageCellProtocol, SBUFeed
     // MARK: -
     open override func prepareForReuse() {
         super.prepareForReuse()
+        
+        if self.isMessyViewHierarchy == true {
+            self.isMessyViewHierarchy = false
+            self.setupViews()
+            self.setupLayouts()
+            
+            self.setNeedsLayout()
+        }
     }
     
     // MARK: - feedback view delegate
     
     open func feedbackView(_ view: SBUFeedbackView, didAnswer answer: SBUFeedbackAnswer) {
         self.updateFeedbackHandler?(answer, self)
+    }
+    
+    // MARK: - common
+    
+    func reloadCell() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) { [weak self] in
+            guard let self = self else { return }
+            self.reloadCellHandler?(self)
+        }
     }
 }

@@ -98,7 +98,8 @@ open class SBUFeedNotificationChannelViewController: SBUBaseViewController,
         channelURL: String,
         notificationListParams: MessageListParams? = nil,
         startingPoint: Int64? = nil,
-        displaysLocalCachedListFirst: Bool = false
+        displaysLocalCachedListFirst: Bool = false,
+        viewParams: SBUFeedNotificationChannelViewParams? = nil
     ) {
         super.init(nibName: nil, bundle: nil)
         
@@ -107,7 +108,8 @@ open class SBUFeedNotificationChannelViewController: SBUBaseViewController,
         self.initialize(
             channelURL: channelURL,
             notificationListParams: notificationListParams,
-            displaysLocalCachedListFirst: displaysLocalCachedListFirst
+            displaysLocalCachedListFirst: displaysLocalCachedListFirst,
+            viewParams: viewParams
         )
     }
     
@@ -116,7 +118,8 @@ open class SBUFeedNotificationChannelViewController: SBUBaseViewController,
         channelURL: String? = nil,
         notificationListParams: MessageListParams? = nil,
         startingPoint: Int64? = nil,
-        displaysLocalCachedListFirst: Bool = false
+        displaysLocalCachedListFirst: Bool = false,
+        viewParams: SBUFeedNotificationChannelViewParams? = nil
     ) {
         SBULog.info(#function)
         
@@ -133,7 +136,7 @@ open class SBUFeedNotificationChannelViewController: SBUBaseViewController,
 
         self.headerComponent = SBUModuleSet.FeedNotificationChannelModule.HeaderComponent.init()
         self.categoryFilterComponent = SBUModuleSet.FeedNotificationChannelModule.CategoryFilterComponent.init()
-        self.listComponent = SBUModuleSet.FeedNotificationChannelModule.ListComponent.init()
+        self.listComponent = SBUModuleSet.FeedNotificationChannelModule.ListComponent.init(viewParams: viewParams)
     }
     
     open override func loadView() {
@@ -168,9 +171,9 @@ open class SBUFeedNotificationChannelViewController: SBUBaseViewController,
         self.updateStyles()
         
         self.viewModel?.enableLogImpression(true)
-        self.viewModel?.logImpression(messages: self.listComponent?.getVisibleMessages() ?? [])
+        self.viewModel?.markAsViewed(messages: self.listComponent?.getVisibleMessages() ?? [])
     }
-    
+
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
@@ -230,16 +233,13 @@ open class SBUFeedNotificationChannelViewController: SBUBaseViewController,
     /// print(action.data) // "https://www.sendbird.com"
     /// ```
     /// - Since: 3.5.0
-    open func handleWebAction(_
-        action: SBUMessageTemplate.Action,
+    open func handleWebAction(
+        _ action: SBUMessageTemplate.Action,
         notification: BaseMessage,
         forRowAt indexPath: IndexPath
     ) {
-        if let url = URL(string: action.data.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") {
-            url.open()
-        } else if let urlString = action.alterData, let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") {
-            url.open()
-        }
+        guard let url = action.urlFromActionDatas else { return }
+        url.open()
     }
     
     /// Called when there’s a tap gesture on a notification that includes a custom URL scheme. e.g., `"myapp://someaction"`
@@ -252,11 +252,8 @@ open class SBUFeedNotificationChannelViewController: SBUBaseViewController,
         notification: BaseMessage,
         forRowAt indexPath: IndexPath
     ) {
-        if let url = URL(string: action.data.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") {
-            url.open(needSanitise: false)
-        } else if let urlString = action.alterData, let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") {
-            url.open(needSanitise: false)
-        }
+        guard let url = action.urlFromActionDatas else { return }
+        url.open(needSanitise: false)
     }
     
     // MARK: - ViewModel
@@ -349,9 +346,6 @@ open class SBUFeedNotificationChannelViewController: SBUBaseViewController,
         self.headerComponent?.updateStyles()
         self.categoryFilterComponent?.updateStyles()
         self.listComponent?.updateStyles()
-        
-        self.categoryFilterComponent?.reloadCollectionView()
-        self.listComponent?.reloadTableView()
     }
 
     open override func updateLayouts() {
@@ -480,7 +474,7 @@ open class SBUFeedNotificationChannelViewController: SBUBaseViewController,
     ) {
         guard channel != nil else {
             // channel deleted
-            if self.navigationController?.viewControllers.last == self {
+            if self.isLastInNavigationStack() {
                 // If leave is called in the ChannelSettingsViewController, this logic needs to be prevented.
                 self.onClickBack()
             }
@@ -779,15 +773,27 @@ open class SBUFeedNotificationChannelViewController: SBUBaseViewController,
     
     func feedNotificationChannelModule(
         _ listComponent: SBUFeedNotificationChannelModule.List,
-        shouldLogImpression messages: [BaseMessage]
+        shouldMarkAsViewed messages: [BaseMessage]
     ) {
-        self.viewModel?.logImpression(messages: messages)
+        self.viewModel?.markAsViewed(messages: messages)
     }
     
-    func feedNotificationChannelModuleStopLogImpressionTimer(
+    func feedNotificationChannelModuleStopMarkAsViewedTimer(
         _ listComponent: SBUFeedNotificationChannelModule.List
     ) {
         self.viewModel?.invalidateLogImpressionTimer()
+    }
+
+    func feedNotificationChannelModule(
+        _ listComponent: SBUFeedNotificationChannelModule.List,
+        shouldHandleUncachedTemplateKeys templateKeys: [String],
+        messageCell: SBUBaseMessageCell
+    ) {
+        self.viewModel?.loadUncachedTemplate(
+            keys: templateKeys
+        ) { [weak self] _ in
+            self?.listComponent?.reloadTableView()
+        }
     }
     
     // MARK: - SBUFeedNotificationChannelModuleListDataSource
@@ -824,6 +830,22 @@ open class SBUFeedNotificationChannelViewController: SBUBaseViewController,
         startingPointIn tableView: UITableView
     ) -> Int64? {
         self.viewModel?.startingPoint
+    }
+    
+    func feedNotificationChannelModule(
+        _ listComponent: SBUFeedNotificationChannelModule.List,
+        didHandleUncachedTemplateKeys templateKeys: [String]
+    ) -> Bool? {
+        let cache = self.viewModel?.templateLoadCache ?? [:]
+        var result = true
+        for templateKey in templateKeys {
+            switch cache[templateKey] {
+            case .success: continue
+            case .failure, .loading: result = false
+            default: return nil
+            }
+        }
+        return result
     }
     
     // MARK: - SBUCommonViewModelDelegate

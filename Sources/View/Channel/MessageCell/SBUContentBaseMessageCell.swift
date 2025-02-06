@@ -18,6 +18,11 @@ open class SBUContentBaseMessageCell: SBUBaseMessageCell {
     public var useQuotedMessage = false
     public var useThreadInfo = false
     
+    /// The boolean value that decides whether to enable a long press on a reaction emoji.
+    /// If `true`, a member list for each reaction emoji is shown.
+    /// - Since: 3.19.0
+    public var enableEmojiLongPress = true
+    
     // MARK: Views: Controls
     public lazy var userNameView: UIView = {
         let userNameView = SBUUserNameView()
@@ -31,6 +36,12 @@ open class SBUContentBaseMessageCell: SBUBaseMessageCell {
     }()
     public lazy var profileView: UIView = SBUMessageProfileView()
     public lazy var stateView: UIView = SBUMessageStateView()
+    
+    #if SWIFTUI
+    /// A hostingView for senderProfileImage.
+    /// If this is non-nil, it means that SwiftUI View was set for senderProfileImage.
+//    var profileHostingView: UIView?
+    #endif
     
     // MARK: Views: Layouts
     
@@ -111,6 +122,41 @@ open class SBUContentBaseMessageCell: SBUBaseMessageCell {
         return SBUStackView(axis: .horizontal, alignment: .bottom, spacing: 4)
     }()
     
+    /// Type specifying the maximum width of the message view
+    /// - Since: 3.21.0
+    @available(*, deprecated, message: "`containerType` has been deprecated since 3.27.2.")
+    var containerType: SBUMessageContainerType { .default }
+    
+    /// Used when the containertype is wide, to place state view below the message bubble.
+    /// - Since: 3.21.0
+    @available(*, deprecated, message: "`wideSizeStateContainerView` has been deprecated since 3.27.2.")
+    lazy var wideSizeStateContainerView: UIStackView = {
+        return SBUStackView(axis: .horizontal, alignment: .center, spacing: 12)
+    }()
+    
+    /// This is the view used to display the state view after spacing out the profile area in the `wideSizeStateContainerView`.
+    /// - Since: 3.21.0
+    @available(*, deprecated, message: "`wideSizeProfileSpaceView` has been deprecated since 3.27.2.")
+    lazy var wideSizeProfileSpaceView: UIView = {
+        return UIView()
+    }()
+    
+    /// The fullSizeMessageContainerView is attached as an overlay.
+    /// - Since: 3.21.0
+    @available(*, deprecated, message: "`fullSizeMessageContainerView` has been deprecated since 3.27.2.")
+    lazy var fullSizeMessageContainerView: UIStackView = {
+        return SBUStackView(axis: .vertical, alignment: .fill, spacing: 4)
+    }()
+
+    // fullSizeMessageConstraints exists as a property to handle active/deactive.
+    /// - Since: 3.21.0
+    @available(*, deprecated, message: "`fullSizeMessageConstraints` has been deprecated since 3.27.2.")
+    var fullSizeMessageConstraints: [NSLayoutConstraint] = [] {
+        didSet {
+            NSLayoutConstraint.deactivate(oldValue)
+        }
+    }
+    
     // + ----------------- +
     // | mainContainerView |
     // + ----------------- +
@@ -137,6 +183,15 @@ open class SBUContentBaseMessageCell: SBUBaseMessageCell {
         mainView.position = self.position
         return mainView
     }()
+    
+    /// Update the radius of the mainContainerView to the default value.
+    /// - Since: 3.21.0
+    public func resetMainContainerViewLayer() {
+        self.mainContainerView.layer.cornerRadius = 16
+        self.mainContainerView.layer.borderColor = UIColor.clear.cgColor
+        self.mainContainerView.layer.borderWidth = 1
+        self.mainContainerView.clipsToBounds = true
+    }
     
     /// A ``SBUMessageReactionView`` that shows reactions on the message.
     public var reactionView: SBUMessageReactionView = SBUMessageReactionView()
@@ -175,12 +230,14 @@ open class SBUContentBaseMessageCell: SBUBaseMessageCell {
         // + ------------------+-----------------------+-------------------+
         // | threadInfoSpacing                         | threadInfoView    |
         // + ------------------------------------------+-------------------+
+        // | wideSizeStateContainerView                                    |
+        // + --------------------------------------------------------------+
         
         self.userNameStackView.setVStack([
             self.userNameView,
             self.contentHStackView.setHStack([
                 self.profilesStackView.setHStack([
-                    profileView
+                    self.profileView
                 ]),
                 self.profileContentSpacing,
                 self.contentVStackView.setVStack([
@@ -212,7 +269,7 @@ open class SBUContentBaseMessageCell: SBUBaseMessageCell {
         self.userNameStackView
             .sbu_constraint(equalTo: self.messageContentView, left: 12, right: 12, bottom: 0)
             .sbu_constraint(equalTo: self.messageContentView, top: 0, priority: .defaultLow)
-        
+                
         super.setupLayouts()
     }
     
@@ -243,10 +300,17 @@ open class SBUContentBaseMessageCell: SBUBaseMessageCell {
             guard let self = self else { return }
             self.moreEmojiTapHandler?()
         }
+        
+        self.reactionView.errorHandler = { [weak self] error in
+            guard let self = self else { return }
+            self.errorHandler?(error)
+        }
     }
     
     open override func setupStyles() {
         super.setupStyles()
+        
+        self.resetMainContainerViewLayer()
         self.mainContainerView.leftBackgroundColor = self.theme.leftBackgroundColor
         self.mainContainerView.leftPressedBackgroundColor = self.theme.leftPressedBackgroundColor
         self.mainContainerView.rightBackgroundColor = self.theme.rightBackgroundColor
@@ -284,6 +348,7 @@ open class SBUContentBaseMessageCell: SBUBaseMessageCell {
     }
     
     // MARK: - Common
+    
     open override func configure(with configuration: SBUBaseMessageCellParams) {
         // nil for super/broadcast channel which doesn't support receipts.
         // Kept receipt to .none for backward compatibility as this configure() is *open*.
@@ -293,11 +358,14 @@ open class SBUContentBaseMessageCell: SBUBaseMessageCell {
         guard let message = self.message else { return }
         
         // MARK: Configure reaction view
-        self.reactionView.configure(
+        let params = SBUMessageReactionViewParams(
             maxWidth: SBUConstant.imageSize.width,
             useReaction: self.useReaction,
-            reactions: message.reactions
+            reactions: message.reactions,
+            enableEmojiLongPress: self.enableEmojiLongPress,
+            message: message
         )
+        self.reactionView.configure(configuration: params)
         
         // MARK: update UI with message position
         
@@ -321,40 +389,29 @@ open class SBUContentBaseMessageCell: SBUBaseMessageCell {
         self.profileView.isHidden = self.position == .right
         self.profilesStackView.isHidden = self.position == .right
         
-        let usingProfileView = !(
-            SBUGlobals.isMessageGroupingEnabled &&
-            (configuration.groupPosition == .top || configuration.groupPosition == .middle)
-        )
-        
         if configuration.messagePosition != .right {
             self.configureMessageProfileViews(message: message)
         }
         
+//        let usingProfileView = !(
+//            SBUGlobals.isMessageGroupingEnabled &&
+//            (configuration.groupPosition == .top || configuration.groupPosition == .middle)
+//        )
+        
         // MARK: Set up SBU message state view
         if self.stateView is SBUMessageStateView {
-            let isQuotedReplyMessage = message.parentMessage != nil
+            let isQuotedReplyMessage = (self.useQuotedMessage ? message.parentMessage != nil : false)
             let configuration = SBUMessageStateViewParams(
                 timestamp: message.createdAt,
                 sendingState: message.sendingStatus,
                 receiptState: self.receiptState,
                 position: self.position,
-                isQuotedReplyMessage: self.useQuotedMessage ? isQuotedReplyMessage : false
+                isQuotedReplyMessage: isQuotedReplyMessage
             )
-            self.messageHStackView.arrangedSubviews.forEach {
-                $0.removeFromSuperview()
-            }
+            self.stateView.removeFromSuperview()
             self.stateView = SBUMessageStateView(
-                isQuotedReplyMessage: self.useQuotedMessage
-                ? isQuotedReplyMessage
-                : false
+                isQuotedReplyMessage: isQuotedReplyMessage
             )
-            self.messageHStackView.setHStack([
-                self.mainContainerVStackView.setVStack([
-                    self.mainContainerView,
-                ]),
-                self.stateView,
-                self.messageSpacing
-            ])
             (self.stateView as? SBUMessageStateView)?.configure(with: configuration)
         }
         
@@ -498,54 +555,61 @@ open class SBUContentBaseMessageCell: SBUBaseMessageCell {
         }
         
         switch self.position {
-            case .left:
-                self.userNameStackView.alignment = .leading
-                self.mainContainerVStackView.alignment = .leading
-                self.messageHStackView.setHStack([
-                    self.mainContainerVStackView.setVStack([
-                        self.mainContainerView,
-                    ]),
-                    self.stateView,
-                    self.messageSpacing
-                ])
-                self.contentVStackView.setVStack([
-                    self.quotedMessageView,
-                    self.messageHStackView
-                ])
-                self.contentHStackView.setHStack([
-                    self.profilesStackView,
-                    self.profileContentSpacing,
-                    self.contentVStackView
-                ])
-                self.threadHStackView.setHStack([
-                    self.threadInfoSpacing,
-                    self.threadInfoView
-                ])
-                    
-            case .right:
-                self.userNameStackView.alignment = .trailing
-                self.mainContainerVStackView.alignment = .trailing
-                self.messageHStackView.setHStack([
-                    self.messageSpacing,
-                    self.stateView,
-                    self.mainContainerVStackView.setVStack([
-                        self.mainContainerView,
-                    ]),
-                ])
-                self.contentVStackView.setVStack([
-                    self.quotedMessageView,
-                    self.messageHStackView
-                ])
-                self.contentHStackView.setHStack([
-                    self.contentVStackView,
-                    self.profileContentSpacing
-                ])
-                self.threadHStackView.setHStack([
-                    self.threadInfoView
-                ])
-                
-            case .center:
-                break
+        case .left:
+            self.userNameStackView.alignment = .leading
+            self.mainContainerVStackView.alignment = .leading
+            self.messageHStackView.setHStack([
+                self.mainContainerVStackView.setVStack([
+                    self.mainContainerView,
+                ]),
+                self.stateView,
+                self.messageSpacing
+            ])
+            self.contentVStackView.setVStack([
+                self.quotedMessageView,
+                self.messageHStackView
+            ])
+            self.contentHStackView.setHStack([
+                self.profilesStackView,
+                self.profileContentSpacing,
+                self.contentVStackView
+            ])
+            #if SWIFTUI
+            if self.configuration?.isThreadMessage == false {
+                self.applyViewConverter(.senderProfileImage)
+            } else {
+                self.applyViewConverterForMessageThread(.senderProfileImage)
+            }
+            #endif
+            self.threadHStackView.setHStack([
+                self.threadInfoSpacing,
+                self.threadInfoView
+            ])
+            
+        case .right:
+            self.userNameStackView.alignment = .trailing
+            self.mainContainerVStackView.alignment = .trailing
+            self.messageHStackView.setHStack([
+                self.messageSpacing,
+                self.stateView,
+                self.mainContainerVStackView.setVStack([
+                    self.mainContainerView,
+                ]),
+            ])
+            self.contentVStackView.setVStack([
+                self.quotedMessageView,
+                self.messageHStackView
+            ])
+            self.contentHStackView.setHStack([
+                self.contentVStackView,
+                self.profileContentSpacing
+            ])
+            self.threadHStackView.setHStack([
+                self.threadInfoView
+            ])
+            
+        case .center:
+            break
         }
         
         if self.useQuotedMessage {
@@ -615,7 +679,8 @@ open class SBUContentBaseMessageCell: SBUBaseMessageCell {
     }
         
     // MARK: - Action
-    @objc open func onLongPressContentView(sender: UILongPressGestureRecognizer?) {
+    @objc
+    open func onLongPressContentView(sender: UILongPressGestureRecognizer?) {
         if let sender = sender {
             if sender.state == .began {
                 self.longPressHandlerToContent?()
@@ -625,11 +690,13 @@ open class SBUContentBaseMessageCell: SBUBaseMessageCell {
         }
     }
     
-    @objc open func onTapContentView(sender: UITapGestureRecognizer) {
+    @objc
+    open func onTapContentView(sender: UITapGestureRecognizer) {
         self.tapHandlerToContent?()
     }
     
-    @objc open func onTapUserProfileView(sender: UITapGestureRecognizer) {
+    @objc
+    open func onTapUserProfileView(sender: UITapGestureRecognizer) {
         self.userProfileTapHandler?()
     }
     

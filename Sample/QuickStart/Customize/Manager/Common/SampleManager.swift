@@ -8,6 +8,7 @@
 
 import UIKit
 import SendbirdChatSDK
+import SendbirdUIKit
 
 // This function handles alertController to be used in the sample app.
 class AlertManager: NSObject {
@@ -41,7 +42,7 @@ class ChannelManager: NSObject {
         let channelListQuery = GroupChannel.createMyGroupChannelListQuery(params: params)
         channelListQuery.loadNextPage { channels, error in
             guard error == nil else {
-                SBULog.error(error?.localizedDescription)
+                print(error?.localizedDescription)
                 return
             }
             
@@ -51,6 +52,27 @@ class ChannelManager: NSObject {
             }
             
             completionHandler(channel)
+        }
+    }
+    
+    static func getSampleOpenChannel(completionHandler: @escaping (_ channel: OpenChannel) -> Void) {
+        let params = OpenChannelListQueryParams()
+        params.limit = 10
+        
+        // Sendbird provides various access control options when using the Chat SDK. By default, the Allow retrieving user list attribute is turned on to facilitate creating sample apps. However, this may grant access to unwanted data or operations, leading to potential security concerns. To manage your access control settings, you can turn on or off each setting on Sendbird Dashboard.
+        let channelListQuery = OpenChannel.createOpenChannelListQuery(params: params)
+        channelListQuery.loadNextPage { openChannels, error in
+            guard error == nil else {
+                print(error?.localizedDescription)
+                return
+            }
+            
+            guard let openChannel = openChannels?.first else {
+                AlertManager.show(title: "No channel", message: "Create at least one open channel to proceed.")
+                return
+            }
+            
+            completionHandler(openChannel)
         }
     }
 }

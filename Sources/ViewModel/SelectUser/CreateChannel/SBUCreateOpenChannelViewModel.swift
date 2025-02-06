@@ -17,15 +17,22 @@ public protocol SBUCreateOpenChannelViewModelDelegate: SBUCommonViewModelDelegat
     )
 }
 
+/// `SBUCreateOpenChannelViewModel` is a class that handles the creation of open channels.
 open class SBUCreateOpenChannelViewModel {
     
     // MARK: - Property (Private)
     weak var delegate: SBUCreateOpenChannelViewModelDelegate?
     @SBUAtomic private var isLoading = false
     
+    // MARK: SwiftUI (Internal)
+    var delegates = WeakDelegateStorage<SBUCreateOpenChannelViewModelDelegate>()
+        
     // MARK: - Life Cycle
-    public init(delegate: SBUCreateOpenChannelViewModelDelegate?) {
+    /// Initializes a new instance of `SBUCreateOpenChannelViewModel`.
+    /// - Parameter delegate: An optional delegate that conforms to `SBUCreateOpenChannelViewModelDelegate`.
+    required public init(delegate: SBUCreateOpenChannelViewModelDelegate?) {
         self.delegate = delegate
+        self.delegates.addDelegate(delegate, type: .uikit)
     }
     
     // MARK: - Create Channel
@@ -54,10 +61,10 @@ open class SBUCreateOpenChannelViewModel {
     open func createChannel(params: OpenChannelCreateParams) {
         SBULog.info("[Request] Create open channel")
         
-        self.delegate?.shouldUpdateLoadingState(true)
+        self.delegates.forEach {$0.shouldUpdateLoadingState(true) }
         
         OpenChannel.createChannel(params: params) { [weak self] channel, error in
-            defer { self?.delegate?.shouldUpdateLoadingState(false) }
+            defer { self?.delegates.forEach {$0.shouldUpdateLoadingState(false) } }
             guard let self = self else { return }
 
             if let error = error {
@@ -65,12 +72,12 @@ open class SBUCreateOpenChannelViewModel {
                     [Failed] Create open channel request:
                     \(String(error.localizedDescription))
                     """)
-                self.delegate?.didReceiveError(error)
+                self.delegates.forEach {$0.didReceiveError(error) }
                 return
             }
 
             SBULog.info("[Succeed] Create open channel: \(channel?.description ?? "")")
-            self.delegate?.createOpenChannelViewModel(self, didCreateChannel: channel)
+            self.delegates.forEach {$0.createOpenChannelViewModel(self, didCreateChannel: channel) }
         }
     }
 

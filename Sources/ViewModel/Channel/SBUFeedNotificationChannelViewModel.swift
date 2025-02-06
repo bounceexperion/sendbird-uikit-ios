@@ -9,6 +9,7 @@
 import Foundation
 import SendbirdChatSDK
 
+// swiftlint:disable type_name
 protocol SBUFeedNotificationChannelViewModelDataSource: AnyObject {
     /// Asks to data source to return the array of index path that represents starting point of channel.
     /// - Parameters:
@@ -74,6 +75,7 @@ protocol SBUFeedNotificationChannelViewModelDelegate: SBUCommonViewModelDelegate
         keepsScroll: Bool
     )
 }
+// swiftlint:enable type_name
 
 /// A view model for the notification channel.
 class SBUFeedNotificationChannelViewModel: NSObject {
@@ -92,6 +94,10 @@ class SBUFeedNotificationChannelViewModel: NSObject {
     
     /// This object has all valid notifications synchronized with the server.
     @SBUAtomic var notifications: [BaseMessage] = []
+    
+    /// Data fields for templates to cache load states
+    /// - Since: 3.29.0
+    var templateLoadCache: [String: SBUMessageTemplate.TemplateCacheState] = [:] // template-key : load-state
     
     /// Custom param set by user.
     var customizedNotificationListParams: MessageListParams?
@@ -117,15 +123,15 @@ class SBUFeedNotificationChannelViewModel: NSObject {
     /// ```
     var allowsReadStatusUpdate = false
     
-    // MARK: - Log impression
+    // MARK: - Mark as viewed
     
-    /// The time interval to wait to send the impression logs after scrolling has stopped
-    static let logImpressionInterval: TimeInterval = 0.5
+    /// The time interval to wait to send the viewed action after scrolling has stopped
+    static let markAsViewsInterval: TimeInterval = 0.5
     
-    /// A timer for log impression
-    private var logImpressionTimer: Timer?
+    /// A timer for markAsViewed
+    private var markAsViewedTimer: Timer?
     
-    private var logImpressionEnabled: Bool = false
+    private var markAsViewedEnabled: Bool = false
     
     // MARK: - Common
     
@@ -162,21 +168,15 @@ class SBUFeedNotificationChannelViewModel: NSObject {
     var displaysLocalCachedListFirst: Bool = false
     
     var isCategoryFilterEnabled: Bool { // 3.9.0
-        get {
-            self.channel?.isCategoryFilterEnabled ?? false
-        }
+        self.channel?.isCategoryFilterEnabled ?? false
     }
     
     var categories: [NotificationCategory] { // 3.9.0
-        get {
-            self.channel?.categories ?? []
-        }
+        self.channel?.categories ?? []
     }
     
     var isTemplateLabelEnabled: Bool { // 3.9.0
-        get {
-            self.channel?.isTemplateLabelEnabled ?? false
-        }
+        self.channel?.isTemplateLabelEnabled ?? false
     }
     
     var selectedCategory: NotificationCategory? // 3.9.0
@@ -678,30 +678,52 @@ class SBUFeedNotificationChannelViewModel: NSObject {
         )
     }
     
-    // MARK: - Log impression
-    /// Appends impression logs.
-    func logImpression(messages: [BaseMessage]) {
-        if self.logImpressionEnabled == false {
+    // MARK: - Mark as viewed
+    /// Appends viewed action.
+    func markAsViewed(messages: [BaseMessage]) {
+        if self.markAsViewedEnabled == false {
             return
         }
         
         self.invalidateLogImpressionTimer()
         
-        self.logImpressionTimer = Timer.scheduledTimer(
-            withTimeInterval: Self.logImpressionInterval,
+        self.markAsViewedTimer = Timer.scheduledTimer(
+            withTimeInterval: Self.markAsViewsInterval,
             repeats: false
         ) { [weak self] _ in
             guard let self = self else { return }
-            _ = self.channel?.logImpression(messages: messages)
+            _ = self.channel?.logViewed(messages: messages)
         }
     }
     
     func enableLogImpression(_ enable: Bool) {
-        self.logImpressionEnabled = enable
+        self.markAsViewedEnabled = enable
     }
 
     func invalidateLogImpressionTimer() {
-        self.logImpressionTimer?.invalidate()
+        self.markAsViewedTimer?.invalidate()
+    }
+    
+    func loadUncachedTemplate(
+        keys: [String],
+        completionHandler: @escaping (Bool) -> Void
+    ) {
+        guard let uncachedKeys = self.templateLoadCache.uncachedKeys(from: keys) else {
+            SBULog.info("[Request] All requested keys are already marked as failed or are loading: \(keys)")
+            completionHandler(false)
+            return
+        }
+        
+        self.templateLoadCache.loadingKeys(from: uncachedKeys)
+        
+        SBUMessageTemplateManager.loadTemplateList(type: .notification, keys: uncachedKeys) { [weak self] success in
+            guard let self = self else { return }
+            SBULog.info("[Request] Load request completed - success: \(success)")
+            
+            self.templateLoadCache.didLoadKeys(form: uncachedKeys, success: success)
+
+            completionHandler(success)
+        }
     }
     
     /// This function refreshes channel and checkes updated message.

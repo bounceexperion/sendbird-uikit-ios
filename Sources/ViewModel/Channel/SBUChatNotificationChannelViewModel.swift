@@ -9,6 +9,7 @@
 import Foundation
 import SendbirdChatSDK
 
+// swiftlint:disable type_name
 protocol SBUChatNotificationChannelViewModelDataSource: AnyObject {
     /// Asks to data source to return the array of index path that represents starting point of channel.
     /// - Parameters:
@@ -74,6 +75,7 @@ protocol SBUChatNotificationChannelViewModelDelegate: SBUCommonViewModelDelegate
         keepsScroll: Bool
     )
 }
+// swiftlint:enable type_name
 
 /// A view model for the notification channel.
 class SBUChatNotificationChannelViewModel: NSObject {
@@ -93,6 +95,10 @@ class SBUChatNotificationChannelViewModel: NSObject {
     /// This object has all valid notifications synchronized with the server.
     @SBUAtomic var notifications: [BaseMessage] = []
     
+    /// Data fields for templates to cache load states
+    /// - Since: 3.29.0
+    var templateLoadCache: [String: SBUMessageTemplate.TemplateCacheState] = [:] // template-key : load-state
+
     /// Custom param set by user.
     var customizedNotificationListParams: MessageListParams?
     var notificationListParams = MessageListParams()
@@ -368,7 +374,9 @@ class SBUChatNotificationChannelViewModel: NSObject {
     
     // MARK: - Notification related
     func markAsRead(completionHandler: SendbirdChatSDK.SBErrorHandler? = nil) {
-        if let channel = self.channel, allowsReadStatusUpdate {
+        if let channel = self.channel,
+            allowsReadStatusUpdate,
+           SendbirdChat.getConnectState() == .open {
             channel.markAsRead(completionHandler: completionHandler)
         }
     }
@@ -681,6 +689,28 @@ class SBUChatNotificationChannelViewModel: NSObject {
             params: self.notificationListParams
         )
         self.notificationCollection?.delegate = self
+    }
+
+    func loadUncachedTemplate(
+        keys: [String],
+        completionHandler: @escaping (Bool) -> Void
+    ) {
+        guard let uncachedKeys = self.templateLoadCache.uncachedKeys(from: keys) else {
+            SBULog.info("[Request] All requested keys are already marked as failed or are loading: \(keys)")
+            completionHandler(false)
+            return
+        }
+        
+        self.templateLoadCache.loadingKeys(from: uncachedKeys)
+        
+        SBUMessageTemplateManager.loadTemplateList(type: .notification, keys: uncachedKeys) { [weak self] success in
+            guard let self = self else { return }
+            SBULog.info("[Request] Load request completed - success: \(success)")
+            
+            self.templateLoadCache.didLoadKeys(form: uncachedKeys, success: success)
+
+            completionHandler(success)
+        }
     }
 }
 

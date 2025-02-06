@@ -42,7 +42,8 @@ extension SBUMessageSearchModule {
     
     /// A module component that represent the list of `SBUMessageSearchModule`.
     @objc(SBUMessageSearchModuleList)
-    @objcMembers open class List: UIView {
+    @objcMembers
+    open class List: UIView {
         
         // MARK: - UI properties (Public)
         
@@ -50,6 +51,7 @@ extension SBUMessageSearchModule {
         public var tableView = UITableView()
         
         /// A view that shows when there is no searched messages.
+        /// The default view type is ``SBUEmptyView``.
         public var emptyView: UIView? {
             didSet { self.tableView.backgroundView = self.emptyView }
         }
@@ -61,12 +63,6 @@ extension SBUMessageSearchModule {
         public var theme: SBUMessageSearchTheme?
         
         // MARK: - UI properties (Private)
-        private lazy var defaultEmptyView: SBUEmptyView? = {
-            let emptyView = SBUEmptyView()
-            emptyView.type = EmptyViewType.none
-            emptyView.delegate = self
-            return emptyView
-        }()
         
         private let searchCellHeight: CGFloat = 76.0
         
@@ -80,6 +76,13 @@ extension SBUMessageSearchModule {
         /// The search result list object from `messageSearchModule(_:searchResultsInTableView:)` data source method.
         public var resultList: [BaseMessage] {
             self.dataSource?.messageSearchModule(self, searchResultsInTableView: self.tableView) ?? []
+        }
+        
+        func createDefualtEmptyView() -> SBUEmptyView {
+            SBUEmptyView.createDefault(
+                Self.EmptyView,
+                delegate: self
+            )
         }
         
         // MARK: - LifeCycle
@@ -115,7 +118,7 @@ extension SBUMessageSearchModule {
         open func setupViews() {
             // empty view
             if self.emptyView == nil {
-                self.emptyView = self.defaultEmptyView
+                self.emptyView = self.createDefualtEmptyView()
             }
             
             // tableview
@@ -132,7 +135,7 @@ extension SBUMessageSearchModule {
             
             // register cell
             if self.resultCell == nil {
-                self.register(resultCell: SBUMessageSearchResultCell())
+                self.register(resultCell: Self.MessageSearchResultCell.init())
             }
         }
         

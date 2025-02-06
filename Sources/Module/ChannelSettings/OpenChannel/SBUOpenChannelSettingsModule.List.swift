@@ -29,14 +29,16 @@ public protocol SBUOpenChannelSettingsModuleListDelegate: SBUBaseChannelSettings
     func openChannelSettingsModuleDidSelectDelete(_ listComponent: SBUOpenChannelSettingsModule.List)
 }
 
+// swiftlint:disable type_name
 public protocol SBUOpenChannelSettingsModuleListDataSource: SBUBaseChannelSettingsModuleListDataSource { }
+// swiftlint:enable type_name
 
 extension SBUOpenChannelSettingsModule {
     
     /// A module component that represent the list of `SBUOpenChannelSettingsModule`.
     @objc(SBUOpenChannelSettingsModuleList)
-    @objcMembers open class List: SBUBaseChannelSettingsModule.List {
-        
+    @objcMembers
+    open class List: SBUBaseChannelSettingsModule.List {
         // MARK: - Logic properties (Public)
         public weak var delegate: SBUOpenChannelSettingsModuleListDelegate? {
             get { self.baseDelegate as? SBUOpenChannelSettingsModuleListDelegate }
@@ -49,6 +51,12 @@ extension SBUOpenChannelSettingsModule {
         }
         
         public weak var channel: OpenChannel? { self.baseChannel as? OpenChannel }
+        
+        // MARK: - default view
+        
+        override func createDefaultChannelInfoView() -> SBUChannelSettingsChannelInfoView {
+            Self.ChannelInfoView.init()
+        }
         
         // MARK: - LifeCycle
         @available(*, unavailable, renamed: "SBUOpenChannelSettingsModule.List()")
@@ -88,7 +96,7 @@ extension SBUOpenChannelSettingsModule {
             super.setupViews()
             
             self.tableView.register(
-                type(of: SBUOpenChannelSettingCell()),
+                Self.SettingCell,
                 forCellReuseIdentifier: SBUOpenChannelSettingCell.sbu_className
             )
         }
@@ -162,8 +170,10 @@ extension SBUOpenChannelSettingsModule {
 
 // MARK: - UITableViewDelegate, UITableViewDataSource
 extension SBUOpenChannelSettingsModule.List {
-    open override func tableView(_ tableView: UITableView,
-                        cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    open override func tableView(
+        _ tableView: UITableView,
+        cellForRowAt indexPath: IndexPath
+    ) -> UITableViewCell {
         let cell: UITableViewCell? = tableView.dequeueReusableCell(
             withIdentifier: SBUOpenChannelSettingCell.sbu_className)
         

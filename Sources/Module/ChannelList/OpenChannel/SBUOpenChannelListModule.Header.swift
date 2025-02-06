@@ -14,7 +14,9 @@ public protocol SBUOpenChannelListModuleHeaderDelegate: SBUBaseChannelListModule
 
 extension SBUOpenChannelListModule {
     /// A module component that represents the header of `SBUOpenChannelListModule`.
-    @objcMembers open class Header: SBUBaseChannelListModule.Header {
+    @objc(SBUOpenChannelListModuleHeader)
+    @objcMembers
+    open class Header: SBUBaseChannelListModule.Header {
         
         // MARK: - UI properties (Public)
         /// The object that is used as the theme of the header  component. The theme must adopt the `SBUOpenChannelListTheme` class.
@@ -25,6 +27,34 @@ extension SBUOpenChannelListModule {
         public weak var delegate: SBUOpenChannelListModuleHeaderDelegate? {
             get { self.baseDelegate as? SBUOpenChannelListModuleHeaderDelegate }
             set { self.baseDelegate = newValue }
+        }
+        
+        // MARK: - Methods (Private)
+        
+        override func createDefaultTitleView() -> SBUNavigationTitleView {
+            let titleView = SBUModuleSet.OpenChannelListModule.HeaderComponent.TitleView.init()
+            titleView.configure(title: SBUStringSet.ChannelList_Header_Title)
+            return titleView
+        }
+        
+        override func createDefaultLeftButton() -> SBUBarButtonItem {
+            SBUModuleSet.OpenChannelListModule.HeaderComponent.LeftBarButton.init(
+                image: SBUIconSetType.iconBack.image(to: SBUIconSetType.Metric.defaultIconSize),
+                landscapeImagePhone: nil,
+                style: .plain,
+                target: self,
+                action: #selector(onTapLeftBarButton)
+            )
+        }
+        
+        override func createDefaultRightButton() -> SBUBarButtonItem {
+            SBUModuleSet.OpenChannelListModule.HeaderComponent.RightBarButton.init(
+                image: SBUIconSetType.iconCreate.image(to: SBUIconSetType.Metric.defaultIconSize),
+                landscapeImagePhone: nil,
+                style: .plain,
+                target: self,
+                action: #selector(onTapRightBarButton)
+            )
         }
         
         // MARK: - LifeCycle
@@ -52,6 +82,16 @@ extension SBUOpenChannelListModule {
             self.setupStyles()
         }
         
+        open override func setupViews() {
+            #if SWIFTUI
+            self.applyViewConverter(.titleView)
+            self.applyViewConverter(.leftView)
+            self.applyViewConverter(.rightView)
+            // We are not using `...buttons` in SwiftUI
+            #endif
+            super.setupViews()
+        }
+        
         /// Sets up style with theme. If the `theme` is `nil`, it uses the stored theme.
         /// - Parameter theme: `SBUOpenChannelListTheme` object
         open func setupStyles(theme: SBUOpenChannelListTheme? = nil) {
@@ -65,6 +105,9 @@ extension SBUOpenChannelListModule {
             
             self.leftBarButton?.tintColor = self.theme?.leftBarButtonTintColor
             self.rightBarButton?.tintColor = self.theme?.rightBarButtonTintColor
+            
+            self.leftBarButtons?.forEach({ $0.tintColor = self.theme?.leftBarButtonTintColor })
+            self.rightBarButtons?.forEach({ $0.tintColor = self.theme?.rightBarButtonTintColor })
         }
     }
 }

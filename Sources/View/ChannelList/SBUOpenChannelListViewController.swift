@@ -8,6 +8,15 @@
 
 import UIKit
 import SendbirdChatSDK
+#if SWIFTUI
+import SwiftUI
+#endif
+
+#if SWIFTUI
+protocol OpenChannelListViewEventDelegate: AnyObject {
+    func openChannelListView(didSelectRowAt indexPath: IndexPath)
+}
+#endif
 
 open class SBUOpenChannelListViewController: SBUBaseChannelListViewController, SBUOpenChannelListModuleHeaderDelegate, SBUOpenChannelListModuleListDelegate, SBUOpenChannelListModuleListDataSource, SBUCommonViewModelDelegate, SBUOpenChannelListViewModelDelegate {
     
@@ -33,6 +42,18 @@ open class SBUOpenChannelListViewController: SBUBaseChannelListViewController, S
     /// This object has a list of all channels.
     public var channelList: [OpenChannel] { self.viewModel?.channelList ?? [] }
     
+    // MARK: - SwiftUI
+    #if SWIFTUI
+    var openChannelViewBuilder: OpenChannelViewBuilder?
+    var createChannelViewBuilder: CreateOpenChannelViewBuilder?
+    
+    weak var swiftUIDelegate: (SBUOpenChannelListViewModelDelegate & OpenChannelListViewEventDelegate)? {
+        didSet {
+            self.viewModel?.baseDelegates.addDelegate(self.swiftUIDelegate, type: .swiftui)
+        }
+    }
+    #endif
+    
     // MARK: - Lifecycle
     @available(*, unavailable, renamed: "SBUOpenChannelListViewController()")
     required public init?(coder: NSCoder) {
@@ -51,8 +72,8 @@ open class SBUOpenChannelListViewController: SBUBaseChannelListViewController, S
         super.init(nibName: nil, bundle: nil)
         
         self.createViewModel(channelListQuery: nil)
-        self.headerComponent = SBUModuleSet.openChannelListModule.headerComponent
-        self.listComponent = SBUModuleSet.openChannelListModule.listComponent
+        self.headerComponent = SBUModuleSet.OpenChannelListModule.HeaderComponent.init()
+        self.listComponent = SBUModuleSet.OpenChannelListModule.ListComponent.init()
     }
     
     /// You can initialize the class through this function.
@@ -73,8 +94,8 @@ open class SBUOpenChannelListViewController: SBUBaseChannelListViewController, S
         SBULog.info("")
         
         self.createViewModel(channelListQuery: channelListQuery)
-        self.headerComponent = SBUModuleSet.openChannelListModule.headerComponent
-        self.listComponent = SBUModuleSet.openChannelListModule.listComponent
+        self.headerComponent = SBUModuleSet.OpenChannelListModule.HeaderComponent.init()
+        self.listComponent = SBUModuleSet.OpenChannelListModule.ListComponent.init()
     }
     
     open override func viewDidLoad() {
@@ -86,6 +107,10 @@ open class SBUOpenChannelListViewController: SBUBaseChannelListViewController, S
     open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.updateStyles()
+        
+        #if INSPECTION
+        NotificationCenter.default.post(name: Notification.Name.bringInspectionViewToFront, object: nil)
+        #endif
     }
     
     open override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -104,7 +129,7 @@ open class SBUOpenChannelListViewController: SBUBaseChannelListViewController, S
     /// - Parameter channelListQuery: Customer's own `OpenChannelListQuery` object
     /// - Since: 3.0.0
     open func createViewModel(channelListQuery: OpenChannelListQuery?) {
-        self.viewModel = SBUOpenChannelListViewModel(
+        self.viewModel = SBUViewModelSet.OpenChannelListViewModel.init(
             delegate: self,
             channelListQuery: channelListQuery
         )
@@ -154,6 +179,14 @@ open class SBUOpenChannelListViewController: SBUBaseChannelListViewController, S
     ///   - channelURL: channel url for use in channelViewController.
     ///   - messageListParams: If there is a messageListParams set directly for use in Channel, set it up here
     open override func showChannel(channelURL: String, messageListParams: MessageListParams? = nil) {
+        #if SWIFTUI
+        if let openChannelViewBuilder = self.openChannelViewBuilder {
+            let view = openChannelViewBuilder(channelURL, messageListParams)
+            let channelVC = UIHostingController(rootView: view)
+            self.navigationController?.pushViewControllerNonFlickering(channelVC, animated: true)
+            return
+        }
+        #endif
         let channelVC = SBUViewControllerSet.OpenChannelViewController.init(
             channelURL: channelURL,
             messageListParams: messageListParams
@@ -165,6 +198,14 @@ open class SBUOpenChannelListViewController: SBUBaseChannelListViewController, S
     ///
     /// If you want to use a custom createChannelViewController, override it and implement it.
     open func showCreateChannel() {
+        #if SWIFTUI
+        if let createChannelViewBuilder = self.createChannelViewBuilder {
+            let view = createChannelViewBuilder()
+            let createOpenChannelVC = UIHostingController(rootView: view)
+            self.navigationController?.pushViewControllerNonFlickering(createOpenChannelVC, animated: true)
+            return
+        }
+        #endif
         let createOpenChannelVC = SBUViewControllerSet.CreateOpenChannelViewController.init()
         self.navigationController?.pushViewController(createOpenChannelVC, animated: true)
     }
@@ -179,40 +220,74 @@ open class SBUOpenChannelListViewController: SBUBaseChannelListViewController, S
     }
 
     // MARK: - SBUOpenChannelListModuleHeaderDelegate
-    open func baseChannelListModule(_ headerComponent: SBUBaseChannelListModule.Header,
-                                didUpdateTitleView titleView: UIView?) {
+    open func baseChannelListModule(
+        _ headerComponent: SBUBaseChannelListModule.Header,
+        didUpdateTitleView titleView: UIView?
+    ) {
         self.navigationItem.titleView = titleView
     }
     
-    open func baseChannelListModule(_ headerComponent: SBUBaseChannelListModule.Header,
-                                didUpdateLeftItem leftItem: UIBarButtonItem?) {
+    open func baseChannelListModule(
+        _ headerComponent: SBUBaseChannelListModule.Header,
+        didUpdateLeftItem leftItem: UIBarButtonItem?
+    ) {
         self.navigationItem.leftBarButtonItem = leftItem
     }
     
-    open func baseChannelListModule(_ headerComponent: SBUBaseChannelListModule.Header,
-                                didUpdateRightItem rightItem: UIBarButtonItem?) {
+    open func baseChannelListModule(
+        _ headerComponent: SBUBaseChannelListModule.Header,
+        didUpdateRightItem rightItem: UIBarButtonItem?
+    ) {
         self.navigationItem.rightBarButtonItem = rightItem
     }
     
-    open func baseChannelListModule(_ headerComponent: SBUBaseChannelListModule.Header,
-                                didTapLeftItem leftItem: UIBarButtonItem) {
+    /// 3.28.0
+    open func baseChannelListModule(
+        _ headerComponent: SBUBaseChannelListModule.Header,
+        didUpdateLeftItems leftItems: [UIBarButtonItem]?
+    ) {
+        self.navigationItem.leftBarButtonItems = leftItems
+    }
+    
+    /// 3.28.0
+    open func baseChannelListModule(
+        _ headerComponent: SBUBaseChannelListModule.Header,
+        didUpdateRightItems rightItems: [UIBarButtonItem]?
+    ) {
+        self.navigationItem.rightBarButtonItems = rightItems
+    }
+    
+    open func baseChannelListModule(
+        _ headerComponent: SBUBaseChannelListModule.Header,
+        didTapLeftItem leftItem: UIBarButtonItem
+    ) {
         self.onClickBack()
     }
     
-    open func baseChannelListModule(_ headerComponent: SBUBaseChannelListModule.Header,
-                                didTapRightItem rightItem: UIBarButtonItem) {
+    open func baseChannelListModule(
+        _ headerComponent: SBUBaseChannelListModule.Header,
+        didTapRightItem rightItem: UIBarButtonItem
+    ) {
         self.showCreateChannel()
     }
     
     // MARK: - SBUOpenChannelListModuleListDelegate
-    open func baseChannelListModule(_ listComponent: SBUBaseChannelListModule.List,
-                                didSelectRowAt indexPath: IndexPath) {
+    open func baseChannelListModule(
+        _ listComponent: SBUBaseChannelListModule.List,
+        didSelectRowAt indexPath: IndexPath
+    ) {
         guard let channel = self.viewModel?.channelList[indexPath.row] else { return }
         self.showChannel(channelURL: channel.channelURL)
+        
+        #if SWIFTUI
+        self.swiftUIDelegate?.openChannelListView(didSelectRowAt: indexPath)
+        #endif
     }
     
-    open func baseChannelListModule(_ listComponent: SBUBaseChannelListModule.List,
-                                didDetectPreloadingPosition indexPath: IndexPath) {
+    open func baseChannelListModule(
+        _ listComponent: SBUBaseChannelListModule.List,
+        didDetectPreloadingPosition indexPath: IndexPath
+    ) {
         self.viewModel?.loadNextChannelList(reset: false)
     }
     
@@ -225,8 +300,10 @@ open class SBUOpenChannelListViewController: SBUBaseChannelListViewController, S
     }
     
     // MARK: - SBUOpenChannelListModuleListDataSource
-    open func baseChannelListModule(_ listComponent: SBUBaseChannelListModule.List,
-                                channelsInTableView tableView: UITableView) -> [BaseChannel]? {
+    open func baseChannelListModule(
+        _ listComponent: SBUBaseChannelListModule.List,
+        channelsInTableView tableView: UITableView
+    ) -> [BaseChannel]? {
         return self.viewModel?.channelList
     }
     
@@ -254,9 +331,11 @@ open class SBUOpenChannelListViewController: SBUBaseChannelListViewController, S
     }
     
     // MARK: - SBUOpenChannelListViewModelDelegate
-    open func openChannelListViewModel(_ viewModel: SBUOpenChannelListViewModel,
-                                        didChangeChannelList channels: [OpenChannel]?,
-                                        needsToReload: Bool) {
+    open func openChannelListViewModel(
+        _ viewModel: SBUOpenChannelListViewModel,
+        didChangeChannelList channels: [OpenChannel]?,
+        needsToReload: Bool
+    ) {
         if let channelList = channels {
             self.listComponent?.updateEmptyView(type: (channelList.count == 0) ? .noChannels : .none)
         }
@@ -266,6 +345,8 @@ open class SBUOpenChannelListViewController: SBUBaseChannelListViewController, S
         self.listComponent?.reloadTableView()
     }
     
-    open func openChannelListViewModel(_ viewModel: SBUOpenChannelListViewModel,
-                                        didUpdateChannel channel: OpenChannel) { }
+    open func openChannelListViewModel(
+        _ viewModel: SBUOpenChannelListViewModel,
+        didUpdateChannel channel: OpenChannel
+    ) { }
 }

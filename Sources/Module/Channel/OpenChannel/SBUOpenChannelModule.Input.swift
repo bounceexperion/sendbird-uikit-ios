@@ -25,7 +25,9 @@ public protocol SBUOpenChannelModuleInputDataSource: SBUBaseChannelModuleInputDa
 
 extension SBUOpenChannelModule {
     /// The `SBUOpenChannelModule`'s component class that represents input.
-    @objcMembers open class Input: SBUBaseChannelModule.Input {
+    @objc(SBUOpenChannelModuleInput)
+    @objcMembers
+    open class Input: SBUBaseChannelModule.Input {
         
         /// The open channel object casted from `baseChannel`.
         public var channel: OpenChannel? {
@@ -44,6 +46,15 @@ extension SBUOpenChannelModule {
             set { self.baseDataSource = newValue }
         }
         
+        // MARK: - Logic Properties (Private)
+        private lazy var defaultMessageInputView: SBUMessageInputView = {
+            let messageInputView = SBUModuleSet.OpenChannelModule.InputComponent.MessageInputView.init()
+            messageInputView.delegate = self
+            messageInputView.datasource = self
+            return messageInputView
+        }()
+        
+        // MARK: - LifeCycle
         /// Configures component with parameters.
         /// - Parameters:
         ///   - delegate: `SBUGroupChannelModuleListDelegate` type listener
@@ -62,6 +73,25 @@ extension SBUOpenChannelModule {
                 messageInputView.voiceMessageButton?.isHidden = true
                 messageInputView.textViewTrailingPaddingView.isHidden = true
                 messageInputView.showsVoiceMessageButton = false
+            }
+        }
+        
+        open override func setupViews() {
+            // NOTE: Input entireContnet interface has been temporarily closed.
+//            #if SWIFTUI
+//            if self.applyViewConverter(.entireContent) { return }
+//            #endif
+            
+            /// It does not call `super.setupViews()` because it creates `messageInputView` differently for each channelType
+            
+            if self.messageInputView == nil {
+                self.messageInputView = defaultMessageInputView
+            }
+            if let messageInputView = messageInputView {
+                inputVStackView.setVStack([
+                    messageInputView
+                ])
+                self.addSubview(inputVStackView)
             }
         }
         
@@ -110,27 +140,27 @@ extension SBUOpenChannelModule {
             }
             
             switch mimeType {
-                case "image/gif":
-                    let gifData = try? Data(contentsOf: imageURL)
-                    
-                    self.delegate?.openChannelModule(
-                        self,
-                        didPickFileData: gifData,
-                        fileName: imageName,
-                        mimeType: mimeType
-                    )
-                    
-                default:
-                    let originalImage = info[.originalImage] as? UIImage
-                    guard let image = originalImage?.fixedOrientation(),
-                          let imageData = image.sbu_convertToData() else { return }
-                    
-                    self.delegate?.openChannelModule(
-                        self,
-                        didPickFileData: imageData,
-                        fileName: imageName,
-                        mimeType: mimeType
-                    )
+            case "image/gif":
+                let gifData = try? Data(contentsOf: imageURL)
+                
+                self.delegate?.openChannelModule(
+                    self,
+                    didPickFileData: gifData,
+                    fileName: imageName,
+                    mimeType: mimeType
+                )
+                
+            default:
+                let originalImage = info[.originalImage] as? UIImage
+                guard let image = originalImage?.fixedOrientation(),
+                      let imageData = image.sbu_convertToData() else { return }
+                
+                self.delegate?.openChannelModule(
+                    self,
+                    didPickFileData: imageData,
+                    fileName: imageName,
+                    mimeType: mimeType
+                )
             }
         }
         
@@ -307,8 +337,7 @@ extension SBUOpenChannelModule {
             guard let userId = SBUGlobals.currentUser?.userId else { return }
             let isOperator = self.channel?.isOperator(userId: userId) ?? false
             let isFrozen = self.channel?.isFrozen ?? false
-            self.channel?.getMyMutedInfo(completionHandler: {
-                [weak self] isMuted, _, _, _, _, _ in
+            self.channel?.getMyMutedInfo(completionHandler: { [weak self] isMuted, _, _, _, _, _ in
                 guard let self = self else { return }
                 if !isFrozen || (isFrozen && isOperator) {
                     if let messageInputView = self.messageInputView as? SBUMessageInputView {

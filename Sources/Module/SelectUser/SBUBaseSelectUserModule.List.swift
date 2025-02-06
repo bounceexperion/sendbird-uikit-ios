@@ -32,8 +32,9 @@ public protocol SBUBaseSelectUserModuleListDataSource: AnyObject {
 extension SBUBaseSelectUserModule {
     
     /// A module component that represent the list of `SBUBaseSelectUserModule`.
-    @objc(SBUBaseChannelSettingsModuleList)
-    @objcMembers open class List: UIView {
+    @objc(SBUBaseSelectUserModuleList)
+    @objcMembers
+    open class List: UIView {
         
         // MARK: - UI properties (Public)
         
@@ -41,6 +42,7 @@ extension SBUBaseSelectUserModule {
         public var tableView = UITableView()
         
         /// A view that shows when there is no message in the channel.
+        /// The default view type is ``SBUEmptyView``.
         public var emptyView: UIView? {
             didSet { self.tableView.backgroundView = self.emptyView }
         }
@@ -50,14 +52,6 @@ extension SBUBaseSelectUserModule {
         
         /// The object that is used as the theme of the list component. The theme must adopt the `SBUUserListTheme` class.
         public var theme: SBUUserListTheme?
-        
-        // MARK: - UI properties (Private)
-        private lazy var defaultEmptyView: SBUEmptyView? = {
-            let emptyView = SBUEmptyView()
-            emptyView.type = EmptyViewType.none
-            emptyView.delegate = self
-            return emptyView
-        }()
         
         // MARK: - Logic properties (Public)
         /// The object that acts as the base delegate of the list component. The base delegate must adopt the `SBUBaseSelectUserModuleListDelegate`.
@@ -76,6 +70,15 @@ extension SBUBaseSelectUserModule {
             self.baseDataSource?.baseSelectUserModule(self, selectedUsersInTableView: self.tableView)
         }
         
+        // MARK: - default views
+        
+        func createDefaultEmptyView() -> SBUEmptyView {
+            SBUEmptyView.createDefault(
+                SBUEmptyView.self,
+                delegate: self
+            )
+        }
+        
         // MARK: - LifeCycle
         deinit {
             SBULog.info("")
@@ -87,7 +90,7 @@ extension SBUBaseSelectUserModule {
         open func setupViews() {
             // empty view
             if self.emptyView == nil {
-                self.emptyView = self.defaultEmptyView
+                self.emptyView = self.createDefaultEmptyView()
             }
             
             // tableview
@@ -101,11 +104,6 @@ extension SBUBaseSelectUserModule {
             self.tableView.estimatedRowHeight = 44.0
             self.tableView.sectionHeaderHeight = 0
             self.addSubview(self.tableView)
-            
-            // register cell
-            if self.userCell == nil {
-                self.register(userCell: SBUUserCell())
-            }
         }
         
         /// Sets layouts of the views in the list component.
@@ -188,7 +186,8 @@ extension SBUBaseSelectUserModule {
 
 // MARK: - SBUEmptyViewDelegate
 extension SBUBaseSelectUserModule.List: SBUEmptyViewDelegate {
-    @objc open func didSelectRetry() {
+    @objc 
+    open func didSelectRetry() {
         if let emptyView = self.emptyView as? SBUEmptyView {
             emptyView.reloadData(.noMembers)
         }

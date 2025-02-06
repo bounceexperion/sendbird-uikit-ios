@@ -103,6 +103,7 @@ public protocol SBUMessageInputViewDelegate: AnyObject {
     func messageInputViewDidTapVoiceMessage(_ messageInputView: SBUMessageInputView)
 }
 
+// swiftlint:disable missing_docs
 public extension SBUMessageInputViewDelegate {
     func messageInputView(_ messageInputView: SBUMessageInputView, didSelectSend text: String) { }
     
@@ -126,6 +127,7 @@ public extension SBUMessageInputViewDelegate {
     
     func messageInputView(_ messageInputView: SBUMessageInputView, didChangeSelection range: NSRange) { }
 }
+// swiftlint:enable missing_docs
 
 public protocol SBUMessageInputViewDataSource: AnyObject {
     /// Ask the data source to return the `BaseChannel` object.
@@ -135,7 +137,7 @@ public protocol SBUMessageInputViewDataSource: AnyObject {
     func channelForMessageInputView(_ messageInputView: SBUMessageInputView) -> BaseChannel?
 }
 
-open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDelegate {
+open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDelegate, SBUMessageInputViewProtocol {
     // MARK: - Properties (Public)
     public lazy var addButton: UIButton? = {
         let button = UIButton(type: .custom)
@@ -148,12 +150,12 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
     public lazy var placeholderLabel = UILabel()
     
     public lazy var textView: UITextView? = {
-        let tv = UITextView()
-        tv.textContainerInset = UIEdgeInsets(top: 10, left: 9, bottom: 10, right: 16)
-        tv.layer.borderWidth = 1
-        tv.layer.cornerRadius = 20
-        tv.delegate = self
-        return tv
+        let textView = UITextView()
+        textView.textContainerInset = UIEdgeInsets(top: 10, left: 9, bottom: 10, right: 16)
+        textView.layer.borderWidth = 1
+        textView.layer.cornerRadius = 20
+        textView.delegate = self
+        return textView
     }()
     
     public lazy var sendButton: UIButton? = {
@@ -173,7 +175,7 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         button.isHidden = !showsVoiceMessageButton
         return button
     }()
-
+    
     public lazy var editView: UIView = {
         let editView = UIView()
         editView.isHidden = true
@@ -375,40 +377,43 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
     var inputViewBottomSpacer = UIView()
     
     var textViewHeightConstraint: NSLayoutConstraint?
-
+    
     /// The delegate that is type of `SBUMessageInputViewDelegate`.
     /// - NOTE: `SBUMessageInputViewDelegate` notifies events that occur in the message input field. To receive such events, you need to set a delegate to an object that conforms to the `SBUMessageInputViewDelegate` protocol.
     public weak var delegate: SBUMessageInputViewDelegate?
     public weak var datasource: SBUMessageInputViewDataSource?
-
+    
     var basedText: String = ""
     
     var isFrozen: Bool = false
     var isMuted: Bool = false
-    var isDisable: Bool = false
+    var isDisabledByServer: Bool = false  // 서버 페이로드로만 토글되는 플래그 ("disable_chat_input")
+    var isDisabled: Bool = false  // 고객이 직접 설정하는 플래그 (since 3.22.0)
+    
+    var disabledPlaceholder = ""
     
     /// The Flag to check if it is the first thread message input. (This flag's priority is higher than `isThreadMessage`)
     var isThreadFirstMessage: Bool = false
     /// The Flag to check if it is the thread message input
     var isThreadMessage: Bool = false
-
-    let cameraItem = SBUActionSheetItem(
+    
+    static let cameraItem = SBUActionSheetItem(
         title: SBUStringSet.Camera,
         tag: MediaResourceType.camera.rawValue,
         completionHandler: nil
     )
-    let libraryItem = SBUActionSheetItem(
+    static let libraryItem = SBUActionSheetItem(
         title: SBUStringSet.PhotoVideoLibrary,
         tag: MediaResourceType.library.rawValue,
         completionHandler: nil
     )
-    let documentItem = SBUActionSheetItem(
+    static let documentItem = SBUActionSheetItem(
         title: SBUStringSet.Document,
         tag: MediaResourceType.document.rawValue,
         completionHandler: nil
     )
-    let cancelItem = SBUActionSheetItem(title: SBUStringSet.Cancel, completionHandler: nil)
-
+    static let cancelItem = SBUActionSheetItem(title: SBUStringSet.Cancel, completionHandler: nil)
+    
     @SBUThemeWrapper(theme: SBUTheme.messageInputTheme)
     public var theme: SBUMessageInputTheme
     @SBUThemeWrapper(theme: SBUTheme.overlayTheme.messageInputTheme, setToDefault: true)
@@ -427,11 +432,12 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
     
     public init(isOverlay: Bool) {
         self.isOverlay = isOverlay
-
+        
         super.init(frame: .zero)
     }
     
-    public override init() {
+    required public init(isThreadMessage: Bool = false) {
+        self.isThreadMessage = isThreadMessage
         super.init()
     }
     
@@ -515,7 +521,7 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         self.quoteMessageView?.isHidden = true
         self.divider.isHidden = true
     }
-
+    
     /// This function handles the initialization of views.
     open override func setupViews() {
         self.editView.isHidden = true
@@ -554,7 +560,7 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
             self.inputContentView.addSubview(textView)
             self.inputContentView.addSubview(self.placeholderLabel)
         }
-
+        
         self.editView.addSubview(
             self.editStackView.setHStack([
                 self.cancelButton,
@@ -592,6 +598,10 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         ])
         
         self.addSubview(self.baseStackView)
+        
+        #if SWIFTUI
+        self.setupViewsForSwiftUI()
+        #endif
     }
     
     /// This function handles the initialization of autolayouts.
@@ -605,7 +615,7 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         
         self.saveButton?
             .sbu_constraint(width: 75)
-
+        
         self.editView
             .sbu_constraint(height: 32)
         
@@ -638,8 +648,9 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
             .sbu_constraint(equalTo: self.inputContentView, leading: 0, trailing: 0, top: 0, bottom: 0)
         
         if let textView = self.textView {
+            let leading: CGFloat = self.currentLayoutDirection.isRTL ? 22 : 14
             self.placeholderLabel
-                .sbu_constraint(equalTo: textView, leading: 14, top: 10)
+                .sbu_constraint(equalTo: textView, leading: leading, top: 10)
             self.setupTextViewHeight(textView: textView)
         }
         
@@ -691,7 +702,7 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         let theme = self.isOverlay ? self.overlayTheme : self.theme
         
         self.backgroundColor = theme.backgroundColor
-
+        
         // placeholderLabel
         self.placeholderLabel.font = theme.textFieldPlaceholderFont
         if self.isFrozen {
@@ -700,8 +711,11 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         } else if self.isMuted {
             self.placeholderLabel.text = SBUStringSet.MessageInput_Text_Muted
             self.placeholderLabel.textColor = theme.textFieldDisabledColor
-        } else if self.isDisable {
+        } else if self.isDisabledByServer {
             self.placeholderLabel.text = SBUStringSet.MessageInput_Text_Unavailable
+            self.placeholderLabel.textColor = theme.textFieldDisabledColor
+        } else if self.isDisabled {
+            self.placeholderLabel.text = self.disabledPlaceholder
             self.placeholderLabel.textColor = theme.textFieldDisabledColor
         } else if self.isThreadFirstMessage {
             self.placeholderLabel.text = SBUStringSet.MessageThread.MessageInput.replyInThread
@@ -716,16 +730,25 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
             self.placeholderLabel.text = SBUStringSet.MessageInput_Text_Placeholder
             self.placeholderLabel.textColor = theme.textFieldPlaceholderColor
         }
-
+        
         // textView
         self.textView?.backgroundColor = theme.textFieldBackgroundColor
         self.textView?.tintColor = theme.textFieldTintColor
         self.textView?.layer.borderColor = theme.textFieldBorderColor.cgColor
         self.textView?.typingAttributes = defaultAttributes
         
+        // support rtl layout
+        if self.currentLayoutDirection == .rightToLeft {
+            if SBUUtils.isRTLCharacter(with: self.placeholderLabel.text) {
+                self.placeholderLabel.textAlignment = .right
+            } else {
+                self.placeholderLabel.textAlignment = .left
+            }
+        }
+        
         // addButton
         let iconAdd = SBUIconSetType.iconAdd
-            .image(with: (self.isFrozen || self.isMuted || self.isDisable)
+            .image(with: (self.isFrozen || self.isMuted || self.isDisabledByServer || self.isDisabled)
                    ? theme.buttonDisabledTintColor
                    : theme.buttonTintColor,
                    to: SBUIconSetType.Metric.defaultIconSize)
@@ -742,7 +765,7 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         // IconVoiceMessage
         self.voiceMessageButton?.setImage(
             SBUIconSetType.iconVoiceMessageOn.image(
-                with: (self.isFrozen || self.isMuted || self.isDisable)
+                with: (self.isFrozen || self.isMuted || self.isDisabledByServer || self.isDisabled)
                 ? theme.buttonDisabledTintColor
                 : theme.buttonTintColor,
                 to: SBUIconSetType.Metric.defaultIconSize
@@ -759,19 +782,19 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         self.saveButton?.titleLabel?.font = theme.saveButtonFont
         
         // Item
-        self.cameraItem.image = SBUIconSetType.iconCamera.image(
+        Self.cameraItem.image = SBUIconSetType.iconCamera.image(
             with: theme.buttonTintColor,
             to: SBUIconSetType.Metric.iconActionSheetItem
         )
-        self.libraryItem.image = SBUIconSetType.iconPhoto.image(
+        Self.libraryItem.image = SBUIconSetType.iconPhoto.image(
             with: theme.buttonTintColor,
             to: SBUIconSetType.Metric.iconActionSheetItem
         )
-        self.documentItem.image = SBUIconSetType.iconDocument.image(
+        Self.documentItem.image = SBUIconSetType.iconDocument.image(
             with: theme.buttonTintColor,
             to: SBUIconSetType.Metric.iconActionSheetItem
         )
-        self.cancelItem.color = theme.buttonTintColor
+        Self.cancelItem.color = theme.buttonTintColor
         
         self.divider.backgroundColor = theme.channelViewDividerColor
     }
@@ -785,7 +808,7 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         self.textView?.text = text
         self.basedText = text
         self.placeholderLabel.isHidden = !text.isEmpty
-
+        
         self.addButton?.isHidden = true
         self.addButton?.alpha = 0
         
@@ -795,7 +818,7 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         
         self.editView.isHidden = false
         self.editView.alpha = 1
-
+        
         self.updateTextViewHeight()
         let bottom = NSRange(location: (self.textView?.text.count ?? 0) - 1, length: 1)
         self.textView?.scrollRangeToVisible(bottom)
@@ -803,6 +826,12 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         self.textView?.becomeFirstResponder()
         self.textView?.textAlignment = SBUGlobals.isRTLLayout ? .right : .left
 
+        
+        // SwiftUI
+        #if SWIFTUI
+        self.startEditModeForSwiftUI()
+        #endif
+        
         self.layoutIfNeeded()
     }
     
@@ -810,16 +839,20 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         self.textView?.text = ""
         self.basedText = ""
         self.placeholderLabel.isHidden = false
-
+        
         self.addButton?.isHidden = false
         self.addButton?.alpha = 1
-        
         self.textViewTrailingPaddingView.isHidden = (!showsSendButton && !showsVoiceMessageButton)
         self.voiceMessageButton?.isHidden = !showsVoiceMessageButton
         
+        // SWIFTUI
+        #if SWIFTUI
+        self.endEditModeForSwiftUI()
+        #endif
+        
         self.editView.isHidden = true
         self.editView.alpha = 0
-
+        
         self.updateTextViewHeight()
         
         self.layoutIfNeeded()
@@ -832,15 +865,12 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
     public func setFrozenModeState(_ isFrozen: Bool) {
         self.isFrozen = isFrozen
         
-        self.textView?.isEditable = !self.isFrozen
-        self.textView?.isUserInteractionEnabled = !self.isFrozen
-        self.addButton?.isEnabled = !self.isFrozen
-        self.voiceMessageButton?.isEnabled = !self.isFrozen
-        
-        if self.isFrozen {
-            self.endTypingMode()
-        }
-        self.setupStyles()
+        // SwiftUI
+        #if SWIFTUI
+        self.setFrozenModeStateForSwiftUI(isFrozen)
+        #endif
+
+        self.updateInputState()
     }
     
     /// Sets frozen mode state.
@@ -848,31 +878,65 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
     public func setMutedModeState(_ isMuted: Bool) {
         self.isMuted = isMuted
         
-        self.textView?.isEditable = !self.isMuted
-        self.textView?.isUserInteractionEnabled = !self.isMuted
-        self.addButton?.isEnabled = !self.isMuted
-        self.voiceMessageButton?.isEnabled = !self.isMuted
+        // SwiftUI
+        #if SWIFTUI
+        self.setMutedModeStateForSwiftUI(isMuted)
+        #endif
+
+        self.updateInputState()
+    }
+    
+    /// Sets disable chat input value
+    /// - Parameter isDisable: `true` is disable mode, `false` is available mode
+    func setDisableChatInputState(_ isDisabledByServer: Bool) {
+        if self.isMuted || self.isFrozen { return }
         
-        if self.isMuted {
+        // SwiftUI
+        #if SWIFTUI
+        self.setDisableChatInputStateForSwiftUI(isDisabledByServer)
+        #endif
+        
+        self.isDisabledByServer = isDisabledByServer
+        
+        self.updateInputState()
+    }
+    
+    /// Methods to update the inputView's input-enabled state by looking at all states
+    /// - Since: 3.27.0
+    func updateInputState() {
+        let isDisabled = self.isDisabledByServer || self.isMuted || self.isFrozen
+        
+        self.textView?.isEditable = !isDisabled
+        self.textView?.isUserInteractionEnabled = !isDisabled
+        self.addButton?.isEnabled = !isDisabled
+        self.voiceMessageButton?.isEnabled = !isDisabled
+        
+        if isDisabled {
             self.endTypingMode()
         }
         self.setupStyles()
     }
     
-    /// Sets disable chat input value
-    /// - Parameter isDisable: `true` is disable mode, `false` is available mode
-    func setDisableChatInputState(_ isDisable: Bool) {
-        if SendbirdUI.config.groupChannel.channel.isSuggestedRepliesEnabled == false { return }
-        if self.isMuted || self.isFrozen { return }
-            
-        self.isDisable = isDisable
+    /// Enables or disables the entire input view.
+    /// - Parameter isEnabled: if `true`, the input view is enabled, otherwise the input view is disabled.
+    /// - Since: 3.22.0
+    public func setInputState(_ isEnabled: Bool, placeholder: String) {
+        self.isDisabled = !isEnabled
+        self.disabledPlaceholder = placeholder
         
-        self.textView?.isEditable = !self.isDisable
-        self.textView?.isUserInteractionEnabled = !self.isDisable
-        self.addButton?.isEnabled = !self.isDisable
-        self.voiceMessageButton?.isEnabled = !self.isDisable
+        if self.isFrozen || self.isMuted || self.isDisabledByServer { return }
+
+        self.textView?.isEditable = isEnabled
+        self.textView?.isUserInteractionEnabled = isEnabled
+        self.addButton?.isEnabled = isEnabled
+        self.voiceMessageButton?.isEnabled = isEnabled
+
+        // SwiftUI
+        #if SWIFTUI
+        self.setInputStateForSwiftUI(isEnabled, placeholder: placeholder)
+        #endif
         
-        if self.isDisable {
+        if isEnabled == false {
             self.endTypingMode()
         }
         self.setupStyles()
@@ -883,6 +947,11 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         self.textView?.isEditable = false
         self.textView?.isUserInteractionEnabled = false
         self.addButton?.isEnabled = false
+        
+        // SwiftUI
+        #if SWIFTUI
+        self.setErrorStateForSwiftUI()
+        #endif
         
         self.endTypingMode()
         self.setupStyles()
@@ -895,6 +964,10 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         self.sendButton?.isHidden = !showsSendButton
         self.voiceMessageButton?.isHidden = !showsVoiceMessageButton
         self.textViewTrailingPaddingView.isHidden = (!showsSendButton && !showsVoiceMessageButton)
+        
+        #if SWIFTUI
+        self.endTypingModeForSwiftUI()
+        #endif
         self.setMode(.none)
         self.updateTextViewHeight()
         self.layoutIfNeeded()
@@ -946,13 +1019,17 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
     }
 
     // MARK: - Action
+    public func onTapAddButton() {
+        self.onTapAddButton(self)
+    }
     
-    @objc open func onTapAddButton(_ sender: Any) {
+    @objc
+    open func onTapAddButton(_ sender: Any) {
         self.endEditing(true)
         let items = self.generateResourceItems()
         SBUActionSheet.show(
             items: items,
-            cancelItem: self.cancelItem,
+            cancelItem: Self.cancelItem,
             oneTimetheme: isOverlay ? SBUComponentTheme.dark : nil,
             delegate: self
         )
@@ -964,12 +1041,17 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
     ///
     /// - Since: 3.6.0
     open func generateResourceItems() -> [SBUActionSheetItem] {
+        return Self.generateResourceItems(channelType: self.channelType)
+    }
+    
+    /// - Since: 3.28.0
+    static func generateResourceItems(channelType: ChannelType) -> [SBUActionSheetItem] {
         var items: [SBUActionSheetItem] = []
         var inputConfig: SBUConfig.BaseInput?
         
-        if self.channelType == .group {
+        if channelType == .group {
             inputConfig = SendbirdUI.config.groupChannel.channel.input
-        } else if self.channelType == .open {
+        } else if channelType == .open {
             inputConfig = SendbirdUI.config.openChannel.channel.input
         }
         
@@ -988,7 +1070,8 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         return items
     }
     
-    @objc open func onTapSendButton(_ sender: Any) {
+    @objc
+    open func onTapSendButton(_ sender: Any) {
         self.delegate?.messageInputView(
             self,
             didSelectSend: self.textView?.text.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
@@ -1001,16 +1084,19 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
     /// Shows voice message input view
     /// - Parameter sender: Button
     /// - Since: 3.4.0
-    @objc open func onTapVoiceMessageButton(_ sender: Any) {
+    @objc
+    open func onTapVoiceMessageButton(_ sender: Any) {
         self.delegate?.messageInputViewDidTapVoiceMessage(self)
         self.endEditing(true)
     }
         
-    @objc open func onTapCancelButton(_ sender: Any) {
+    @objc
+    open func onTapCancelButton(_ sender: Any) {
         self.setMode(.none)
     }
     
-    @objc open func onTapSaveButton(_ sender: Any) {
+    @objc
+    open func onTapSaveButton(_ sender: Any) {
         let editedText = self.textView?.text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard basedText != editedText else {
             self.endEditMode()
@@ -1021,6 +1107,33 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
             self,
             didSelectEdit: self.textView?.text.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         )
+    }
+    
+    // MARK: - Internal methods
+    func showCamera() {
+        SBUPermissionManager.shared.requestCameraAccess(for: .video) { [weak self] in
+            guard let self = self else { return }
+            self.delegate?.messageInputView(self, didSelectResource: .camera)
+        } onDenied: { [weak self] in
+            guard let self = self else { return }
+            self.delegate?.messageInputView(self, didSelectResource: .camera)
+        }
+    }
+    
+    func showPhotosLibrary() {
+        SBUPermissionManager.shared.requestPhotoAccessIfNeeded { _ in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.delegate?.messageInputView(self, didSelectResource: .library)
+            }
+        }
+    }
+    
+    func showDocumentsPicker() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.delegate?.messageInputView(self, didSelectResource: .document)
+        }
     }
 
     // MARK: - UITextViewDelegate
@@ -1035,7 +1148,20 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
                 text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             self.voiceMessageButton?.isHidden = !(showsVoiceMessageButton && (self.sendButton?.isHidden ?? false))
             self.textViewTrailingPaddingView.isHidden = (self.sendButton?.isHidden == true) && (self.voiceMessageButton?.isHidden == true)
+            
+            #if SWIFTUI
+            self.textViewDidChangeForSwiftUI(text)
+            #endif
             self.layoutIfNeeded()
+        }
+        
+        // support rtl layout
+        if self.currentLayoutDirection == .rightToLeft {
+            if SBUUtils.isRTLCharacter(with: text) {
+                self.textView?.textAlignment = .right
+            } else {
+                self.textView?.textAlignment = .left
+            }
         }
         
         self.delegate?.messageInputView(self, didChangeText: text)
@@ -1079,20 +1205,9 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
         let type = MediaResourceType.init(rawValue: index) ?? .unknown
         switch type {
         case .camera:
-            SBUPermissionManager.shared.requestCameraAccess(for: .video) { [weak self] in
-                guard let self = self else { return }
-                self.delegate?.messageInputView(self, didSelectResource: type)
-            } onDenied: { [weak self] in
-                guard let self = self else { return }
-                self.delegate?.messageInputView(self, didSelectResource: type)
-            }
+            self.showCamera()
         case .library:
-            SBUPermissionManager.shared.requestPhotoAccessIfNeeded { _ in
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    self.delegate?.messageInputView(self, didSelectResource: type)
-                }
-            }
+            self.showPhotosLibrary()
         default:
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -1105,22 +1220,26 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
     
     // MARK: - Deprecated
     @available(*, deprecated, renamed: "onTapAddButton")
-    @objc open func onClickAddButton(_ sender: Any) {
+    @objc
+    open func onClickAddButton(_ sender: Any) {
         self.onTapAddButton(sender)
     }
     
     @available(*, deprecated, renamed: "onTapSendButton")
-    @objc open func onClickSendButton(_ sender: Any) {
+    @objc
+    open func onClickSendButton(_ sender: Any) {
         self.onTapSendButton(sender)
     }
     
     @available(*, deprecated, renamed: "onTapCancelButton")
-    @objc open func onClickCancelButton(_ sender: Any) {
+    @objc
+    open func onClickCancelButton(_ sender: Any) {
         self.onTapCancelButton(sender)
     }
     
     @available(*, deprecated, renamed: "onTapSaveButton")
-    @objc open func onClickSaveButton(_ sender: Any) {
+    @objc
+    open func onClickSaveButton(_ sender: Any) {
         self.onTapSaveButton(sender)
     }
 
@@ -1131,3 +1250,284 @@ extension SBUMessageInputView: SBUQuoteMessageInputViewDelegate {
         self.setMode(.none)
     }
 }
+
+#if SWIFTUI
+// TODO: SwiftUI - swiftui/Common 같은곳으로 로직 분리
+protocol SBUMessageInputViewProtocol {
+    func setupViewsForSwiftUI()
+    func startEditModeForSwiftUI()
+    func endEditModeForSwiftUI()
+    func setFrozenModeStateForSwiftUI(_ isFrozen: Bool)
+    func setMutedModeStateForSwiftUI(_ isMuted: Bool)
+    func setDisableChatInputStateForSwiftUI(_ isDisabledByServer: Bool)
+    func setInputStateForSwiftUI(_ isEnabled: Bool, placeholder: String)
+    func setErrorStateForSwiftUI()
+    func endTypingModeForSwiftUI()
+    func textViewDidChangeForSwiftUI(_ text: String)
+}
+extension SBUMessageInputViewProtocol {
+    func setupViewsForSwiftUI() {}
+    func startEditModeForSwiftUI() {}
+    func endEditModeForSwiftUI() {}
+    func setFrozenModeStateForSwiftUI(_ isFrozen: Bool) {}
+    func setMutedModeStateForSwiftUI(_ isMuted: Bool) {}
+    func setDisableChatInputStateForSwiftUI(_ isDisabledByServer: Bool) {}
+    func setInputStateForSwiftUI(_ isEnabled: Bool, placeholder: String) {}
+    func setErrorStateForSwiftUI() {}
+    func endTypingModeForSwiftUI() {}
+    func textViewDidChangeForSwiftUI(_ text: String) {}
+}
+#else
+protocol SBUMessageInputViewProtocol {}
+#endif
+
+#if SWIFTUI
+extension SBUMessageInputView {
+    func setupViewsForSwiftUI() {
+        switch self.channelType {
+        case .open:
+            self.applyViewConverterForOpen(.leftView)
+            self.applyViewConverterForOpen(.rightView)
+
+            self.applyViewConverterForOpen(.addButton)
+            self.applyViewConverterForOpen(.sendButton, isHidden: !showsSendButton)
+        case .group:
+            if self.isThreadMessage {
+                self.applyViewConverterForThread(.leftView)
+                self.applyViewConverterForThread(.rightView)
+
+                self.applyViewConverterForThread(.addButton)
+                self.applyViewConverterForThread(.sendButton, isHidden: !showsSendButton)
+                self.applyViewConverterForThread(.voiceButton, isHidden: !showsVoiceMessageButton)
+            } else {
+                self.applyViewConverter(.leftView)
+                self.applyViewConverter(.rightView)
+
+                self.applyViewConverter(.addButton)
+                self.applyViewConverter(.sendButton, isHidden: !showsSendButton)
+                self.applyViewConverter(.voiceButton, isHidden: !showsVoiceMessageButton)
+            }
+        default:
+            break
+        }
+    }
+    
+    func startEditModeForSwiftUI() {
+        switch self.channelType {
+        case .open:
+            self.applyViewConverterForOpen(.leftView, isHidden: true, alpha: 0)
+            self.applyViewConverterForOpen(.addButton, isHidden: true, alpha: 0)
+            
+            self.applyViewConverterForOpen(.rightView, isHidden: true, alpha: 0)
+            self.applyViewConverterForOpen(.sendButton, isHidden: !showsSendButton)
+        case .group:
+            if self.isThreadMessage {
+                self.applyViewConverterForThread(.leftView, isHidden: true, alpha: 0)
+                self.applyViewConverterForThread(.addButton, isHidden: true, alpha: 0)
+                
+                self.applyViewConverterForThread(.rightView, isHidden: true, alpha: 0)
+                self.applyViewConverterForThread(.sendButton, isHidden: !showsSendButton)
+                self.applyViewConverterForThread(.voiceButton, isHidden: true)
+            } else {
+                self.applyViewConverter(.leftView, isHidden: true, alpha: 0)
+                self.applyViewConverter(.addButton, isHidden: true, alpha: 0)
+                
+                self.applyViewConverter(.rightView, isHidden: true, alpha: 0)
+                self.applyViewConverter(.sendButton, isHidden: !showsSendButton)
+                self.applyViewConverter(.voiceButton, isHidden: true)
+            }
+        default:
+            break
+        }
+    }
+    
+    func endEditModeForSwiftUI() {
+        switch self.channelType {
+        case .open:
+            self.applyViewConverterForOpen(.leftView, isHidden: false, alpha: 1)
+            self.applyViewConverterForOpen(.addButton, isHidden: false, alpha: 1)
+            
+            self.applyViewConverterForOpen(.rightView, isHidden: false, alpha: 1)
+        case .group:
+            if self.isThreadMessage {
+                self.applyViewConverterForThread(.leftView, isHidden: false, alpha: 1)
+                self.applyViewConverterForThread(.addButton, isHidden: false, alpha: 1)
+                
+                self.applyViewConverterForThread(.rightView, isHidden: false, alpha: 1)
+                self.applyViewConverterForThread(.voiceButton, isHidden: !showsVoiceMessageButton)
+            } else {
+                self.applyViewConverter(.leftView, isHidden: false, alpha: 1)
+                self.applyViewConverter(.addButton, isHidden: false, alpha: 1)
+                
+                self.applyViewConverter(.rightView, isHidden: false, alpha: 1)
+                self.applyViewConverter(.voiceButton, isHidden: !showsVoiceMessageButton)
+            }
+        default:
+            break
+        }
+    }
+    
+    func setFrozenModeStateForSwiftUI(_ isFrozen: Bool) {
+        switch self.channelType {
+        case .open:
+            self.applyViewConverterForOpen(.leftView, isEnabled: !isFrozen)
+            self.applyViewConverterForOpen(.addButton, isEnabled: !isFrozen)
+            
+            self.applyViewConverterForOpen(.rightView, isEnabled: !isFrozen)
+            self.applyViewConverterForOpen(.sendButton, isEnabled: !isFrozen)
+        case .group:
+            if self.isThreadMessage {
+                self.applyViewConverterForThread(.leftView, isEnabled: !isFrozen)
+                self.applyViewConverterForThread(.addButton, isEnabled: !isFrozen)
+                
+                self.applyViewConverterForThread(.rightView, isEnabled: !isFrozen)
+                self.applyViewConverterForThread(.sendButton, isEnabled: !isFrozen)
+            } else {
+                self.applyViewConverter(.leftView, isEnabled: !isFrozen)
+                self.applyViewConverter(.addButton, isEnabled: !isFrozen)
+                
+                self.applyViewConverter(.rightView, isEnabled: !isFrozen)
+                self.applyViewConverter(.sendButton, isEnabled: !isFrozen)
+            }
+        default:
+            break
+        }
+    }
+    
+    func setMutedModeStateForSwiftUI(_ isMuted: Bool) {
+        switch self.channelType {
+        case .open:
+            self.applyViewConverterForOpen(.leftView, isEnabled: !isMuted)
+            self.applyViewConverterForOpen(.addButton, isEnabled: !isMuted)
+            
+            self.applyViewConverterForOpen(.rightView, isEnabled: !isMuted)
+        case .group:
+            if self.isThreadMessage {
+                self.applyViewConverterForThread(.leftView, isEnabled: !isMuted)
+                self.applyViewConverterForThread(.addButton, isEnabled: !isMuted)
+                
+                self.applyViewConverterForThread(.rightView, isEnabled: !isMuted)
+                self.applyViewConverterForThread(.voiceButton, isEnabled: !isMuted)
+            } else {
+                self.applyViewConverter(.leftView, isEnabled: !isMuted)
+                self.applyViewConverter(.addButton, isEnabled: !isMuted)
+                
+                self.applyViewConverter(.rightView, isEnabled: !isMuted)
+                self.applyViewConverter(.voiceButton, isEnabled: !isMuted)
+            }
+        default:
+            break
+        }
+    }
+    
+    func setDisableChatInputStateForSwiftUI(_ isDisabledByServer: Bool) {
+        switch self.channelType {
+        case .open:
+            self.applyViewConverterForOpen(.leftView, isEnabled: !isDisabledByServer)
+            self.applyViewConverterForOpen(.addButton, isEnabled: !isDisabledByServer)
+            
+        case .group:
+            if self.isThreadMessage {
+                self.applyViewConverterForThread(.leftView, isEnabled: !isDisabledByServer)
+                self.applyViewConverterForThread(.addButton, isEnabled: !isDisabledByServer)
+                
+                self.applyViewConverterForThread(.voiceButton, isEnabled: !isDisabledByServer)
+            } else {
+                self.applyViewConverter(.leftView, isEnabled: !isDisabledByServer)
+                self.applyViewConverter(.addButton, isEnabled: !isDisabledByServer)
+                
+                self.applyViewConverter(.voiceButton, isEnabled: !isDisabledByServer)
+            }
+        default:
+            break
+        }
+    }
+    
+    func setInputStateForSwiftUI(_ isEnabled: Bool, placeholder: String) {
+        switch self.channelType {
+        case .open:
+            self.applyViewConverterForOpen(.leftView, isEnabled: isEnabled)
+            self.applyViewConverterForOpen(.addButton, isEnabled: isEnabled)
+        case .group:
+            if self.isThreadMessage {
+                self.applyViewConverterForThread(.leftView, isEnabled: isEnabled)
+                self.applyViewConverterForThread(.addButton, isEnabled: isEnabled)
+                self.applyViewConverterForThread(.voiceButton, isEnabled: isEnabled)
+            } else {
+                self.applyViewConverter(.leftView, isEnabled: isEnabled)
+                self.applyViewConverter(.addButton, isEnabled: isEnabled)
+                self.applyViewConverter(.voiceButton, isEnabled: isEnabled)
+            }
+        default:
+            break
+        }
+    }
+    
+    func setErrorStateForSwiftUI() {
+        switch self.channelType {
+        case .open:
+            self.applyViewConverterForOpen(.leftView, isEnabled: false)
+            self.applyViewConverterForOpen(.addButton, isEnabled: false)
+        case .group:
+            if self.isThreadMessage {
+                self.applyViewConverterForThread(.leftView, isEnabled: false)
+                self.applyViewConverterForThread(.addButton, isEnabled: false)
+            } else {
+                self.applyViewConverter(.leftView, isEnabled: false)
+                self.applyViewConverter(.addButton, isEnabled: false)
+            }
+        default:
+            break
+        }
+    }
+    
+    func endTypingModeForSwiftUI() {
+        switch self.channelType {
+        case .open:
+            self.applyViewConverterForOpen(.sendButton, isHidden: !showsSendButton)
+        case .group:
+            if self.isThreadMessage {
+                self.applyViewConverterForThread(.sendButton, isHidden: !showsSendButton)
+                self.applyViewConverterForThread(.voiceButton, isHidden: !showsVoiceMessageButton)
+            } else {
+                self.applyViewConverter(.sendButton, isHidden: !showsSendButton)
+                self.applyViewConverter(.voiceButton, isHidden: !showsVoiceMessageButton)
+            }
+        default:
+            break
+        }
+    }
+    
+    func textViewDidChangeForSwiftUI(_ text: String) {
+        switch self.channelType {
+        case .open:
+            self.applyViewConverterForOpen(
+                .sendButton,
+                isHidden: (!showsSendButton && text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            )
+        case .group:
+            if self.isThreadMessage {
+                self.applyViewConverterForThread(
+                    .sendButton,
+                    isHidden: (!showsSendButton && text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                )
+                self.applyViewConverterForThread(
+                    .voiceButton,
+                    isHidden: !(showsVoiceMessageButton && (self.sendButton?.isHidden ?? false))
+                )
+            } else {
+                self.applyViewConverter(
+                    .sendButton,
+                    isHidden: (!showsSendButton && text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                )
+                self.applyViewConverter(
+                    .voiceButton,
+                    isHidden: !(showsVoiceMessageButton && (self.sendButton?.isHidden ?? false))
+                )
+            }
+        default:
+            break
+        }
+    }
+}
+#endif

@@ -69,10 +69,15 @@ class CustomBaseViewController: UITableViewController {
                 naviVC: navigationController,
                 type: ChannelListCustomType(rawValue: row)
             )
-        case .Channel:
+        case .GroupChannel:
             ChannelCustomManager.shared.startSample(
                 naviVC: navigationController,
                 type: ChannelCustomType(rawValue: row)
+            )
+        case .OpenChannel:
+            OpenChannelCustomManager.shared.startSample(
+                naviVC: navigationController,
+                type: OpenChannelCustomType(rawValue: row)
             )
         case .ChannelSettings:
             ChannelSettingsCustomManager.shared.startSample(
@@ -121,18 +126,21 @@ extension CustomBaseViewController {
                                           style: .plain,
                                           target: self,
                                           action: #selector(onClickBack) )
-        backButton.image = SBUIconSet.iconBack.resize(with: CGSize(width: 24, height: 24))
+        backButton.image = SBUIconSet.iconBack.sbu_resize(with: CGSize(width: 24, height: 24))
         backButton.tintColor = SBUColorSet.primary300
         self.navigationItem.leftBarButtonItem = backButton
     }
     
     @objc func onClickBack() {
-        if let navigationController = self.navigationController,
-            navigationController.viewControllers.count > 1 {
-            navigationController.popViewController(animated: true)
-        }
-        else {
-            self.dismiss(animated: true, completion: nil)
+        SendbirdUI.disconnect {
+            UserDefaults.removeSignedSampleApp()
+            if let navigationController = self.navigationController,
+                navigationController.viewControllers.count > 1 {
+                navigationController.popViewController(animated: true)
+            }
+            else {
+                self.dismiss(animated: true, completion: nil)
+            }
         }
     }
 }

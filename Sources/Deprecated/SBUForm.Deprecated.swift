@@ -183,6 +183,7 @@ extension SBUUserMessageCell {
     public func updateFormView(with forms: [SBUForm]?, answers: [SBUForm.Answer]) -> Bool { false }
 }
 
+@available(*, unavailable, message: "This model is no longer used internally.")
 extension SBUFormViewDelegate {
     /// Called when `form` is submitted.
     /// - Parameters:
@@ -199,6 +200,7 @@ extension SBUFormViewDelegate {
     func formView(_ view: SBUFormView, didUpdate answer: SBUForm.Answer) { }
 }
 
+@available(*, unavailable, message: "This model is no longer used internally.")
 extension SBUFormFieldViewDelegate {
     /// Called when `SBUForm.Field` is updated.
     /// - Parameters:
@@ -208,6 +210,7 @@ extension SBUFormFieldViewDelegate {
     func formFieldView(_ fieldView: SBUFormFieldView, didUpdate updated: SBUForm.Field.Updated) { }
 }
 
+@available(*, unavailable, message: "This method is deprecated in 3.27.0")
 extension SBUFormViewParams {
     @available(*, unavailable, message: "This model is no longer used internally. Changed to use `SendbirdChatSDK.Form`.")
     init(messageId: Int64, form: SBUForm) {
@@ -215,6 +218,7 @@ extension SBUFormViewParams {
     }
 }
 
+@available(*, unavailable, message: "This model is no longer used internally.")
 extension SBUFormView {
     /// Memory cached answer data.
     @available(*, unavailable, message: "This model is no longer used internally. Changed to use `SendbirdChatSDK.Form`.")
@@ -224,21 +228,22 @@ extension SBUFormView {
     /// - Parameter forms: The array of ``SBUForm/Field``.
     /// - Returns: The array of ``SBUFormFieldView`` instances.
     @available(*, unavailable, message: "This model is no longer used internally. Changed to use `SendbirdChatSDK.Form`.")
-    open func createFormFieldViews(with form: SBUForm?) -> [SBUFormFieldView] { [] }
+    public func createFormFieldViews(with form: SBUForm?) -> [SBUFormFieldView] { [] }
     
     /// Called when a form field is updated.
     /// It invokes ``SBUFormFieldViewDelegate/formFieldView(_:didUpdate:)`
     @available(*, unavailable, message: "This model is no longer used internally. Changed to use `SendbirdChatSDK.Form`.")
-    open func formFieldView(_ view: SBUFormFieldView, didUpdate updated: SBUForm.Field.Updated) { }
+    public func formFieldView(_ view: SBUFormFieldView, didUpdate updated: SBUForm.Field.Updated) { }
 }
 
+@available(*, unavailable, message: "This model is no longer used internally.")
 extension SBUFormFieldView {
     
     // MARK: - Configure
     /// Configure ``SBUFormFieldView`` with `field`.
     /// - Since: 3.11.0
     @available(*, unavailable, message: "This model is no longer used internally. Changed to use `SendbirdChatSDK.Form`.")
-    open func configure(
+    public func configure(
         form: SBUForm,
         field: SBUForm.Field,
         value: String?,
@@ -277,6 +282,7 @@ extension SBUGroupChannelViewController {
     public func groupChannelModule(_ listComponent: SBUGroupChannelModule.List, answersFor messageId: Int64?) -> [SBUForm.Answer]? { nil }
 }
 
+@available(*, unavailable, message: "This model is no longer used internally.")
 extension SBUFormFieldView.StatusType {
     @available(*, unavailable, message: "This model is no longer used internally. Changed to use `SendbirdChatSDK.Form`.")
     public init(form: SBUForm, field: SBUForm.Field, value: String?) {

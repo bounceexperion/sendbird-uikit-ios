@@ -15,7 +15,7 @@ class LiveStreamChannelListViewModel: SBUOpenChannelListViewModel {
     static let queryLimit: UInt = 20
     static let customType = "SB_LIVE_TYPE"
     
-    override init(delegate: SBUOpenChannelListViewModelDelegate?, channelListQuery: OpenChannelListQuery?) {
+    required init(delegate: SBUOpenChannelListViewModelDelegate?, channelListQuery: OpenChannelListQuery?) {
         let params = OpenChannelListQueryParams {
             $0.limit = Self.queryLimit
             $0.customTypeFilter = Self.customType
@@ -24,4 +24,10 @@ class LiveStreamChannelListViewModel: SBUOpenChannelListViewModel {
         
         super.init(delegate: delegate, channelListQuery: channelListQuery)
     }
+    
+//    override func upsertChannels(_ channels: [OpenChannel]?, needReload: Bool) {
+//        // Pass only the live stream channels
+//        let channels = channels?.filter { $0.customType == Self.customType }
+//        super.upsertChannels(channels, needReload: needReload)
+//    }
 }

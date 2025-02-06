@@ -71,6 +71,9 @@ extension Date {
         }
     }
     
+    /// This function returns the last updated time for a channel cell.
+    /// - Parameter baseTimestamp: The base timestamp to calculate the last updated time.
+    /// - Returns: A string representing the last updated time, or nil if the calculation fails.
     public static func lastUpdatedTimeForChannelCell(baseTimestamp: Int64) -> String? {
         self.lastUpdatedTime(
             baseTimestamp: baseTimestamp,
@@ -80,6 +83,9 @@ extension Date {
         )
     }
     
+    /// This function returns the last updated time for a message search result cell.
+    /// - Parameter baseTimestamp: The base timestamp to calculate the last updated time.
+    /// - Returns: A string representing the last updated time, or nil if the calculation fails.
     public static func lastUpdatedTimeForMessageSearchResultCell(baseTimestamp: Int64) -> String? {
         self.lastUpdatedTime(
             baseTimestamp: baseTimestamp,
@@ -89,6 +95,9 @@ extension Date {
         )
     }
     
+    /// This function returns the created time for a parent message.
+    /// - Parameter baseTimestamp: The base timestamp to calculate the created time.
+    /// - Returns: A string representing the created time, or nil if the calculation fails.
     public static func messageCreatedTimeForParentInfo(baseTimestamp: Int64) -> String? {
         self.lastUpdatedTime(
             baseTimestamp: baseTimestamp,
@@ -99,6 +108,9 @@ extension Date {
         )
     }
     
+    /// This function returns the date separated time for a given timestamp.
+    /// - Parameter baseTimestamp: The base timestamp to calculate the date separated time.
+    /// - Returns: A string representing the date separated time, or nil if the calculation fails.
     public static func dateSeparatedTime(baseTimestamp: Int64) -> String? {
         self.lastUpdatedTime(
             baseTimestamp: baseTimestamp,
@@ -124,6 +136,7 @@ extension Date {
         timeFormat: String = SBUDateFormatSet.hhmm,
         yesterdayFormat: String? = nil
     ) -> String? {
+        let localizedFormat = UIView.getCurrentLayoutDirection() == .rightToLeft ? true : false
         let baseDate = Date.sbu_from(baseTimestamp)
         let currDate = Date()
          
@@ -141,7 +154,7 @@ extension Date {
                 baseDateComponents.day != currDateComponents.day {
                 
                 if let yesterdayFormat = yesterdayFormat {
-                    return baseDate.sbu_toString(dateFormat: yesterdayFormat, localizedFormat: false)
+                    return baseDate.sbu_toString(dateFormat: yesterdayFormat, localizedFormat: localizedFormat)
                 }
                 
                 let interval = (currDateComponents.day ?? 0) - (baseDateComponents.day ?? 0)
@@ -152,12 +165,12 @@ extension Date {
             
             if (baseDateComponents.year != currDateComponents.year),
                 let pastYearFormat = pastYearFormat {
-                return baseDate.sbu_toString(dateFormat: pastYearFormat, localizedFormat: false)
+                return baseDate.sbu_toString(dateFormat: pastYearFormat, localizedFormat: localizedFormat)
             }
             
-            return baseDate.sbu_toString(dateFormat: dateFormat, localizedFormat: false)
+            return baseDate.sbu_toString(dateFormat: dateFormat, localizedFormat: localizedFormat)
         } else {
-            return baseDate.sbu_toString(dateFormat: timeFormat, localizedFormat: false)
+            return baseDate.sbu_toString(dateFormat: timeFormat, localizedFormat: localizedFormat)
         }
     }
     
@@ -225,15 +238,24 @@ extension Date {
     /// - Since: 2.1.13
     @available(*, deprecated, renamed: "SBUDateFormatSet") // 3.0.0
     public enum SBUDateFormat {
+        /// Represents date format: EMMMyyyy
         case EMMMyyyy
+        /// Represents date format: MMMddyyyy
         case MMMddyyyy
+        /// Represents date format: EMMMdd
         case EMMMdd
+        /// Represents date format: MMMdd
         case MMMdd
+        /// Represents date format: hhmma
         case hhmma
+        /// Represents date format: hhmm
         case hhmm
+        /// Represents date format: yyyyMMddhhmm
         case yyyyMMddhhmm
+        /// Represents date format: yyyyMMddhhmmss
         case yyyyMMddhhmmss
         
+        /// rawValue
         public var rawValue: String {
             switch self {
             case .EMMMyyyy:

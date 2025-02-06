@@ -33,7 +33,7 @@ open class SBUUserMessageTextView: SBUView {
     public var textView: SBULinkClickableTextView = {
         var textView = SBULinkClickableTextView()
         textView.backgroundColor = .clear
-        textView.textAlignment = .left
+        textView.textAlignment = .natural
         textView.textContainer.lineBreakMode = .byCharWrapping
         textView.showsVerticalScrollIndicator = false
         textView.showsHorizontalScrollIndicator = false
@@ -75,6 +75,8 @@ open class SBUUserMessageTextView: SBUView {
     var textHeightConstraint: NSLayoutConstraint?
     var textMinWidthConstraint: NSLayoutConstraint?
     
+    var containerType: SBUMessageContainerType = .default
+    
     public override init() {
         super.init()
     }
@@ -104,6 +106,7 @@ open class SBUUserMessageTextView: SBUView {
             self.widthConstraint = self.widthAnchor.constraint(
                 lessThanOrEqualToConstant: Metric.textMaxWidth
             )
+            self.widthConstraint?.priority = .init(999)
             self.widthConstraint?.isActive = true
         }
 
@@ -174,11 +177,24 @@ open class SBUUserMessageTextView: SBUView {
     
     open func configure(model: SBUUserMessageTextViewModel) {
         self.text = model.text
-        self.textView.attributedText = model.attributedText
+        self.textView.attributedText = SBUMarkdownTransfer.convert(
+            with: model.attributedText,
+            isEnabled: model.isMarkdownEnabled
+        )        
+        
+        if self.currentLayoutDirection == .rightToLeft {
+            if SBUUtils.isRTLCharacter(with: self.textView.attributedText.string) {
+                self.textView.textAlignment = .right
+            } else {
+                self.textView.textAlignment = .left
+            }            
+        }
+        
         self.textView.linkTextAttributes = [
             .foregroundColor: model.textColor,
             .underlineStyle: NSUnderlineStyle.single.rawValue
         ]
+        self.containerType = model.message?.asUiSettingContainerType ?? .default
         
         if model.hasMentionedMessage, SendbirdUI.config.groupChannel.channel.isMentionEnabled {
             guard let mentionedMessageTemplate = model.message?.mentionedMessageTemplate,
@@ -200,14 +216,18 @@ open class SBUUserMessageTextView: SBUView {
             
             textView.attributedText = mutableAttributedText
         }
+        
+        self.setupLayouts()
     }
 }
 
 extension SBUUserMessageTextView: UITextViewDelegate {
-    open func textView(_ textView: UITextView,
-                  shouldInteractWith URL: URL,
-                  in characterRange: NSRange,
-                  interaction: UITextItemInteraction) -> Bool {
+    open func textView(
+        _ textView: UITextView,
+        shouldInteractWith URL: URL,
+        in characterRange: NSRange,
+        interaction: UITextItemInteraction
+    ) -> Bool {
         if let mentionManager = mentionManager {
             if let mention = mentionManager.findMentions(with: characterRange).first,
                 interaction == .invokeDefaultAction {

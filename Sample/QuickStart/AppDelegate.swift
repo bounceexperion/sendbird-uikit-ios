@@ -7,51 +7,28 @@
 //
 
 import UIKit
+import SendbirdChatSDK
+@_exported import SendbirdUIKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     var window: UIWindow?
-    
     var pendingNotificationPayload: NSDictionary?
     
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        SendbirdUI.setLogLevel(.none)
+        SendbirdUI.setLogLevel(.all)
+        #if INSPECTION
+        SendbirdUI.setLogLevel(.all)
+        self.renderViewForInspection()
+        #endif
+        self.uikitConfigs()
         
-        // TODO: Change to your AppId
-        SendbirdUI.initialize(applicationId: "2D7B4CDB-932F-4082-9B09-A1153792DC8D") { // origin
-            //
-        } migrationHandler: {
-            //
-        } completionHandler: { error in
-            //
-        }
-        
-        SBUGlobals.accessToken = ""
-        SendbirdUI.config.common.isUsingDefaultUserProfileEnabled = true
-        
-        // Reply
-        SendbirdUI.config.groupChannel.channel.replyType = .quoteReply
-        // Channel List - Typing indicator
-        SendbirdUI.config.groupChannel.channelList.isTypingIndicatorEnabled = true
-        // Channel List - Message receipt state
-        SendbirdUI.config.groupChannel.channelList.isMessageReceiptStatusEnabled = true
-        // User Mention
-        SendbirdUI.config.groupChannel.channel.isMentionEnabled = true
-        // GroupChannel - Voice Message
-        SendbirdUI.config.groupChannel.channel.isVoiceMessageEnabled = true
-        // GroupChannel - suggested replies
-        SendbirdUI.config.groupChannel.channel.isSuggestedRepliesEnabled = true
-        // GroupChannel - form type message
-        SendbirdUI.config.groupChannel.channel.isFormTypeMessageEnabled = true
-        
-//        if #available(iOS 14, *) {
-//            SendbirdUI.config.groupChannel.channel.isMultipleFilesMessageEnabled = true
-//        }
-        
-        
+        // INFO: This method could cause the 800100 error. However, it's not a problem because the device push token will be kept by the ChatSDK and the token will be registered after the connection is established.
         self.initializeRemoteNotification()
-        
+        #if INSPECTION
+        self.addObserversForInspection()
+        #endif
         return true
     }
     
@@ -82,8 +59,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                                        willPresent notification: UNNotification,
                                        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Swift.Void)
     {
+        #if INSPECTION
+        self.saveForegroundRemoteNotificationPayload(payload: notification.request.content.userInfo)
+        #endif
         // Foreground setting
-        //        completionHandler( [.alert, .badge, .sound])
+//        completionHandler( [.alert, .badge, .sound])
     }
     
     public func userNotificationCenter(_ center: UNUserNotificationCenter,
@@ -91,28 +71,103 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                                        withCompletionHandler completionHandler: @escaping () -> Swift.Void) {
         let userInfo = response.notification.request.content.userInfo
         guard let payload: NSDictionary = userInfo["sendbird"] as? NSDictionary else { return }
-        
-        
-        let havePresentedVC = UIApplication.shared.currentWindow?.rootViewController?.presentedViewController != nil
-        let isSignedIn = (UIApplication.shared.currentWindow?.rootViewController as? ViewController)?.isSignedIn ?? false
-        let needToPedning = !(isSignedIn || havePresentedVC)
-        
-        if needToPedning {
+
+        #if INSPECTION
+        // This code is not for general purpose and can only be available in Inspection mode sample.
+        self.markPushNotificationAsClicked(remoteNotificationPayload: userInfo)
+        #else
+        SendbirdChat.markPushNotificationAsClicked(remoteNotificationPayload: userInfo)
+        #endif
+
+        let signedInApp = UserDefaults.loadSignedInSampleApp()
+        if signedInApp != .none {
             self.pendingNotificationPayload = payload
-        } else {
-            guard let channel: NSDictionary = payload["channel"] as? NSDictionary,
-                  let channelURL: String = channel["channel_url"] as? String else { return }
             
-            if havePresentedVC {
-                SendbirdUI.moveToChannel(channelURL: channelURL, basedOnChannelList: true)
-            } else {
-                let mainVC = SBUGroupChannelListViewController()
-                let naviVC = UINavigationController(rootViewController: mainVC)
-                naviVC.modalPresentationStyle = .fullScreen
-                UIApplication.shared.currentWindow?.rootViewController?.present(naviVC, animated: true) {
-                    SendbirdUI.moveToChannel(channelURL: channelURL)
+            guard let channel: NSDictionary = payload["channel"] as? NSDictionary, let channelURL: String = channel["channel_url"] as? String else { return }
+            
+            guard let rootViewController = UIApplication.shared.keyWindow?.rootViewController else { return }
+            
+            var topController = rootViewController
+            while let presentedViewController = topController.presentedViewController {
+                topController = presentedViewController
+            }
+            
+            if topController is UINavigationController && !topController.children.isEmpty {
+                topController = topController.children.last!
+            }
+
+            switch topController {
+            case let vc as BasicUsagesViewController:
+                guard let channelType = payload["channel_type"] as? String else { return }
+                
+                if channelType == "group_messaging" {
+                    vc.startGroupChatAction(channelURL: channelURL)
                 }
+            case let vc as MainChannelTabbarController:
+                // Group Channels in Basic Usage
+                if vc.selectedIndex == 1 { // My settings tab
+                    vc.selectedIndex = 0 // Select Channels tab
+                }
+                
+                if let nc = vc.selectedViewController as? UINavigationController {
+                    if nc.visibleViewController is SBUGroupChannelViewController { // SBUGroupChannelViewController is already pushed.
+                        nc.popViewController(animated: false) // Move to channel list
+                    }
+                }
+                self.pendingNotificationPayload = nil
+                SendbirdUI.moveToChannel(channelURL: channelURL, basedOnChannelList: true)
+            case let vc as MainOpenChannelTabbarController:
+                vc.dismiss(animated: false) {
+                    
+                }
+            case let vc as BusinessMessagingSelectionViewController:
+                guard let channelType = payload["channel_type"] as? String else { return }
+                
+                let authType = UserDefaults.loadAuthType()
+                if channelType == "notification_feed" {
+                    vc.openFeedOnly(channelURL: channelURL)
+                } else if channelType == "chat" && authType == .websocket {
+                    vc.openChatAndFeed(channelURL: channelURL)
+                }
+            case let vc as BusinessMessagingTabBarController:
+                guard let channelType = payload["channel_type"] as? String else { return }
+                vc.channelURLforPushNotification = channelURL
+                
+                if channelType == "notification_feed" {
+                    vc.channelType = .feed
+                    vc.openFeedChannelIfNeeded()
+                } else if channelType == "chat" {
+                    vc.channelType = .group
+                    vc.openChatChannelIfNeeded()
+                }
+            default:
+                break
             }
         }
     }
+    
+    func uikitConfigs() {
+//        SBUGlobals.accessToken = ""
+        SendbirdUI.config.common.isUsingDefaultUserProfileEnabled = true
+        
+        // Reply
+        SendbirdUI.config.groupChannel.channel.replyType = .quoteReply
+        // Channel List - Typing indicator
+        SendbirdUI.config.groupChannel.channelList.isTypingIndicatorEnabled = true
+        // Channel List - Message receipt state
+        SendbirdUI.config.groupChannel.channelList.isMessageReceiptStatusEnabled = true
+        // User Mention
+        SendbirdUI.config.groupChannel.channel.isMentionEnabled = true
+        // GroupChannel - Voice Message
+        SendbirdUI.config.groupChannel.channel.isVoiceMessageEnabled = true
+        // GroupChannel - suggested replies
+        SendbirdUI.config.groupChannel.channel.isSuggestedRepliesEnabled = true
+        // GroupChannel - form type message
+        SendbirdUI.config.groupChannel.channel.isFormTypeMessageEnabled = true
+        
+//        if #available(iOS 14, *) {
+//            SendbirdUI.config.groupChannel.channel.isMultipleFilesMessageEnabled = true
+//        }
+    }
+
 }

@@ -9,8 +9,16 @@
 import UIKit
 import SendbirdChatSDK
 
-open class SBUGroupChannelPushSettingsViewController: SBUBaseViewController, SBUGroupChannelPushSettingsViewModelDelegate, SBUGroupChannelPushSettingsModuleHeaderDelegate, SBUGroupChannelPushSettingsModuleListDelegate, SBUGroupChannelPushSettingsModuleListDataSource {
+#if SWIFTUI
+protocol GroupChannelPushSettingsViewEventDelegate: AnyObject {
     
+}
+#endif
+
+// swiftlint:disable type_name
+open class SBUGroupChannelPushSettingsViewController: SBUBaseViewController, SBUGroupChannelPushSettingsViewModelDelegate, SBUGroupChannelPushSettingsModuleHeaderDelegate, SBUGroupChannelPushSettingsModuleListDelegate, SBUGroupChannelPushSettingsModuleListDataSource {
+    // swiftlint:enable type_name
+
     // MARK: - UI properties (Public)
     public var headerComponent: SBUGroupChannelPushSettingsModule.Header?
     public var listComponent: SBUGroupChannelPushSettingsModule.List?
@@ -27,6 +35,15 @@ open class SBUGroupChannelPushSettingsViewController: SBUBaseViewController, SBU
     
     public var channel: BaseChannel? { viewModel?.channel }
     public var channelURL: String? { viewModel?.channelURL }
+    
+    // MARK: - SwiftUI
+    #if SWIFTUI
+    weak var swiftUIDelegate: (SBUGroupChannelPushSettingsViewModelDelegate & GroupChannelPushSettingsViewEventDelegate)? {
+        didSet {
+            self.viewModel?.baseDelegates.addDelegate(self.swiftUIDelegate, type: .swiftui)
+        }
+    }
+    #endif
     
     // MARK: - Lifecycle
     @available(*, unavailable, renamed: "SBUGroupChannelPushSettingsViewController(channelURL:type:)")
@@ -49,8 +66,8 @@ open class SBUGroupChannelPushSettingsViewController: SBUBaseViewController, SBU
         
         self.createViewModel(channel: channel)
         
-        self.headerComponent = SBUModuleSet.groupChannelPushSettingsModule.headerComponent
-        self.listComponent = SBUModuleSet.groupChannelPushSettingsModule.listComponent
+        self.headerComponent = SBUModuleSet.GroupChannelPushSettingsModule.HeaderComponent.init()
+        self.listComponent = SBUModuleSet.GroupChannelPushSettingsModule.ListComponent.init()
     }
     
     required public init(channelURL: String) {
@@ -59,8 +76,8 @@ open class SBUGroupChannelPushSettingsViewController: SBUBaseViewController, SBU
         
         self.createViewModel(channelURL: channelURL)
         
-        self.headerComponent = SBUModuleSet.groupChannelPushSettingsModule.headerComponent
-        self.listComponent = SBUModuleSet.groupChannelPushSettingsModule.listComponent
+        self.headerComponent = SBUModuleSet.GroupChannelPushSettingsModule.HeaderComponent.init()
+        self.listComponent = SBUModuleSet.GroupChannelPushSettingsModule.ListComponent.init()
     }
     
     open override func viewDidLoad() {
@@ -107,6 +124,8 @@ open class SBUGroupChannelPushSettingsViewController: SBUBaseViewController, SBU
         self.navigationItem.titleView = self.headerComponent?.titleView
         self.navigationItem.leftBarButtonItem = self.headerComponent?.leftBarButton
         self.navigationItem.rightBarButtonItem = self.headerComponent?.rightBarButton
+        self.navigationItem.leftBarButtonItems = self.headerComponent?.leftBarButtons
+        self.navigationItem.rightBarButtonItems = self.headerComponent?.rightBarButtons
         
         // List component
         self.listComponent?.configure(
@@ -123,7 +142,11 @@ open class SBUGroupChannelPushSettingsViewController: SBUBaseViewController, SBU
     open override func setupLayouts() {
         self.listComponent?.sbu_constraint(
             equalTo: self.view,
-            left: 0, right: 0, top: 0, bottom: 0
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            useSafeArea: true
         )
     }
     
@@ -154,6 +177,7 @@ open class SBUGroupChannelPushSettingsViewController: SBUBaseViewController, SBU
     }
     
     open func baseChannelSettingsViewModel(_ viewModel: SBUBaseChannelSettingsViewModel, didChangeChannel channel: BaseChannel?, withContext context: MessageContext) {
+        self.viewModel?.updateChannelPushTriggerOption()
     }
     
     open func baseChannelSettingsViewModel(_ viewModel: SBUBaseChannelSettingsViewModel, shouldDismissForChannelSettings channel: BaseChannel?) {
@@ -175,6 +199,14 @@ open class SBUGroupChannelPushSettingsViewController: SBUBaseViewController, SBU
     
     open func groupChannelPushSettingsModule(_ headerComponent: SBUGroupChannelPushSettingsModule.Header, didUpdateRightItem rightItem: UIBarButtonItem?) {
         self.navigationItem.rightBarButtonItem = rightItem
+    }
+    
+    open func groupChannelPushSettingsModule(_ headerComponent: SBUGroupChannelPushSettingsModule.Header, didUpdateLeftItems leftItems: [UIBarButtonItem]?) {
+        self.navigationItem.leftBarButtonItems = leftItems
+    }
+    
+    open func groupChannelPushSettingsModule(_ headerComponent: SBUGroupChannelPushSettingsModule.Header, didUpdateRightItems rightItems: [UIBarButtonItem]?) {
+        self.navigationItem.rightBarButtonItems = rightItems
     }
     
     open func groupChannelPushSettingsModule(_ headerComponent: SBUGroupChannelPushSettingsModule.Header, didTapLeftItem leftItem: UIBarButtonItem) {

@@ -42,13 +42,23 @@ open class SBUBaseChannelListViewController: SBUBaseViewController {
         self.navigationItem.leftBarButtonItem = self.baseHeaderComponent?.leftBarButton
         self.navigationItem.rightBarButtonItem = self.baseHeaderComponent?.rightBarButton
         
+        self.navigationItem.leftBarButtonItems = self.baseHeaderComponent?.leftBarButtons
+        self.navigationItem.rightBarButtonItems = self.baseHeaderComponent?.rightBarButtons
+        
         if let listComponent = self.baseListComponent {
             self.view.addSubview(listComponent)
         }
     }
     
     open override func setupLayouts() {
-        self.baseListComponent?.sbu_constraint(equalTo: self.view, left: 0, right: 0, top: 0, bottom: 0)
+        self.baseListComponent?.sbu_constraint(
+            equalTo: self.view,
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            useSafeArea: true
+        )
     }
     
     open override func updateStyles() {

@@ -8,6 +8,7 @@
 
 import UIKit
 
+// swiftlint:disable type_name
 /// Event methods for the views updates and performing actions from the header component in a notification channel.
 protocol SBUFeedNotificationChannelModuleHeaderDelegate: SBUCommonDelegate {
     /// Called when the value of  ``SBUFeedNotificationChannelModule/Header/titleView`` has been updated.
@@ -77,16 +78,19 @@ protocol SBUFeedNotificationChannelModuleHeaderDataSource: AnyObject {
         channelNameForTitleView titleView: UIView?
     ) -> String?
 }
+// swiftlint:enable type_name
 
 extension SBUFeedNotificationChannelModule {
     /// A module component that represent the header of ``SBUFeedNotificationChannelModule``
     /// - Since: 3.5.0
+    @objc(SBUFeedNotificationChannelModuleHeader)
     @objcMembers
     public class Header: UIView {
         
         // MARK: - UI properties (Public)
         
         /// Specifies a custom view of the channel title in the center of the navigation bar of the header component.
+        /// The default view type is ``SBUNotificationNavigationTitleView``. 
         /// - NOTE: When the value is updated, ``SBUFeedNotificationChannelModuleHeaderDelegate/feedNotificationChannelModule(_:didUpdateTitleView:)`` delegate function is called.
         /// - NOTE: To update title text when you using default title view, please calls ``SBUFeedNotificationChannelViewController/updateChannelTitle(_:)`` in ``SBUFeedNotificationChannelViewController``
         var titleView: UIView? {
@@ -99,6 +103,7 @@ extension SBUFeedNotificationChannelModule {
         }
         
         /// Specifies an array of  `UIBarButtonItem` that is used as a button on the left side of the navigation bar.
+        /// The default view type is `[UIBarButtonItem]`.
         /// - NOTE: When the value is updated, ``SBUFeedNotificationChannelModuleHeaderDelegate/feedNotificationChannelModule(_:didUpdateLeftItems:)``  delegate function is called.
         var leftBarButtons: [UIBarButtonItem]? {
             didSet {
@@ -140,7 +145,7 @@ extension SBUFeedNotificationChannelModule {
         /// "Notifications"
         lazy var defaultLeftBarButton: UIBarButtonItem = {
             let backButton = SBUBarButtonItem.backButton(
-                vc: self,
+                target: self,
                 selector: #selector(onTapLeftBarButton(_:))
             )
             return backButton
@@ -218,11 +223,9 @@ extension SBUFeedNotificationChannelModule {
                 titleView.titleLabel.textColor = self.theme.textColor
             }
             
-            self.leftBarButtons?
-                .forEach { $0.tintColor = self.theme.buttonIconTintColor }
+            self.leftBarButtons?.forEach { $0.tintColor = self.theme.buttonIconTintColor }
             
-            self.rightBarButtons?
-                .forEach { $0.tintColor = self.theme.buttonIconTintColor }
+            self.rightBarButtons?.forEach { $0.tintColor = self.theme.buttonIconTintColor }
         }
         
         /// Updates styles of the views in the header component.

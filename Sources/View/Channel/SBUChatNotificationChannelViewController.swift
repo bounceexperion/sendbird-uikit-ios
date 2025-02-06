@@ -89,8 +89,8 @@ open class SBUChatNotificationChannelViewController: SBUBaseViewController,
             )
         }
         
-        self.headerComponent = SBUModuleSet.chatNotificationChannelModule.headerComponent
-        self.listComponent = SBUModuleSet.chatNotificationChannelModule.listComponent
+        self.headerComponent = SBUModuleSet.ChatNotificationChannelModule.HeaderComponent.init()
+        self.listComponent = SBUModuleSet.ChatNotificationChannelModule.ListComponent.init()
     }
     
     /// Initializes ``SBUFeedNotificationChannelViewController`` with channelURL
@@ -114,8 +114,8 @@ open class SBUChatNotificationChannelViewController: SBUBaseViewController,
             )
         }
         
-        self.headerComponent = SBUModuleSet.chatNotificationChannelModule.headerComponent
-        self.listComponent = SBUModuleSet.chatNotificationChannelModule.listComponent
+        self.headerComponent = SBUModuleSet.ChatNotificationChannelModule.HeaderComponent.init()
+        self.listComponent = SBUModuleSet.ChatNotificationChannelModule.ListComponent.init()
     }
     
     open override func loadView() {
@@ -210,16 +210,13 @@ open class SBUChatNotificationChannelViewController: SBUBaseViewController,
     /// print(action.data) // "https://www.sendbird.com"
     /// ```
     /// - Since: 3.5.0
-    open func handleWebAction(_
-        action: SBUMessageTemplate.Action,
+    open func handleWebAction(
+        _ action: SBUMessageTemplate.Action,
         notification: BaseMessage,
         forRowAt indexPath: IndexPath
     ) {
-        if let url = URL(string: action.data) {
-            url.open()
-        } else if let urlString = action.alterData, let url = URL(string: urlString) {
-            url.open()
-        }
+        guard let url = action.urlFromActionDatas else { return }
+        url.open()
     }
     
     /// Called when there’s a tap gesture on a notification that includes a custom URL scheme. e.g., `"myapp://someaction"`
@@ -232,11 +229,8 @@ open class SBUChatNotificationChannelViewController: SBUBaseViewController,
         notification: BaseMessage,
         forRowAt indexPath: IndexPath
     ) {
-        if let urlScehem = URL(string: action.data) {
-            urlScehem.open(needSanitise: false)
-        } else if let urlString = action.alterData, let url = URL(string: urlString) {
-            url.open(needSanitise: false)
-        }
+        guard let url = action.urlFromActionDatas else { return }
+        url.open(needSanitise: false)
     }
     
     // MARK: - ViewModel
@@ -406,7 +400,7 @@ open class SBUChatNotificationChannelViewController: SBUBaseViewController,
     ) {
         guard channel != nil else {
             // channel deleted
-            if self.navigationController?.viewControllers.last == self {
+            if self.isLastInNavigationStack() {
                 // If leave is called in the ChannelSettingsViewController, this logic needs to be prevented.
                 self.onClickBack()
             }
@@ -567,6 +561,22 @@ open class SBUChatNotificationChannelViewController: SBUBaseViewController,
         // Nothing
     }
     
+    func chatNotificationChannelModule(
+        _ listComponent: SBUChatNotificationChannelModule.List,
+        didHandleUncachedTemplateKeys templateKeys: [String]
+    ) -> Bool? {
+        let cache = self.viewModel?.templateLoadCache ?? [:]
+        var result = true
+        for templateKey in templateKeys {
+            switch cache[templateKey] {
+            case .success: continue
+            case .failure, .loading: result = false
+            default: return nil
+            }
+        }
+        return result
+    }
+    
     // MARK: - SBUChatNotificationChannelModuleListDelegate
     func chatNotificationChannelModule(
         _ listComponent: SBUChatNotificationChannelModule.List,
@@ -668,6 +678,18 @@ open class SBUChatNotificationChannelViewController: SBUBaseViewController,
     ) {
         if let channelURL = self.viewModel?.channelURL {
             self.viewModel?.loadChannel(channelURL: channelURL)
+        }
+    }
+    
+    func chatNotificationChannelModule(
+        _ listComponent: SBUChatNotificationChannelModule.List,
+        shouldHandleUncachedTemplateKeys templateKeys: [String],
+        messageCell: SBUBaseMessageCell
+    ) {
+        self.viewModel?.loadUncachedTemplate(
+            keys: templateKeys
+        ) { [weak self] success in
+            self?.listComponent?.reloadTableView()
         }
     }
     

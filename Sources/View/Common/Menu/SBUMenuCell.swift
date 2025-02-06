@@ -8,27 +8,20 @@
 
 import UIKit
 
-class SBUMenuCell: UITableViewCell {
+/// This menu cell used in the MenuSheetViewController is the menu cell
+/// - Since: 3.28.0
+open class SBUMenuCell: SBUTableViewCell {
+    public lazy var containerView = {
+        SBUStackView.init(axis: .horizontal, alignment: .fill, spacing: 30)
+    }()
+    public lazy var titleLabel = { UILabel(frame: .zero) }()
+    public lazy var iconImageView = { UIImageView(frame: .zero) }()
+    public lazy var lineView = { UIView(frame: .zero) }()
 
-    @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var iconImageView: UIImageView!
-    @IBOutlet weak var lineView: UIView!
-
-    var isEnabled: Bool = true
-    var tapHandler: ((@escaping (Bool) -> Void) -> Void)?
-
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        // Initialization code
-    }
-
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-
-        // Configure the view for the selected state
-    }
+    public var isEnabled: Bool = true
+    public var tapHandler: ((@escaping (Bool) -> Void) -> Void)?
     
-    func configure(with item: SBUMenuItem) {
+    open func configure(with item: SBUMenuItem) {
         let theme = SBUTheme.componentTheme
         
         self.titleLabel.text = item.title
@@ -52,5 +45,42 @@ class SBUMenuCell: UITableViewCell {
             
             completion(item?.transitionsWhenSelected ?? false)
         }
+    }
+    
+    override open func setupViews() {
+        super.setupViews()
+        
+        self.containerView.setHStack([
+            self.titleLabel,
+            self.iconImageView
+        ])
+        
+        self.contentView.addSubview(self.containerView)
+    }
+    
+    override open func setupLayouts() {
+        super.setupLayouts()
+        
+        self.containerView
+            .sbu_constraint(
+                equalTo: self.contentView,
+                left: 17,
+                right: 17,
+                top: 0,
+                bottom: 0,
+                priority: .required
+            )
+            .sbu_constraint(height: 56, priority: .required)
+        
+        self.iconImageView
+            .sbu_constraint(width: 25, priority: .required)
+    }
+    
+    override open func setupStyles() {
+        super.setupStyles()
+        
+        self.backgroundColor = .clear
+        
+        self.iconImageView.contentMode = .scaleAspectFit
     }
 }

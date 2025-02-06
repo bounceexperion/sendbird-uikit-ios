@@ -61,7 +61,7 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
     
     var isTransformedList: Bool = true
     
-    var isDisableChatInputState: Bool = false
+    var isChatInputDisabled: Bool = false
     
     // MARK: - Lifecycle
     @available(*, unavailable)
@@ -228,7 +228,6 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
         self.view.endEditing(true)
         
         NotificationCenter.default.removeObserver(self, name: UIApplication.willResignActiveNotification, object: nil)
-        NotificationCenter.default.removeObserver(self)
     }
     
     /// Called when the application will resign activity.
@@ -304,6 +303,9 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
         self.navigationItem.titleView = self.baseHeaderComponent?.titleView
         self.navigationItem.leftBarButtonItem = self.baseHeaderComponent?.leftBarButton
         self.navigationItem.rightBarButtonItem = useRightBarButtonItem ? self.baseHeaderComponent?.rightBarButton : nil
+        
+        self.navigationItem.leftBarButtonItems = self.baseHeaderComponent?.leftBarButtons
+        self.navigationItem.rightBarButtonItems = self.baseHeaderComponent?.rightBarButtons
         
         // List
         if let baseListComponent = baseListComponent {
@@ -398,7 +400,7 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
     /// - Parameter message: `BaseMessage` object
     /// - Since: 1.1.0
     open func showEmojiListModal(message: BaseMessage) {
-        let emojiListVC = SBUEmojiListViewController(message: message)
+        let emojiListVC = SBUCommonViewControllerSet.EmojiListViewController.init(message: message)
         emojiListVC.modalPresentationStyle = .custom
         emojiListVC.transitioningDelegate = self
         
@@ -514,14 +516,14 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
                 switch fileData.fileType {
                 case .audio, .video:
                     if SBUGlobals.isAVPlayerAlwaysEnabled {
-                        let vc = AVPlayerViewController()
-                        vc.player = AVPlayer(url: fileURL)
-                        self.present(vc, animated: true) { vc.player?.play() }
+                        let viewController = AVPlayerViewController()
+                        viewController.player = AVPlayer(url: fileURL)
+                        self.present(viewController, animated: true) { viewController.player?.play() }
                     } else {
-                        let dc = UIDocumentInteractionController(url: fileURL)
-                        dc.name = fileData.name
-                        dc.delegate = self
-                        dc.presentPreview(animated: true)
+                        let documentController = UIDocumentInteractionController(url: fileURL)
+                        documentController.name = fileData.name
+                        documentController.delegate = self
+                        documentController.presentPreview(animated: true)
                     }
                 default:
                     if let messageInputView = self.baseInputComponent?.messageInputView as? SBUMessageInputView {
@@ -531,10 +533,10 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
                     }
                     
                     if fileURL.scheme == "file" {
-                        let dc = UIDocumentInteractionController(url: fileURL)
-                        dc.name = fileData.name
-                        dc.delegate = self
-                        dc.presentPreview(animated: true)
+                        let documentController = UIDocumentInteractionController(url: fileURL)
+                        documentController.name = fileData.name
+                        documentController.delegate = self
+                        documentController.presentPreview(animated: true)
                     } else {
                         let safariVC = SFSafariViewController(url: fileURL)
                         self.present(safariVC, animated: true, completion: nil)
@@ -680,8 +682,10 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
             }
         }
         
-        self.isDisableChatInputState =  messages.first?.asExtendedMessagePayload?.getDisabledChatInputState(hasNext: self.baseViewModel?.hasNext()) ?? false
-        
+        self.isChatInputDisabled = messages.getChatInputDisableState(
+            hasNext: self.baseViewModel?.hasNext()
+        )
+            
         guard needsToReload else { return }
         
         // Verify that the UIViewController is currently visible on the screen
@@ -762,6 +766,7 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
         }
         
         self.navigationItem.titleView = titleStackView
+        
     }
     
     open func baseChannelModule(_ headerComponent: SBUBaseChannelModule.Header, didTapTitleView titleView: UIView?) {
@@ -774,6 +779,18 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
     open func baseChannelModule(_ headerComponent: SBUBaseChannelModule.Header, didUpdateRightItem rightItem: UIBarButtonItem?) {
         if useRightBarButtonItem {
             self.navigationItem.rightBarButtonItem = rightItem
+        }
+    }
+    
+    /// - Since: 3.28.0
+    public func baseChannelModule(_ headerComponent: SBUBaseChannelModule.Header, didUpdateLeftItems leftItems: [UIBarButtonItem]?) {
+        self.navigationItem.leftBarButtonItems = leftItems
+    }
+    
+    /// - Since: 3.28.0
+    public func baseChannelModule(_ headerComponent: SBUBaseChannelModule.Header, didUpdateRightItems rightItems: [UIBarButtonItem]?) {
+        if useRightBarButtonItem {
+            self.navigationItem.rightBarButtonItems = rightItems
         }
     }
     
@@ -895,7 +912,6 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
                     startingPoint: .max
                 )
             }
-            break
         default:
             break
         }
@@ -1107,6 +1123,10 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
     
     open func baseChannelModule(_ inputComponent: SBUBaseChannelModule.Input,
                                 didTapResource type: MediaResourceType) {
+        self.didTapResource(of: type)
+    }
+    
+    func didTapResource(of type: MediaResourceType) {
         switch type {
         case .document: self.showDocumentPicker()
         case .library:
@@ -1156,9 +1176,15 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
         
         var mediaType: PHAssetMediaType? // nil is all type support
         
-        if gallery.isPhotoEnabled && gallery.isVideoEnabled { mediaType = nil } else if gallery.isPhotoEnabled { mediaType = .image } else if gallery.isVideoEnabled { mediaType = .video }
+        if gallery.isPhotoEnabled && gallery.isVideoEnabled {
+            mediaType = nil
+        } else if gallery.isPhotoEnabled {
+            mediaType = .image
+        } else if gallery.isVideoEnabled {
+            mediaType = .video
+        }
         
-        let selectablePhotoVC = SBUSelectablePhotoViewController(mediaType: mediaType)
+        let selectablePhotoVC = SBUCommonViewControllerSet.SelectablePhotoViewController.init(mediaType: mediaType)
         selectablePhotoVC.delegate = self
         let nav = UINavigationController(rootViewController: selectablePhotoVC)
         self.present(nav, animated: true, completion: nil)
@@ -1188,10 +1214,11 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
             
             // Multiple files message is allowed only for group channel.
             if !(self is SBUMessageThreadViewController),
-             let _ = self.baseViewModel?.channel as? GroupChannel,
+               let channel = self.baseViewModel?.channel,
+               channel is GroupChannel,
                SendbirdUI.config.groupChannel.channel.isMultipleFilesMessageEnabled {
                 configuration.selectionLimit = SBUAvailable.multipleFilesMessageFileCountLimit
-
+                
                 if #available(iOS 15, *) {
                     configuration.selection = .ordered
                 }
@@ -1262,30 +1289,42 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
         )
     }
     
-    open func baseChannelModule(_ inputComponent: SBUBaseChannelModule.Input,
-                                didTapEdit text: String) {
+    open func baseChannelModule(
+        _ inputComponent: SBUBaseChannelModule.Input,
+        didTapEdit text: String
+    ) {
         guard let message = self.baseViewModel?.inEditingMessage else { return }
         
         self.baseViewModel?.updateUserMessage(message: message, text: text)
     }
     
-    open func baseChannelModule(_ inputComponent: SBUBaseChannelModule.Input,
-                                didChangeText text: String) {
+    open func baseChannelModule(
+        _ inputComponent: SBUBaseChannelModule.Input,
+        didChangeText text: String
+    ) {
         
     }
     
-    open func baseChannelModule(_ inputComponent: SBUBaseChannelModule.Input,
-                                willChangeMode mode: SBUMessageInputMode, message: BaseMessage?) {
+    open func baseChannelModule(
+        _ inputComponent: SBUBaseChannelModule.Input,
+        willChangeMode mode: SBUMessageInputMode, 
+        message: BaseMessage?
+    ) {
         
     }
     
-    open func baseChannelModule(_ inputComponent: SBUBaseChannelModule.Input,
-                                didChangeMode mode: SBUMessageInputMode, message: BaseMessage?) {
+    open func baseChannelModule(
+        _ inputComponent: SBUBaseChannelModule.Input,
+        didChangeMode mode: SBUMessageInputMode, 
+        message: BaseMessage?
+    ) {
         baseViewModel?.inEditingMessage = message as? UserMessage
     }
     
-    open func baseChannelModule(_ inputComponent: SBUBaseChannelModule.Input,
-                                  channelForInputView messageInputView: UIView?) -> BaseChannel? {
+    open func baseChannelModule(
+        _ inputComponent: SBUBaseChannelModule.Input,
+        channelForInputView messageInputView: UIView?
+    ) -> BaseChannel? {
         baseViewModel?.channel
     }
     
@@ -1337,8 +1376,9 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
             picker.dismiss(animated: true) { [weak self] in
                 guard let self = self else { return }
                 guard info[.mediaType] != nil else { return }
+                // swiftlint:disable force_cast
                 let mediaType = info[.mediaType] as! CFString
-                
+                // swiftlint:enable force_cast
                 switch mediaType {
                 case kUTTypeImage:
                     if let inputComponent = self.baseInputComponent {
@@ -1412,7 +1452,7 @@ open class SBUBaseChannelViewController: SBUBaseViewController, SBUBaseChannelVi
     
     // MARK: - UIDocumentInteractionControllerDelegate
     open func documentInteractionControllerViewControllerForPreview(_ controller: UIDocumentInteractionController) -> UIViewController {
-        return self// or use return self.navigationController for fetching app navigation bar colour
+        return self// or use return self.navigationController for fetching app navigation bar color
     }
     
     // MARK: - SBUSelectablePhotoViewDelegate

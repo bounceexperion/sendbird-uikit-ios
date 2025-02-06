@@ -8,11 +8,23 @@
 
 import UIKit
 
-public typealias SBUMenunHandler = () -> Void
+/// This typealias is deprecated and has been renamed to `SBUMenuHandler`
+@available(*, deprecated, renamed: "SBUMenuHandler")
+public typealias SBUMenunHandler = SBUMenuHandler
 
+/// This typealias is used to define a closure that takes no parameters and returns no value.
+/// It is typically used as a completion handler for various operations in the `SBUMenuItem` class.
+/// - Since: 3.19.0
+public typealias SBUMenuHandler = () -> Void
+
+/// `SBUMenuItem` is a class that inherits from `SBUCommonItem`. It is used to create menu items in the application.
 public class SBUMenuItem: SBUCommonItem {
-    var completionHandler: SBUMenunHandler?
+    var completionHandler: SBUMenuHandler?
     
+    /// A Boolean value that determines whether the `SBUMenuItem` is enabled.
+    ///
+    /// When the value of this property is `false`, the `completionHandler` is set to `nil`.
+    /// When the value of this property is `true`, the `completionHandler` retains its value.
     public var isEnabled: Bool = true {
         didSet {
             guard isEnabled == false else { return }
@@ -31,13 +43,13 @@ public class SBUMenuItem: SBUCommonItem {
     ///    - font: The default is `nil`.  If `nil`, the menu text label will set it's font to ``SBUComponentTheme/menuTitleFont``
     public init(
         title: String? = nil,
-        color: UIColor? = SBUColorSet.onlight01,
+        color: UIColor? = SBUColorSet.onLightTextHighEmphasis,
         image: UIImage? = nil,
         font: UIFont? = nil,
         tintColor: UIColor? = nil,
         textAlignment: NSTextAlignment = .left,
         tag: Int? = nil,
-        completionHandler: SBUMenunHandler? = nil
+        completionHandler: SBUMenuHandler? = nil
     ) {
         super.init(
             title: title,
@@ -52,6 +64,9 @@ public class SBUMenuItem: SBUCommonItem {
     }
 }
 
+// MOD TODO: Need to make module and components
+// MOD TODO: Need to add CustomComponent sample
+// If the reaction feature is enabled, the `SBUMenuSheetViewController` is used; if it is disabled, the `SBUMenuView` is used.
 class SBUMenuView: NSObject {
     static private let shared = SBUMenuView()
     
@@ -190,7 +205,8 @@ class SBUMenuView: NSObject {
         })
     }
     
-    @objc private func dismiss() {
+    @objc
+    private func dismiss() {
         guard !isShowing else { return }
 
         for subView in self.baseView.subviews {
@@ -235,24 +251,59 @@ class SBUMenuView: NSObject {
         let imageSize: CGFloat = 24.0
         
         let titleLabel = UILabel()
-        titleLabel.frame = CGRect(
-            origin: CGPoint(x: leftMargin, y: 0),
-            size: CGSize(
-                width: itemWidth - leftMargin - midMargin - imageSize - rightMargin,
-                height: itemHeight
-            )
-        )
+        
         titleLabel.text = item.title
         titleLabel.font = item.font ?? theme.menuTitleFont
         titleLabel.textColor = item.color
-        titleLabel.textAlignment = item.textAlignment
         
+        // LTR
+        // |-------------------------itemWidth-------------------------|
+        // |-leftMargin-|titleLabel|-midMargin-|imageView|-rightMargin-|
+        
+        // RTL
+        // |-------------------------itemWidth-------------------------|
+        // |-leftMargin-|imageView|-midMargin-|titleLabel|-rightMargin-|
+        var imageViewPosX: CGFloat = 0
+        var titleLabelPosX: CGFloat = 0
+        var titleLabelWidth: CGFloat = 0
+        var textAlignment: NSTextAlignment = .left
+        if UIView.getCurrentLayoutDirection().isLTR == true {
+            textAlignment = .left
+            titleLabelPosX = leftMargin
+            if item.image != nil {
+                imageViewPosX = itemWidth - rightMargin - imageSize
+                titleLabelWidth = itemWidth - leftMargin - midMargin - imageSize - rightMargin
+            } else {
+                titleLabelWidth = itemWidth - leftMargin - rightMargin
+            }
+        } else {
+            textAlignment = .right
+            imageViewPosX = leftMargin
+            if item.image != nil {
+                titleLabelPosX = leftMargin + imageSize + midMargin
+                titleLabelWidth = itemWidth - leftMargin - imageSize - midMargin - rightMargin
+            } else {
+                titleLabelPosX = leftMargin
+                titleLabelWidth = itemWidth - leftMargin - rightMargin
+            }
+        }
+        
+        titleLabel.textAlignment = textAlignment
+        titleLabel.frame = CGRect(
+            origin: CGPoint(x: titleLabelPosX, y: 0),
+            size: CGSize(
+                width: titleLabelWidth,
+                height: itemHeight
+            )
+        )
+
         let imageView = UIImageView()
         if let image = item.image {
             imageView.frame = CGRect(
-                origin: CGPoint(x: titleLabel.frame.maxX + midMargin, y: topBottomMargin),
+                origin: CGPoint(x: imageViewPosX, y: topBottomMargin),
                 size: CGSize(width: imageSize, height: imageSize)
             )
+            
             imageView.image = image
         }
         
@@ -310,7 +361,8 @@ class SBUMenuView: NSObject {
     }
     
     // MARK: Button action
-    @objc private func onClickMenuButton(sender: UIButton) {
+    @objc
+    private func onClickMenuButton(sender: UIButton) {
         let index = sender.tag
         let item = self.items[index]
         item.completionHandler?()

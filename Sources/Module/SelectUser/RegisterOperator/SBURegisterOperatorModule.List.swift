@@ -33,8 +33,8 @@ extension SBURegisterOperatorModule {
     
     /// A module component that represent the list of `SBURegisterOperatorModule`.
     @objc(SBURegisterOperatorModuleList)
-    @objcMembers open class List: SBUBaseSelectUserModule.List {
-        
+    @objcMembers
+    open class List: SBUBaseSelectUserModule.List {
         // MARK: - Logic properties (Public)
         public weak var delegate: SBURegisterOperatorModuleListDelegate? {
             get { self.baseDelegate as? SBURegisterOperatorModuleListDelegate }
@@ -43,6 +43,14 @@ extension SBURegisterOperatorModule {
         public weak var dataSource: SBURegisterOperatorModuleListDataSource? {
             get { self.baseDataSource as? SBURegisterOperatorModuleListDataSource }
             set { self.baseDataSource = newValue }
+        }
+        
+        var channelType: ChannelType = .group
+        
+        // MARK: - Default view
+        
+        override func createDefaultEmptyView() -> SBUEmptyView {
+            SBUEmptyView.createDefault(Self.EmptyView, delegate: self)
         }
         
         // MARK: - LifeCycle
@@ -63,10 +71,13 @@ extension SBURegisterOperatorModule {
         ///   - theme: `SBUUserListTheme` object
         open func configure(delegate: SBURegisterOperatorModuleListDelegate,
                             dataSource: SBURegisterOperatorModuleListDataSource,
+                            channelType: ChannelType = .group,
                             theme: SBUUserListTheme) {
             
             self.delegate = delegate
             self.dataSource = dataSource
+            
+            self.channelType = channelType
             
             self.theme = theme
             
@@ -82,7 +93,8 @@ extension SBURegisterOperatorModule {
             defaultCell.configure(
                 type: .invite,
                 user: user,
-                isChecked: self.isSelectedUser(user)
+                isChecked: self.isSelectedUser(user),
+                channelType: self.channelType
             )
             
             if user.isOperator {
@@ -91,6 +103,13 @@ extension SBURegisterOperatorModule {
                 defaultCell.isUserInteractionEnabled = false
             }
         }
+        
+        open override func setupViews() {
+            super.setupViews()
+            
+            self.register(userCell: Self.UserCell.init())
+        }
+        
     }
 }
 
@@ -105,6 +124,7 @@ extension SBURegisterOperatorModule.List {
 
 // MARK: - UITableView relations
 extension SBURegisterOperatorModule.List {
+    // swiftlint:disable missing_docs
     open func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         self.delegate?.registerOperatorModule(self, didSelectRowAt: indexPath)
         
@@ -121,4 +141,5 @@ extension SBURegisterOperatorModule.List {
                         forRowAt indexPath: IndexPath) {
         self.delegate?.registerOperatorModule(self, didDetectPreloadingPosition: indexPath)
     }
+    // swiftlint:enable missing_docs
 }

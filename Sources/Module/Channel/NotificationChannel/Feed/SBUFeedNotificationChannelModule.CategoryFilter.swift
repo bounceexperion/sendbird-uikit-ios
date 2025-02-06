@@ -1,6 +1,6 @@
 //
 //  SBUFeedNotificationChannelModule.CategoryFilter.swift
-//  QuickStart
+//  SendbirdUIKit
 //
 //  Created by Jed Gyeong on 8/21/23.
 //  Copyright © 2023 SendBird, Inc. All rights reserved.
@@ -9,6 +9,7 @@
 import UIKit
 import SendbirdChatSDK
 
+// swiftlint:disable type_name
 protocol SBUFeedNotificationChannelModuleCategoryFilterDelegate: SBUCommonDelegate {
     func feedNotificationChannelModule(
         _ categoryFilterComponent: SBUFeedNotificationChannelModule.CategoryFilter,
@@ -21,8 +22,10 @@ protocol SBUFeedNotificationChannelModuleCategoryFilterDataSource: AnyObject {
         _ categoryFilterComponent: SBUFeedNotificationChannelModule.CategoryFilter
     ) -> [NotificationCategory]?
 }
+// swiftlint:enable type_name
 
 extension SBUFeedNotificationChannelModule {
+    @objc(SBUFeedNotificationChannelModuleCategoryFilter)
     @objcMembers
     public class CategoryFilter: UIView {
         struct Constants {
@@ -50,6 +53,9 @@ extension SBUFeedNotificationChannelModule {
             )
             view.translatesAutoresizingMaskIntoConstraints = false
             
+            if view.currentLayoutDirection.isRTL {
+                view.transform = .init(scaleX: -1, y: 1)
+            }
             return view
         }()
         
@@ -162,6 +168,10 @@ extension SBUFeedNotificationChannelModule.CategoryFilter: UICollectionViewDataS
         
         cell.label.text = categories[indexPath.row].name
         cell.updateSelectionStatus(isSelected: indexPath.row == self.selectedIndex)
+        
+        if cell.currentLayoutDirection.isRTL {
+            cell.contentView.transform = .init(scaleX: -1, y: 1)
+        }
         
         return cell
     }

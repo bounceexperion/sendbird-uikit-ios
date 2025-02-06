@@ -8,6 +8,15 @@
 
 import UIKit
 import SendbirdChatSDK
+#if SWIFTUI
+import SwiftUI
+#endif
+
+#if SWIFTUI
+protocol ModerationsViewEventDelegate: AnyObject {
+    func moderationsView(didChangeFrozenState isFrozen: Bool)
+}
+#endif
 
 open class SBUModerationsViewController: SBUBaseViewController, SBUModerationsModuleHeaderDelegate, SBUModerationsModuleListDelegate, SBUModerationsModuleListDataSource, SBUCommonViewModelDelegate, SBUModerationsViewModelDelegate {
     
@@ -25,6 +34,26 @@ open class SBUModerationsViewController: SBUBaseViewController, SBUModerationsMo
     public var channel: BaseChannel? { viewModel?.channel }
     public var channelURL: String? { viewModel?.channelURL }
     public var channelType: ChannelType { viewModel?.channelType ?? .group }
+    
+    // MARK: - SwiftUI
+    #if SWIFTUI
+    weak var swiftUIDelegate: (SBUModerationsViewModelDelegate & ModerationsViewEventDelegate)? {
+        didSet {
+            self.viewModel?.delegates.addDelegate(self.swiftUIDelegate, type: .swiftui)
+        }
+    }
+    
+    var groupMemberListViewBuilder: GroupMemberListViewBuilder?
+    var openParticipantListViewBuilder: OpenParticipantListViewBuilder?
+
+    var groupOperatorListViewBuilder: GroupOperatorListViewBuilder?
+    var groupMutedMemberListViewBuilder: GroupMutedMemberListViewBuilder?
+    var groupBannedUserListViewBuilder: GroupBannedUserListViewBuilder?
+    
+    var openOperatorListViewBuilder: OpenOperatorListViewBuilder?
+    var openMutedParticipantListViewBuilder: OpenMutedParticipantListViewBuilder?
+    var openBannedUserListViewBuilder: OpenBannedUserListViewBuilder?
+    #endif
     
     // MARK: - Lifecycle
     @available(*, unavailable, renamed: "SBUModerationsViewController(channel:)")
@@ -63,12 +92,13 @@ open class SBUModerationsViewController: SBUBaseViewController, SBUModerationsMo
     
     open func setupComponents(channelType: ChannelType) {
         if channelType == .group {
-            self.headerComponent = SBUModuleSet.groupModerationsModule.headerComponent
-            self.listComponent = SBUModuleSet.groupModerationsModule.listComponent
+            self.headerComponent = SBUModuleSet.GroupModerationsModule.HeaderComponent.init()
+            self.listComponent = SBUModuleSet.GroupModerationsModule.ListComponent.init()
         } else if channelType == .open {
-            self.headerComponent = SBUModuleSet.openModerationsModule.headerComponent
-            self.listComponent = SBUModuleSet.openModerationsModule.listComponent
+            self.headerComponent = SBUModuleSet.OpenModerationsModule.HeaderComponent.init()
+            self.listComponent = SBUModuleSet.OpenModerationsModule.ListComponent.init()
         }
+        self.headerComponent?.channelType = channelType
     }
     
     open override func viewDidLoad() {
@@ -94,14 +124,34 @@ open class SBUModerationsViewController: SBUBaseViewController, SBUModerationsMo
     
     // MARK: - ViewModel
     open func createViewModel(channel: BaseChannel) {
-        self.viewModel = SBUModerationsViewModel(
+        let viewModelType: SBUModerationsViewModel.Type
+        switch channel.channelType {
+        case .open:
+            viewModelType = SBUViewModelSet.OpenModerationsViewModel
+        case .group:
+            viewModelType = SBUViewModelSet.GroupModerationsViewModel
+        default:
+            viewModelType = SBUViewModelSet.GroupModerationsViewModel
+        }
+        
+        self.viewModel = viewModelType.init(
             channel: channel,
             delegate: self
         )
     }
     
     open func createViewModel(channelURL: String, channelType: ChannelType) {
-        self.viewModel = SBUModerationsViewModel(
+        let viewModelType: SBUModerationsViewModel.Type
+        switch channelType {
+        case .open:
+            viewModelType = SBUViewModelSet.OpenModerationsViewModel
+        case .group:
+            viewModelType = SBUViewModelSet.GroupModerationsViewModel
+        default:
+            viewModelType = SBUViewModelSet.GroupModerationsViewModel
+        }
+        
+        self.viewModel = viewModelType.init(
             channelURL: channelURL,
             channelType: channelType,
             delegate: self
@@ -116,6 +166,8 @@ open class SBUModerationsViewController: SBUBaseViewController, SBUModerationsMo
         self.navigationItem.titleView = self.headerComponent?.titleView
         self.navigationItem.leftBarButtonItem = self.headerComponent?.leftBarButton
         self.navigationItem.rightBarButtonItem = self.headerComponent?.rightBarButton
+        self.navigationItem.leftBarButtonItems = self.headerComponent?.leftBarButtons
+        self.navigationItem.rightBarButtonItems = self.headerComponent?.rightBarButtons
         
         // List component
         self.listComponent?.configure(
@@ -130,7 +182,14 @@ open class SBUModerationsViewController: SBUBaseViewController, SBUModerationsMo
     }
     
     open override func setupLayouts() {
-        self.listComponent?.sbu_constraint(equalTo: self.view, left: 0, right: 0, top: 0, bottom: 0)
+        self.listComponent?.sbu_constraint(
+            equalTo: self.view,
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            useSafeArea: true
+        )
     }
     
     open override func setupStyles() {
@@ -158,9 +217,19 @@ open class SBUModerationsViewController: SBUBaseViewController, SBUModerationsMo
     /// - Parameter completionHandler: completion handler of freeze status change
     public func changeFreeze(_ freeze: Bool, _ completionHandler: ((Bool) -> Void)? = nil) {
         if freeze {
-            self.viewModel?.freezeChannel(completionHandler)
+            self.viewModel?.freezeChannel({ isFrozen in
+                #if SWIFTUI
+                self.swiftUIDelegate?.moderationsView(didChangeFrozenState: isFrozen)
+                #endif
+                completionHandler?(isFrozen)
+            })
         } else {
-            self.viewModel?.unfreezeChannel(completionHandler)
+            self.viewModel?.unfreezeChannel({ isUnfrozen in
+                #if SWIFTUI
+                self.swiftUIDelegate?.moderationsView(didChangeFrozenState: !isUnfrozen)
+                #endif
+                completionHandler?(isUnfrozen)
+            })
         }
     }
     
@@ -191,6 +260,12 @@ open class SBUModerationsViewController: SBUBaseViewController, SBUModerationsMo
             SBULog.error("[Failed] Channel object is nil")
             return
         }
+        
+        #if SWIFTUI
+        if self.showUserListForSwiftUI(userListType: userListType) {
+            return
+        }
+        #endif
         
         var listVC: UIViewController
         if channelType == .open {
@@ -233,6 +308,14 @@ open class SBUModerationsViewController: SBUBaseViewController, SBUModerationsMo
         self.navigationItem.rightBarButtonItem = rightItem
     }
     
+    open func moderationsModule(_ headerComponent: SBUModerationsModule.Header, didUpdateLeftItems leftItems: [UIBarButtonItem]?) {
+        self.navigationItem.leftBarButtonItems = leftItems
+    }
+    
+    open func moderationsModule(_ headerComponent: SBUModerationsModule.Header, didUpdateRightItems rightItems: [UIBarButtonItem]?) {
+        self.navigationItem.rightBarButtonItems = rightItems
+    }
+    
     open func moderationsModule(_ headerComponent: SBUModerationsModule.Header,
                                 didTapLeftItem leftItem: UIBarButtonItem) {
         self.onClickBack()
@@ -266,8 +349,10 @@ open class SBUModerationsViewController: SBUBaseViewController, SBUModerationsMo
     }
     
     // MARK: SBUModerationsModuleListDataSource
-    open func moderationsModule(_ listComponent: SBUModerationsModule.List,
-                                  channelForTableView tableView: UITableView) -> BaseChannel? {
+    open func moderationsModule(
+        _ listComponent: SBUModerationsModule.List,
+        channelForTableView tableView: UITableView
+    ) -> BaseChannel? {
         return self.viewModel?.channel
     }
     
@@ -288,3 +373,71 @@ open class SBUModerationsViewController: SBUBaseViewController, SBUModerationsMo
         self.updateStyles()
     }
 }
+
+#if SWIFTUI
+extension SBUModerationsViewController {
+    func showUserListForSwiftUI(userListType: ChannelUserListType) -> Bool {
+        guard let channel = self.channel else { return false }
+        
+        if channelType == .open {
+            switch userListType {
+            case .muted:
+                guard let openMutedParticipantListViewBuilder else { return false }
+                var view = openMutedParticipantListViewBuilder(channel.channelURL)
+                let listVC = UIHostingController(rootView: view)
+                self.navigationController?.pushViewControllerNonFlickering(listVC, animated: true)
+                return true
+            case .banned:
+                guard let openBannedUserListViewBuilder else { return false }
+                var view = openBannedUserListViewBuilder(channel.channelURL)
+                let listVC = UIHostingController(rootView: view)
+                self.navigationController?.pushViewControllerNonFlickering(listVC, animated: true)
+                return true
+            case .operators:
+                guard let openOperatorListViewBuilder else { return false }
+                var view = openOperatorListViewBuilder(channel.channelURL)
+                let listVC = UIHostingController(rootView: view)
+                self.navigationController?.pushViewControllerNonFlickering(listVC, animated: true)
+                return true
+            case .participants:
+                guard let openParticipantListViewBuilder else { return false }
+                var view = openParticipantListViewBuilder(channel.channelURL)
+                let listVC = UIHostingController(rootView: view)
+                self.navigationController?.pushViewControllerNonFlickering(listVC, animated: true)
+                return true
+            default:
+                return false
+            }
+        } else {
+            switch userListType {
+            case .muted:
+                guard let groupMutedMemberListViewBuilder else { return false }
+                var view = groupMutedMemberListViewBuilder(channel.channelURL)
+                let listVC = UIHostingController(rootView: view)
+                self.navigationController?.pushViewControllerNonFlickering(listVC, animated: true)
+                return true
+            case .banned:
+                guard let groupBannedUserListViewBuilder else { return false }
+                var view = groupBannedUserListViewBuilder(channel.channelURL)
+                let listVC = UIHostingController(rootView: view)
+                self.navigationController?.pushViewControllerNonFlickering(listVC, animated: true)
+                return true
+            case .operators:
+                guard let groupOperatorListViewBuilder else { return false }
+                var view = groupOperatorListViewBuilder(channel.channelURL)
+                let listVC = UIHostingController(rootView: view)
+                self.navigationController?.pushViewControllerNonFlickering(listVC, animated: true)
+                return true
+            case .members:
+                guard let groupMemberListViewBuilder else { return false }
+                var view = groupMemberListViewBuilder(channel.channelURL)
+                let listVC = UIHostingController(rootView: view)
+                self.navigationController?.pushViewControllerNonFlickering(listVC, animated: true)
+                return true
+            default:
+                return false
+            }
+        }
+    }
+}
+#endif

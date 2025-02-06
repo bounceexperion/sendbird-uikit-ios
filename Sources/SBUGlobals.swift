@@ -8,7 +8,9 @@
 
 import UIKit
 import Photos
+import SendbirdChatSDK
 
+/// This class contains global variables and configurations for Sendbird UIKit.
 public class SBUGlobals {
     
     /// The application ID from Sendbird dashboard.
@@ -184,5 +186,88 @@ public class SBUGlobals {
     /// Else set as false ( default value  for English )
     /// - Since: 3.13.0
     public static var isRTLLayout: Bool = false
+    /// The WebSocket host URL as a string. This is optional and can be set to connect to a specific WebSocket server.
+    /// - Since: 3.21.0
+    public static var wsHost: String?
+    
+    /// The API host URL as a string. This is optional and can be set to connect to a specific API server.
+    /// - Since: 3.21.0
+    public static var apiHost: String?
+    
+    /// A static closure property that lets you define filter logic for determining which emoji categories to show for different messages.
+    ///
+    /// Override this closure to apply your custom logic.
+    /// By default, the closure returns `nil`, in which case all emojis defined in your application will be shown.
+    ///
+    /// - Parameter message: The `BaseMessage` object for which emoji categories are being filtered.
+    /// - Returns: An optional array of `Int64` representing the Ids of `EmojiCategory` instances to display, or `nil` if no filtering is applied.
+    ///
+    /// See the example below.
+    /// ```swift
+    /// // Define your custom filter logic before the emojis are shown.
+    ///
+    /// SBUGlobals.emojiCategoryFilter = { message in
+    ///     switch message {
+    ///     case is UserMessage:
+    ///       return [1, 2]
+    ///     case is FileMessage:
+    ///         return [2, 3]
+    ///     default: return []
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// - Note: If you wish to show all available emojis without filtering, return `nil`.
+    /// - Since: 3.27.0
+    public static var emojiCategoryFilter: (BaseMessage) -> [Int64]? = { message in
+        return nil
+    }
+    
+    /// The configuration for loading indicator.
+    /// In certain scenarios, loading indicators are not displayed by default, such as when loading cached channels in Group Channel List.
+    /// You can choose to display them by modifying this property.
+    ///
+    /// See the example below.
+    /// ```swift
+    /// // Show loading indicator when loading cached channels in Group Channel List.
+    /// SBUGlobals.loadingIndicator.groupChannelList.cachedChannels = true
+    /// ```
+    ///
+    /// - Since: 3.27.5
+    public static var loadingIndicator = LoadingIndicator()
+}
 
+extension SBUGlobals {
+    /// The configuration for loading indicators.
+    public class LoadingIndicator {
+        /// The configuration for loading indicator in a Group Channel.
+        /// - Since: 3.27.5
+        public var groupChannel = GroupChannel()
+        
+        /// The configuration for loading indicator in a Group Channel List.
+        /// - Since: 3.27.5
+        public var groupChannelList = GroupChannelList()
+        
+        // The configuration for loading indicators in a Group ChannelList.
+        public class GroupChannelList {
+            /// Decides whether to show a loading indicator when loading **cached** channels in a Group Channel List.
+            /// Default is false.
+            /// - Since: 3.27.5
+            public var cachedChannels: Bool = false
+        }
+        
+        // The configuration for loading indicators in a Group Channel.
+        public class GroupChannel {
+            /// Decides whether to show a loading indicator when loading **cached** messages in a Group Channel.
+            /// Default is false.
+            /// - Since: 3.27.5
+            public var cachedMessages: Bool = false
+        }
+    }
+}
+
+extension SBUGlobals {
+    static var imageCompressionQuality: CGFloat {
+        SBUGlobals.isImageCompressionEnabled ? SBUGlobals.imageCompressionRate : 1.0
+    }
 }

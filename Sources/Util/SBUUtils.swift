@@ -14,6 +14,7 @@ import AVFoundation
 private let kDefaultGroupChannelName = "Group Channel"
 private let kDefaultOpenChannelName = "Open Channel"
 
+/// `SBUUtils` is a utility class that provides various helper methods for Sendbird UIKit.
 public class SBUUtils {
     
     /// This function gets the message file type of the file message.
@@ -226,6 +227,9 @@ public class SBUUtils {
         return true
     }
     
+    /// This function generates an empty title for row edit action based on the provided size.
+    /// - Parameter size: The size for which the empty title is generated.
+    /// - Returns: An empty title string for row edit action.
     public static func emptyTitleForRowEditAction(for size: CGSize) -> String {
         let placeholderSymbol = "\u{200A}"
         let minimalActionWidth: CGFloat = 30
@@ -299,4 +303,23 @@ extension SBUUtils {
             print("error")
         }
     }
+    /// Methods for determining if the first character of a string is an RTL language
+    /// - Since: 3.28.0
+    public static func isRTLCharacter(with string: String?) -> Bool {
+        guard let scalar = string?.unicodeScalars.first else { return false }
+        return Self.rtlCharacterSet.contains(scalar)
+    }
+    
+    /// The characterset used to determine RTL language
+    public static var rtlCharacterSet: CharacterSet = {
+        var rtlCharacterSet = CharacterSet()
+        rtlCharacterSet.insert(charactersIn: "\u{0590}"..."\u{05FF}") // Hebrew
+        rtlCharacterSet.insert(charactersIn: "\u{0600}"..."\u{06FF}") // Arabic
+        rtlCharacterSet.insert(charactersIn: "\u{0750}"..."\u{077F}") // Arabic Supplement
+        rtlCharacterSet.insert(charactersIn: "\u{08A0}"..."\u{08FF}") // Arabic Extended-A
+        rtlCharacterSet.insert(charactersIn: "\u{FB1D}"..."\u{FB4F}") // Hebrew Presentation Forms
+        rtlCharacterSet.insert(charactersIn: "\u{FE70}"..."\u{FEFF}") // Arabic Presentation Forms-B
+        rtlCharacterSet.insert(charactersIn: "\u{1EE00}"..."\u{1EEFF}") // Arabic Mathematical Alphabetic Symbols
+        return rtlCharacterSet
+    }()
 }

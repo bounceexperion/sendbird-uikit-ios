@@ -45,13 +45,15 @@ extension SBUMessageSearchModule {
     
     /// A module component that represent the header of `SBUMessageSearchModule`.
     /// - This class consists of titleView, leftBarButton, and rightBarButton.
-    @objcMembers open class Header: UIView {
+    @objc(SBUMessageSearchModuleHeader)
+    @objcMembers
+    open class Header: UIView {
         
         // MARK: - UI properties (Public)
         
         /// A view that represents a title in navigation bar.
         ///
-        /// The default value for this object is set with `UISearchBar`.
+        /// The default view type is `UISearchBar`.
         /// - NOTE: When the value is updated, `messageSearchModule(_:didUpdateTitleView:)` delegate function is called.
         public var titleView: UIView? {
             didSet { self.delegate?.messageSearchModule(self, didUpdateTitleView: self.titleView) }
@@ -77,23 +79,9 @@ extension SBUMessageSearchModule {
         public var theme: SBUMessageSearchTheme?
         
         // MARK: - UI properties (Private)
-        private lazy var defaultSearchBar: UISearchBar = {
-            let searchBar = UISearchBar()
-            searchBar.setPositionAdjustment(UIOffset(horizontal: 8, vertical: 0), for: .search)
-            searchBar.setPositionAdjustment(UIOffset(horizontal: -4, vertical: 0), for: .clear)
-            searchBar.showsCancelButton = true
-            searchBar.delegate = self
-            
-            if #available(iOS 13.0, *) {
-                searchBar.searchTextField.layer.cornerRadius = 20
-                searchBar.searchTextField.layer.masksToBounds = true
-            } else {
-                if let textfield = searchBar.value(forKey: "searchField") as? UITextField,
-                   let backgroundview = textfield.subviews.first {
-                    backgroundview.layer.cornerRadius = 20
-                    backgroundview.clipsToBounds = true
-                }
-            }
+        lazy var defaultSearchBar: UISearchBar = {
+            let searchBar = SBUModuleSet.MessageSearchModule.HeaderComponent.TitleView.init()
+            searchBar.configure(delegate: self, theme: self.theme)
             
             self.updateSearchBarStyle(with: searchBar)
             return searchBar
@@ -134,9 +122,27 @@ extension SBUMessageSearchModule {
         
         /// Set values of the views in the header component when it needs.
         open func setupViews() {
+            #if SWIFTUI
+            self.applyViewConverter(.titleView)
+            self.applyViewConverter(.leftView)
+            self.applyViewConverter(.rightView)
+            // We are not using `...buttons` in SwiftUI
+            #endif
+            
             if self.titleView == nil {
                 self.titleView = self.defaultSearchBar
             }
+            
+            // MOD TODO: After enabling SBUBarButtonItem's lifecyles, use ModuleSet metatypes to setup bar buttons.
+//            if self.leftBarButton == nil,
+//               let leftBarButtonType =  SBUModuleSet.MessageSearchModule.HeaderComponent.LeftBarButton.self {
+//                self.leftBarButton = leftBarButtonType.init(
+//                    title: "LEFT",
+//                    style: <#T##UIBarButtonItem.Style#>,
+//                    target: <#T##Any?#>,
+//                    action: <#T##Selector?#>
+//                )
+//            }
         }
         
         /// Sets layouts of the views in the header component.
@@ -179,7 +185,7 @@ extension SBUMessageSearchModule {
                 for: .clear,
                 state: .normal
             )
-            
+
             searchBar.placeholder = SBUStringSet.Search
             searchBar.barTintColor = self.theme?.cancelButtonTintColor
             
@@ -207,6 +213,17 @@ extension SBUMessageSearchModule {
                     }
                 }
             }
+            
+            // NOTE: Fixed an issue with images not displaying correctly on some versions of iOS14 and below.
+            if let textField = searchBar.value(forKey: "searchField") as? UITextField {
+                if let searchButton = textField.leftView as? UIImageView {
+                    searchButton.setContentHuggingPriority(.required, for: .horizontal)
+                    searchButton.setContentHuggingPriority(.required, for: .vertical)
+                    searchButton.setContentCompressionResistancePriority(.required, for: .horizontal)
+                    searchButton.setContentCompressionResistancePriority(.required, for: .vertical)
+                    searchButton.contentMode = .scaleAspectFit
+                }
+            }
         }
         
         // MARK: - Common
@@ -218,6 +235,12 @@ extension SBUMessageSearchModule {
                let cancelButton = searchBar.value(forKey: "cancelButton") as? UIButton {
                 cancelButton.isEnabled = true
             }
+        }
+        
+        /// Cancels the search.
+        /// - Since: 3.28.0
+        public func cancelSearch() {
+            self.delegate?.messageSearchModuleDidTapCancel(self)
         }
         
         // MARK: - Keyboard
@@ -234,7 +257,9 @@ extension SBUMessageSearchModule {
         
         /// Unregisters keyboard notification.
         public func unregisterKeyboardNotifications() {
+            // swiftlint:disable notification_center_detachment
             NotificationCenter.default.removeObserver(self)
+            // swiftlint:enable notification_center_detachment
         }
     }
 }
