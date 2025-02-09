@@ -160,6 +160,7 @@ final class GeneralSignInViewController: UIViewController {
 
         },
             completionHandler: { error in
+                UserDefaults.standard.setValue(true, forKey: "is_rtl_enabled")
             SendbirdUI.connect { [weak self] user, error in
                 guard let self = self else { return }
                 

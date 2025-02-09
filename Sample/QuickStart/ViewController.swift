@@ -48,9 +48,9 @@ class ViewController: UIViewController {
         super.viewWillAppear(animated)
 
         SBUTheme.set(theme: .light)
+        GlobalSetCustomManager.setDefault()
         GlobalSetCustomManager.setBounceDefault()
-        nicknameTextField.text = UserDefaults.loadNickname()
-        
+
         let signedApp = UserDefaults.loadSignedInSampleApp()
         switch signedApp {
         case .none:
@@ -98,72 +98,6 @@ class ViewController: UIViewController {
     @IBAction func onEditingChangeTextField(_ sender: UITextField) {
         let color = sender.text?.isEmpty ?? true ? #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0) : #colorLiteral(red: 0.4823529412, green: 0.3254901961, blue: 0.937254902, alpha: 1)
         sender.animateBorderColor(toColor: color, duration: 0.1)
-    }
-  
-    @IBAction func onTapButton(_ sender: UIButton) {
-        let type = ButtonType(rawValue: sender.tag)
-
-        switch type {
-        case .signIn:
-            self.signinAction()
-        case .startChatWithVC, .startChatWithTC:
-            self.startChatAction(type: type ?? .startChatWithVC)
-        case .startOpenChatWithTC:
-            self.startOpenChatAction(type: .startOpenChatWithTC)
-        case .startChatBotWithVC:
-            self.startChatBotAction(type: .startChatBotWithVC)
-        case .signOut:
-            self.signOutAction()
-        case .customSamples:
-            self.moveToCustomSamples()
-        default:
-            break
-        }
-    }
-
-    func signinAction() {
-        loadingIndicator.startAnimating()
-        view.isUserInteractionEnabled = false
-        
-        let userID = userIdTextField.text ?? ""
-        let nickname = nicknameTextField.text ?? ""
-        
-        guard !userID.isEmpty else {
-            userIdTextField.shake()
-            userIdTextField.becomeFirstResponder()
-            loadingIndicator.stopAnimating()
-            view.isUserInteractionEnabled = true
-            return
-        }
-        guard !nickname.isEmpty else {
-            nicknameTextField.shake()
-            nicknameTextField.becomeFirstResponder()
-            loadingIndicator.stopAnimating()
-            view.isUserInteractionEnabled = true
-            return
-        }
-        
-        SBUGlobals.currentUser = SBUUser(userId: userID, nickname: nickname)
-        UserDefaults.standard.setValue(true, forKey: "is_rtl_enabled")
-        SendbirdUI.connect { [weak self] user, error in
-            self?.loadingIndicator.stopAnimating()
-            self?.view.isUserInteractionEnabled = true
-            
-            if let user = user {
-                UserDefaults.saveUserID(userID)
-                UserDefaults.saveNickname(nickname)
-                
-                print("SendbirdUIKit.connect: \(user)")
-                self?.isSignedIn = true
-                self?.updateUnreadCount()
-                
-                if let appDelegate = UIApplication.shared.delegate as? AppDelegate,
-                    let payload = appDelegate.pendingNotificationPayload {
-                    self?.startChatAction(with: payload)
-                    appDelegate.pendingNotificationPayload = nil
-                }
-            }
-        }
     }
     
     @IBAction func onBasicUsagesViewButton(_ sender: UIButton) {
