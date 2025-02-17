@@ -794,6 +794,11 @@ open class SBUMessageInputView: SBUView, SBUActionSheetDelegate, UITextViewDeleg
             with: theme.buttonTintColor,
             to: SBUIconSetType.Metric.iconActionSheetItem
         )
+        
+        Self.cameraItem.title = SBUStringSet.Camera
+        Self.libraryItem.title = SBUStringSet.PhotoVideoLibrary
+        Self.documentItem.title = SBUStringSet.Document
+
         Self.cancelItem.color = theme.buttonTintColor
         
         self.divider.backgroundColor = theme.channelViewDividerColor

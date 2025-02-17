@@ -23,28 +23,30 @@ let package = Package(
         ),
     ],
     targets: [
-        .binaryTarget(
-            name: "SendbirdUIKit",
-            url: "https://github.com/sendbird/sendbird-uikit-ios/releases/download/3.28.1/SendbirdUIKit.xcframework.zip", // SendbirdUIKit_URL
-            checksum: "505f30d55e1a2d2ab270c7d0ee4542da359fa58c3ad07190c5f631d02e0d3143" // SendbirdUIKit_CHECKSUM
-        ),
+        // .binaryTarget(
+        //     name: "SendbirdUIKit",
+        //     url: "https://github.com/sendbird/sendbird-uikit-ios/releases/download/3.29.2/SendbirdUIKit.xcframework.zip", // SendbirdUIKit_URL
+        //     checksum: "bd2b10a922a2f9c4ddd091ef6ee548e7fbaec8b89575c0d7c6586c9201f1e850" // SendbirdUIKit_CHECKSUM
+        // ),
         .binaryTarget(
             name: "SendbirdUIMessageTemplate",
-            url: "https://github.com/sendbird/sendbird-uikit-ios/releases/download/3.29.1/SendbirdUIMessageTemplate.xcframework.zip", // SendbirdUIMessageTemplate_URL
-            checksum: "b5e13a159fd259f88ed7e6afcd711693820e385e2ac7742f4f0090305f0b00ad" // SendbirdUIMessageTemplate_CHECKSUM
+            url: "https://github.com/sendbird/sendbird-uikit-ios/releases/download/3.29.2/SendbirdUIMessageTemplate.xcframework.zip", // SendbirdUIMessageTemplate_URL
+            checksum: "2dfc617fbec3b617b8b18f44fdda10cf6c3f2e75ec156574b1eb734cf5546bc1" // SendbirdUIMessageTemplate_CHECKSUM
         ),
         .target(
             name: "SendbirdUIKitTarget",
             dependencies: [
-                .target(name: "SendbirdUIKit"),
+                // .target(name: "SendbirdUIKit"),
+                .target(name: "SendbirdUIMessageTemplate"),
                 .product(name: "SendbirdChatSDK", package: "SendbirdChatSDK")
             ],
-            path: "Framework/Dependency",
+            path: "Sources",
             exclude: ["../../Sample", "../../Sources"]
         ),
         .target(
             name: "SendbirdUIMessageTemplateTarget",
             dependencies: [
+                .target(name: "SendbirdUIMessageTemplate"),
                 .product(name: "SendbirdChatSDK", package: "SendbirdChatSDK")
             ],
             path: "Framework/Module/MessageTemplate",

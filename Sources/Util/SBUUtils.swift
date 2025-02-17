@@ -297,7 +297,7 @@ extension SBUUtils {
             try AVAudioSession.sharedInstance().setActive(true)
             let volume = AVAudioSession.sharedInstance().outputVolume
             if volume == 0.0 {
-                SBUToastView.showToast(item: SBUToastViewItem(title: SBUStringSet.Alert_Mute_Message, textAlignment: .center))
+                SBUToastView.show(item: SBUToastViewItem(title: SBUStringSet.Alert_Mute_Message, textAlignment: .center))
             }
         } catch {
             print("error")
